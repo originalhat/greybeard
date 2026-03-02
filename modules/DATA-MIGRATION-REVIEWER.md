@@ -66,6 +66,9 @@ Only report issues where:
 - Consider both the migration AND the code changes together
 - Look for logic that was removed but whose effects need to be preserved in data
 - **Do not report "missing migration" if the migration exists in Pass 1 inventory**
+- Only flag actual data risks (schema incompatibility, constraint violations, data loss)
+- Code changes that compute values on-the-fly are not migration issues (no schema change = no migration needed)
+- Derived fields calculated at runtime don't require migration backfills
 
 ---
 

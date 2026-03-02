@@ -51,11 +51,20 @@ For each API change from Pass 1, determine:
 - Is this a **potentially breaking change** (depends on client usage)?
 - Is this a **safe change** (backward compatible)?
 
+Assess ACTUAL PRODUCTION IMPACT, not just theoretical issues:
+- Will clients actually break or can they be resilient?
+- Do modern HTTP clients handle broader status codes (e.g., any 4xx)?
+- Is the change semantically meaningful (e.g., 400→409 is semantically correct)?
+- Are well-behaved clients unaffected (e.g., ignoring unknown fields)?
+
 Check specifically:
-- Are fields being removed or renamed in responses?
-- Are required parameters being added?
-- Are types changing?
-- Are endpoints being removed?
+- Are fields being REMOVED or RENAMED in responses? (breaking)
+- Are required parameters being ADDED without defaults? (breaking)
+- Are types changing in ways clients can't handle? (breaking)
+- Are endpoints being REMOVED? (breaking)
+- Status code changes: only breaking if clients handle specific codes in error paths
+- New fields: non-breaking for well-behaved clients
+- Type narrowing in responses: check if clients actually depend on wide types
 
 ### Pass 3: Report Findings
 For each breaking change:

@@ -136,6 +136,8 @@ session.query(User).options(joinedload('posts'))
 - Consider that N+1 problems may not appear in tests with small datasets
 - Flag patterns even if they're not currently slow (will be with scale)
 - **Only report issues from Pass 1 inventory** - don't speculate about code not in the diff
+- Don't assume missing optimization if eager loading is correct - verify the pattern actually causes N+1
+- Verify loop/iteration is necessary before flagging N+1 (single record fetches aren't N+1)
 
 ## Common False Positives to Avoid
 
