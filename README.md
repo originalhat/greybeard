@@ -20,7 +20,7 @@ greybeard/
 │   │   ├── lenses/            # General technical criteria (22 lenses)
 │   │   └── context/           # Team/repo-specific criteria
 │   └── knowledge-extraction/  # Business logic documentation pipeline
-│       ├── pipeline/          # 5-phase extraction process
+│       ├── pipeline/          # 5-spice extraction process
 │       └── templates/         # output templates
 │       └── output/            # output results
 ├── sources/                   # Clone your repos here
