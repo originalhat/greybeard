@@ -28,6 +28,12 @@ Detect state management issues including duplicated state, improper lifting, and
 - Mixing controlled and uncontrolled patterns on same input
 - Switching between controlled/uncontrolled during lifecycle
 
+### Fragmented Form State
+- Multiple `useState` calls for related form fields that belong together
+- Manual object reconstruction from separate state pieces
+- Scattered reset logic across multiple state setters
+- Passing reconstructed objects to comparison hooks/utilities
+
 ## Patterns
 
 ```jsx
@@ -63,11 +69,24 @@ function User({ user }) {
 }
 ```
 
+```jsx
+// BAD: Fragmented form state - easy to miss field in reconstruction
+const [name, setName] = useState("")
+const [email, setEmail] = useState("")
+const formData = { name, email }  // Must remember all fields!
+const reset = () => { setName(""); setEmail("") }  // Scattered
+
+// GOOD: Unified form state
+const [formData, setFormData] = useState({ name: "", email: "" })
+const setValue = (k, v) => setFormData(p => ({ ...p, [k]: v }))
+const reset = () => setFormData({ name: "", email: "" })
+```
+
 ## Severity
 
 - **CRITICAL**: Data inconsistency, props mutation
-- **HIGH**: Stale data from duplicated state
-- **MEDIUM**: Prop drilling, suboptimal state location
+- **HIGH**: Stale data from duplicated state, fragmented state causing missed fields
+- **MEDIUM**: Prop drilling, suboptimal state location, scattered reset logic
 
 ## False Positives to Avoid
 
@@ -75,3 +94,4 @@ function User({ user }) {
 - Props used as initial value with `useState(prop)` when that's the intent
 - Controlled components that properly sync state
 - Context usage that appropriately reduces prop drilling
+- Separate useState for truly independent fields (e.g., one controls visibility, another holds data)

@@ -1,4 +1,8 @@
-# Cloned repositories for review (large, don't track)
-repos/
+# Cloned repositories (large, don't track)
+sources/*
+!sources/CLAUDE.md
+
+# Generated output from knowledge extraction (domain-specific, not public)
+workflows/knowledge-extraction/output/
 
 .claude/
