@@ -21,7 +21,8 @@ greybeard/
 │   │   └── context/           # Team/repo-specific criteria
 │   └── knowledge-extraction/  # Business logic documentation pipeline
 │       ├── pipeline/          # 5-phase extraction process
-│       └── templates/         # Output templates
+│       └── templates/         # output templates
+│       └── output/            # output results
 ├── sources/                   # Clone your repos here
 └── sketches/                  # Drafts and ideas
 ```
