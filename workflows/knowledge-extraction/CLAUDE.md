@@ -19,6 +19,7 @@ knowledge-extraction/
 │   └── ubiquitous-language.md ← Template for domain vocabulary
 └── output/
     └── {repo}/                ← Per-repo output
+        ├── .extraction-state.json  ← Tracks last extracted SHA for incremental updates
         ├── domains/           ← One file per business domain
         ├── ubiquitous-language.md  ← Domain vocabulary for this repo
         └── open-questions.md  ← Compiled SME questions
@@ -117,6 +118,40 @@ Cross-repo insights should be noted in:
 - On major refactors, re-run the full pipeline for affected domains
 - SME answers should be added directly to domain records
 - Tag each domain record with the last date it was reviewed
+
+### Incremental Extraction (Catch-Up)
+
+Each repo's output directory contains a `.extraction-state.json` file that tracks the last extracted commit:
+
+```json
+{
+  "repo": "care_platform",
+  "last_extracted_sha": "8305c63c...",
+  "last_extracted_at": "2026-04-01T10:45:00Z",
+  "domains_updated": ["task-management", "referral-management"],
+  "notes": "Brief summary of what was extracted"
+}
+```
+
+**To catch up on a repo:**
+
+```
+catch up on knowledge in <repo-name>
+```
+
+This will:
+1. Read `.extraction-state.json` to find the last extracted SHA
+2. Diff from that SHA to current `origin/main`
+3. Analyze only the changed files
+4. Update affected domain records
+5. Update the state file with the new SHA
+
+**Manual diff command:**
+```bash
+cd sources/<repo> && git fetch origin
+git log <last_sha>..origin/main --oneline --no-merges
+git diff <last_sha>..origin/main --stat
+```
 
 ---
 

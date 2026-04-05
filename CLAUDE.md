@@ -32,11 +32,11 @@ review <branch-name> in <repo-name>
 
 **Steps:**
 1. Check out the branch under `sources/{repo}/`
-2. Diff against `origin/main`
+2. Fetch latest (`git fetch origin`) then diff using three-dot syntax (`git diff origin/main...HEAD`)
 3. Evaluate against each lens in `workflows/code-review/lenses/`
 4. Evaluate against `workflows/code-review/context/`
 5. Fact-check findings in the repo
-6. Cross-repo analysis if changes touch integration points
+6. Cross-repo analysis if changes touch integration points (pull latest on related repos first)
 7. Output PASS/FAIL per lens with locations and fixes
 
 ### Knowledge Extraction
