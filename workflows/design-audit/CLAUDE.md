@@ -74,7 +74,7 @@ If the app cannot be started or no deployed URL exists:
 
 ## Catch-Up Mode
 
-**Trigger:** `catch up on design in <repo-name>`
+**Trigger:** `catch up design for <repo-name>`
 
 1. Read `.design-state.json` for last audited SHA
 2. `git diff {last_sha}..HEAD` to identify changed files

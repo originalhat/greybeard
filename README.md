@@ -91,7 +91,7 @@ pen test <repo-name>
 
 Supports incremental catch-up:
 ```
-catch up on security in <repo-name>
+catch up security for <repo-name>
 ```
 
 See [`workflows/security-testing/`](workflows/security-testing/) for details.
@@ -112,7 +112,7 @@ design audit <repo-name>
 
 Supports incremental catch-up:
 ```
-catch up on design in <repo-name>
+catch up design for <repo-name>
 ```
 
 See [`workflows/design-audit/`](workflows/design-audit/) for details.

@@ -63,6 +63,11 @@ extract knowledge from <repo-name>
 2. Output domain records, ubiquitous language, and open questions
 3. Cross-repo analysis for integration points and term alignment
 
+**To catch up:**
+```
+catch up knowledge for <repo-name>
+```
+
 ### Security Testing
 
 Scans entire repositories for security vulnerabilities against 17 focused security lenses.
@@ -81,7 +86,7 @@ pen test <repo-name>
 
 **To catch up:**
 ```
-catch up on security in <repo-name>
+catch up security for <repo-name>
 ```
 Diffs from last scanned SHA, re-scans only changed files, and updates the living report.
 
@@ -105,7 +110,7 @@ The `design-spec.md` output is referenced by the `DESIGN-CONSISTENCY-REVIEWER` c
 
 **To catch up:**
 ```
-catch up on design in <repo-name>
+catch up design for <repo-name>
 ```
 Diffs from last audited SHA, re-inventories only changed files, and updates the living spec.
 

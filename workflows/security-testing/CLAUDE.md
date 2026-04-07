@@ -108,7 +108,7 @@ Each repo's output directory contains a `.scan-state.json` file that tracks the 
 ### Incremental Scan (Catch-Up)
 
 ```
-catch up on security in <repo-name>
+catch up security for <repo-name>
 ```
 
 This will:

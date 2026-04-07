@@ -136,7 +136,7 @@ Each repo's output directory contains a `.extraction-state.json` file that track
 **To catch up on a repo:**
 
 ```
-catch up on knowledge in <repo-name>
+catch up knowledge for <repo-name>
 ```
 
 This will:

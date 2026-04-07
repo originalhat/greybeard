@@ -89,4 +89,4 @@ If no design audit output exists for the repo:
 
 If the spec exists but is stale (last audit > 3 months or many commits behind):
 - Apply lens but note staleness
-- Consider triggering a catch-up: `catch up on design in {repo-name}`
+- Consider triggering a catch-up: `catch up design for {repo-name}`

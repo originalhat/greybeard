@@ -61,7 +61,7 @@ Follow `templates/segment-manifest.md`. Key fields per segment:
 
 ## Catch-Up Mode
 
-When running incrementally (after `catch up on security in <repo-name>`):
+When running incrementally (after `catch up security for <repo-name>`):
 
 1. Read `.scan-state.json` to find `last_scanned_sha`
 2. Diff changed files: `git diff <last_sha>..origin/main --name-only`
