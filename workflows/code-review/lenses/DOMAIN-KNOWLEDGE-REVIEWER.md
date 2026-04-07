@@ -2,7 +2,7 @@
 
 Ensure code changes align with extracted domain knowledge: ubiquitous language, business rules, and domain boundaries.
 
-**Prerequisite:** Extracted knowledge must exist at `workflows/knowledge-extraction/output/{repo}/`
+**Prerequisite:** Extracted knowledge must exist at `../greybeard-data/output/knowledge-extraction/{repo}/`
 
 ## What to Check
 

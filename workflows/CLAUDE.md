@@ -19,7 +19,7 @@ Each workflow directory should contain:
 {workflow-name}/
 ├── CLAUDE.md           # Workflow instructions and execution steps
 ├── {components}/       # Workflow-specific modules, phases, or lenses
-└── output/             # Generated artifacts (if applicable)
+└── templates/          # Output format templates (if applicable)
 ```
 
 ### CLAUDE.md Requirements
@@ -41,5 +41,6 @@ Every workflow CLAUDE.md should include:
 ## Shared Resources
 
 All workflows can access:
-- `sources/` — Cloned repositories for domain knowledge
+- `../greybeard-data/sources/` — Cloned repositories for domain knowledge
+- `../greybeard-data/output/` — Workflow output (per-workflow, per-repo)
 - `sketches/` — Draft ideas (read-only reference)

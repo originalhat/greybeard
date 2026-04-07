@@ -12,23 +12,26 @@ security-testing/
 │   ├── 02-scanner.md   # Per-segment vulnerability scanning
 │   └── 03-consolidator.md # Dedup, fact-check, rank
 ├── lenses/             # 17 security vulnerability lenses
-├── templates/          # Output format templates
-└── output/             # Per-repo living records
-    └── {repo}/
-        ├── .scan-state.json        # Tracks last scanned SHA for incremental catch-up
-        ├── segment-manifest.md     # Repo partitioning map
-        ├── scans/                  # Per-segment raw findings (working artifacts)
-        │   └── scan-{segment}.md
-        └── security-report.md     # Final prioritized vulnerability report
+└── templates/          # Output format templates
+```
+
+Output lives at `../greybeard-data/output/security-testing/{repo}/`:
+```
+{repo}/
+├── .scan-state.json        # Tracks last scanned SHA for incremental catch-up
+├── segment-manifest.md     # Repo partitioning map
+├── scans/                  # Per-segment raw findings (working artifacts)
+│   └── scan-{segment}.md
+└── security-report.md     # Final prioritized vulnerability report
 ```
 
 ## Inputs
 
-- A target repository cloned under `sources/{repo}/`
+- A target repository cloned under `../greybeard-data/sources/{repo}/`
 
 ## Outputs
 
-Per-repo living records under `output/{repo}/`:
+Per-repo living records under `../greybeard-data/output/security-testing/{repo}/`:
 
 - `.scan-state.json` — tracks last scanned SHA for incremental catch-up
 - `segment-manifest.md` — repo partitioning map
@@ -49,7 +52,7 @@ pen test <repo-name> # or security scan <repo name>
 
 ### Steps
 
-1. **Segment** (one Sonnet agent): Run `pipeline/01-segmenter.md` against `sources/{repo}/`. Produces a segment manifest partitioning the repo into groups of 10-30 files, each tagged with applicable lenses and risk priority.
+1. **Segment** (one Sonnet agent): Run `pipeline/01-segmenter.md` against `../greybeard-data/sources/{repo}/`. Produces a segment manifest partitioning the repo into groups of 10-30 files, each tagged with applicable lenses and risk priority.
 
 2. **Scan** (one Sonnet agent per segment, parallel): For each segment in the manifest, run `pipeline/02-scanner.md`. Each scanner agent reads every file in its segment and evaluates against all applicable lenses from `lenses/`. Produces raw vulnerability findings with confidence levels.
 
@@ -121,7 +124,7 @@ This will:
 
 **Manual diff command:**
 ```bash
-cd sources/<repo> && git fetch origin
+cd ../greybeard-data/sources/<repo> && git fetch origin
 git log <last_sha>..origin/main --oneline --no-merges
 git diff <last_sha>..origin/main --stat
 ```

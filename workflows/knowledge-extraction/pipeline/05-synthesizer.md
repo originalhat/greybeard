@@ -83,11 +83,11 @@ Produce a brief **Coverage Report** noting any rules that fell through the crack
 
 ## Output Format
 
-Each domain record follows `templates/domain-record.md`. Produce one file per domain at `output/domains/[domain-name].md`.
+Each domain record follows `templates/domain-record.md`. Produce one file per domain at `../greybeard-data/output/knowledge-extraction/{repo}/domains/[domain-name].md`.
 
 Also produce:
-- `output/open-questions.md` — consolidated unanswered questions from all domains (copy from interrogator output, filtered to unresolved)
-- `output/coverage-report.md` — brief summary of what was and wasn't captured
+- `../greybeard-data/output/knowledge-extraction/{repo}/open-questions.md` — consolidated unanswered questions from all domains (copy from interrogator output, filtered to unresolved)
+- `../greybeard-data/output/knowledge-extraction/{repo}/coverage-report.md` — brief summary of what was and wasn't captured
 
 ---
 

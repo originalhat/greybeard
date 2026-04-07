@@ -13,16 +13,19 @@ knowledge-extraction/
 │   ├── 03-researcher.md       ← Phase 3: Evidence gathering
 │   ├── 04-interrogator.md     ← Phase 4: Gap analysis & SME questions
 │   └── 05-synthesizer.md      ← Phase 5: Final knowledge base assembly
-├── templates/
-│   ├── domain-record.md       ← Template for a documented domain
-│   ├── open-question.md       ← Template for an unresolved SME question
-│   └── ubiquitous-language.md ← Template for domain vocabulary
-└── output/
-    └── {repo}/                ← Per-repo output
-        ├── .extraction-state.json  ← Tracks last extracted SHA for incremental updates
-        ├── domains/           ← One file per business domain
-        ├── ubiquitous-language.md  ← Domain vocabulary for this repo
-        └── open-questions.md  ← Compiled SME questions
+└── templates/
+    ├── domain-record.md       ← Template for a documented domain
+    ├── open-question.md       ← Template for an unresolved SME question
+    └── ubiquitous-language.md ← Template for domain vocabulary
+```
+
+Output lives at `../greybeard-data/output/knowledge-extraction/{repo}/`:
+```
+{repo}/
+├── .extraction-state.json  ← Tracks last extracted SHA for incremental updates
+├── domains/           ← One file per business domain
+├── ubiquitous-language.md  ← Domain vocabulary for this repo
+└── open-questions.md  ← Compiled SME questions
 ```
 
 ---
@@ -66,17 +69,17 @@ A glossary of domain-specific terms used in the codebase. Captures what terms me
 
 ## Outputs
 
-### Domain Records (`output/{repo}/domains/`)
+### Domain Records (`../greybeard-data/output/knowledge-extraction/{repo}/domains/`)
 One markdown file per domain, following `templates/domain-record.md`. These are the canonical reference for business logic.
 
-### Ubiquitous Language (`output/{repo}/ubiquitous-language.md`)
+### Ubiquitous Language (`../greybeard-data/output/knowledge-extraction/{repo}/ubiquitous-language.md`)
 A glossary of domain terms extracted from the codebase. Includes:
 - Term definitions as used in this codebase
 - Relationships between terms
 - Common confusions or naming quirks
 - Cross-repo term alignment notes
 
-### Open Questions (`output/{repo}/open-questions.md`)
+### Open Questions (`../greybeard-data/output/knowledge-extraction/{repo}/open-questions.md`)
 Structured questions for SME review where agents couldn't determine intent.
 
 ---
@@ -99,7 +102,7 @@ Cross-repo insights should be noted in:
 ## Running the Pipeline
 
 ### Prerequisites
-- Access to the target repo under `sources/`
+- Access to the target repo under `../greybeard-data/sources/`
 - Access to git history and commit messages
 - Access to linked issue tracker (if available)
 - One or more humans available for SME review in Phase 4
@@ -148,7 +151,7 @@ This will:
 
 **Manual diff command:**
 ```bash
-cd sources/<repo> && git fetch origin
+cd ../greybeard-data/sources/<repo> && git fetch origin
 git log <last_sha>..origin/main --oneline --no-merges
 git diff <last_sha>..origin/main --stat
 ```

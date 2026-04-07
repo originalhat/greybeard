@@ -1,6 +1,8 @@
 # Sources
 
-This directory contains cloned repositories that serve as **shared domain knowledge** for all workflows. These are read-only references—not working development environments.
+This file documents the repositories analyzed by Greybeard workflows and their relationships.
+
+**Repos are cloned into `../greybeard-data/sources/`**, not this directory. This file stays in the repo as shared documentation.
 
 **Important:** When comparing against other repos, always use their `main` branch and pull to ensure it's up to date.
 
@@ -11,7 +13,7 @@ This directory contains cloned repositories that serve as **shared domain knowle
 Clone repos you want to analyze:
 
 ```bash
-git clone <repo-url> sources/<repo-name>
+git clone <repo-url> ../greybeard-data/sources/<repo-name>
 ```
 
 ## Documenting Your Repos
@@ -52,12 +54,12 @@ If your repos interact with each other, document the relationships:
 ## Using Sources in Workflows
 
 ### Code Review
-1. Check out the branch to review under `sources/{repo}/`
+1. Check out the branch to review under `../greybeard-data/sources/{repo}/`
 2. Pull latest `origin/main` for comparison
 3. Cross-repo analysis: check related repos if changes touch integration points
 
 ### Knowledge Extraction
-1. Run the pipeline against `sources/{repo}/`
+1. Run the pipeline against `../greybeard-data/sources/{repo}/`
 2. Note cross-repo dependencies in domain records
 3. Align ubiquitous language across repos where terms overlap
 

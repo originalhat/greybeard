@@ -3,7 +3,7 @@
 **Role:** Vulnerability Hunter
 **Model:** Sonnet (one agent per segment, run in parallel)
 **Input:** One segment from the segment manifest + applicable lenses from `lenses/`
-**Output:** `output/{repo}/scans/scan-{segment-name}.md`
+**Output:** `../greybeard-data/output/security-testing/{repo}/scans/scan-{segment-name}.md`
 
 ## Mission
 

@@ -27,15 +27,25 @@ greybeard/
 │   ├── security-testing/      # Security vulnerability scanning
 │   │   ├── pipeline/          # 3-phase scan process
 │   │   ├── lenses/            # 17 security-focused lenses
-│   │   ├── templates/         # Output templates
-│   │   └── output/            # Generated reports per repo
+│   │   └── templates/         # Output templates
 │   └── design-audit/          # Frontend design consistency assessment
 │       ├── pipeline/          # 4-phase audit process
 │       ├── lenses/            # Design dimension criteria
-│       ├── templates/         # Output templates
-│       └── output/            # Generated artifacts per repo
-├── sources/                   # Clone your repos here
+│       └── templates/         # Output templates
+├── sources/                   # Repo relationship docs
 └── sketches/                  # Drafts and ideas
+```
+
+Private data lives outside the repo:
+
+```
+../greybeard-data/
+├── sources/                          # Cloned repositories
+│   └── {repo}/
+└── output/                           # Workflow output
+    ├── knowledge-extraction/{repo}/
+    ├── security-testing/{repo}/
+    └── design-audit/{repo}/
 ```
 
 ## Workflows
@@ -126,21 +136,27 @@ git clone https://github.com/your-org/greybeard.git
 cd greybeard
 ```
 
-### 2. Add your repositories
-
-Clone the repos you want to analyze into `sources/`:
+### 2. Set up the data directory
 
 ```bash
-git clone https://github.com/your-org/your-repo.git sources/your-repo
+mkdir -p ../greybeard-data/sources ../greybeard-data/output/{knowledge-extraction,security-testing,design-audit}
 ```
 
-### 3. Customize context (optional)
+### 3. Add your repositories
+
+Clone the repos you want to analyze into the data directory:
+
+```bash
+git clone https://github.com/your-org/your-repo.git ../greybeard-data/sources/your-repo
+```
+
+### 4. Customize context (optional)
 
 Add team-specific review criteria to `workflows/code-review/context/`:
 - `GOTCHYAS.md` — Known pitfalls
 - `NITS.md` — Style preferences
 
-### 4. Run with Claude Code
+### 5. Run with Claude Code
 
 ```bash
 claude

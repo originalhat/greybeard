@@ -13,23 +13,26 @@ design-audit/
 │   ├── 03-analyzer.md
 │   └── 04-synthesizer.md
 ├── lenses/             # Design dimensions to evaluate
-├── templates/          # Output format templates
-└── output/             # Generated artifacts per repo
-    └── {repo}/
-        ├── .design-state.json
-        ├── inventory.md
-        ├── findings.md
-        └── design-spec.md
+└── templates/          # Output format templates
+```
+
+Output lives at `../greybeard-data/output/design-audit/{repo}/`:
+```
+{repo}/
+├── .design-state.json
+├── inventory.md
+├── findings.md
+└── design-spec.md
 ```
 
 ## Inputs
 
-- A frontend repository cloned under `sources/{repo}/`
+- A frontend repository cloned under `../greybeard-data/sources/{repo}/`
 - Optionally: a running dev server or deployed URL for visual capture
 
 ## Outputs
 
-All outputs live under `workflows/design-audit/output/{repo}/`:
+All outputs live under `../greybeard-data/output/design-audit/{repo}/`:
 
 | File | Description |
 |------|-------------|
@@ -57,7 +60,7 @@ The `design-spec.md` is the canonical artifact. The code-review `DESIGN-CONSISTE
 
 ### Steps
 
-1. Clone or verify repo under `sources/{repo}/`
+1. Clone or verify repo under `../greybeard-data/sources/{repo}/`
 2. **Parallel**: Run Phase 1 (Inventorier) and Phase 2 (Screenshotter)
    - Phase 2 requires a running app — if unavailable, skip and proceed static-only
 3. Run Phase 3 (Analyzer) against inventory, screenshots (if available), and each lens

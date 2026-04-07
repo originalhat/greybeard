@@ -2,6 +2,25 @@
 
 A multi-workflow system for code review, knowledge extraction, and design analysis, powered by AI agents.
 
+## Data Directory
+
+Private data (cloned repos and workflow output) lives **outside this repo** at `../greybeard-data/`, a sibling directory. This keeps proprietary source code and generated reports structurally separated from the prompts and templates in this repo.
+
+```
+../greybeard-data/
+├── sources/                          # Cloned repositories
+│   └── {repo}/
+└── output/                           # Workflow output
+    ├── knowledge-extraction/{repo}/  # Domain records, language, questions
+    ├── security-testing/{repo}/      # Scan results, security reports
+    └── design-audit/{repo}/          # Inventory, findings, design specs
+```
+
+Set up the data directory:
+```bash
+mkdir -p ../greybeard-data/sources ../greybeard-data/output/{knowledge-extraction,security-testing,design-audit}
+```
+
 ## Directory Structure
 
 ```
@@ -16,14 +35,12 @@ greybeard/
 │   ├── security-testing/      # Security vulnerability scanning
 │   │   ├── pipeline/          # 3-phase scan process
 │   │   ├── lenses/            # 17 security-focused lenses
-│   │   ├── templates/         # Output templates
-│   │   └── output/            # Generated reports per repo
+│   │   └── templates/         # Output templates
 │   └── design-audit/          # Frontend design consistency assessment
 │       ├── pipeline/          # 4-phase audit process
 │       ├── lenses/            # Design dimension criteria
-│       ├── templates/         # Output templates
-│       └── output/            # Generated artifacts per repo
-├── sources/                   # Cloned repositories (gitignored)
+│       └── templates/         # Output templates
+├── sources/                   # Repo relationship docs (repos cloned into ../greybeard-data/sources/)
 └── sketches/                  # Drafts and ideas
 ```
 
@@ -41,7 +58,7 @@ review <branch-name> in <repo-name>
 ```
 
 **Steps:**
-1. Check out the branch under `sources/{repo}/`
+1. Check out the branch under `../greybeard-data/sources/{repo}/`
 2. Fetch latest (`git fetch origin`) then diff using three-dot syntax (`git diff origin/main...HEAD`)
 3. Evaluate against each lens in `workflows/code-review/lenses/`
 4. Evaluate against `workflows/code-review/context/`
@@ -116,11 +133,13 @@ Diffs from last audited SHA, re-inventories only changed files, and updates the 
 
 ## Sources
 
-Clone repositories to analyze into `sources/`. This directory is gitignored.
+Clone repositories to analyze into the data directory:
 
 ```bash
-git clone <repo-url> sources/<repo-name>
+git clone <repo-url> ../greybeard-data/sources/<repo-name>
 ```
+
+See `sources/CLAUDE.md` for repo relationship documentation.
 
 When comparing against other repos, always use their `main` branch and pull latest.
 

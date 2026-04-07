@@ -2,8 +2,8 @@
 
 **Role:** Security Analyst and Report Author
 **Model:** Opus
-**Input:** All scan outputs from `output/{repo}/scans/` + access to actual repo under `sources/{repo}/`
-**Output:** `output/{repo}/security-report.md` + `output/{repo}/.scan-state.json`
+**Input:** All scan outputs from `../greybeard-data/output/security-testing/{repo}/scans/` + access to actual repo under `../greybeard-data/sources/{repo}/`
+**Output:** `../greybeard-data/output/security-testing/{repo}/security-report.md` + `../greybeard-data/output/security-testing/{repo}/.scan-state.json`
 
 ## Mission
 
@@ -13,14 +13,14 @@ You are the final agent. You receive all raw scan outputs and produce the defini
 
 ### Step 1: Ingest and Deduplicate
 
-- Read all scan outputs from `output/{repo}/scans/`
+- Read all scan outputs from `../greybeard-data/output/security-testing/{repo}/scans/`
 - Group findings by vulnerability type (lens) and code location
 - Merge duplicates: same file + same vulnerability = one finding, take the highest confidence
 - Identify finding chains: related findings that together form a larger attack vector (e.g., unsanitized input in controller → raw SQL in model = injection chain)
 
 ### Step 2: Fact-Check
 
-For every finding, read the actual code at the cited location in `sources/{repo}/`:
+For every finding, read the actual code at the cited location in `../greybeard-data/sources/{repo}/`:
 
 - **CONFIRMED findings**: Verify the vulnerability exists as described. Downgrade or dismiss if the code does not match or if mitigations are present.
 - **LIKELY findings**: Read surrounding code. Check for mitigations — input validation upstream, middleware, framework defaults. Upgrade to CONFIRMED or downgrade to POSSIBLE/DISMISSED.
@@ -60,12 +60,12 @@ Follow `templates/security-report.md`:
 
 ## Scan State
 
-After writing the report, update `output/{repo}/.scan-state.json`:
+After writing the report, update `../greybeard-data/output/security-testing/{repo}/.scan-state.json`:
 
 ```json
 {
   "repo": "{repo}",
-  "last_scanned_sha": "{current HEAD SHA of sources/{repo}}",
+  "last_scanned_sha": "{current HEAD SHA of ../greybeard-data/sources/{repo}}",
   "last_scanned_at": "{ISO 8601 timestamp}",
   "findings_summary": { "critical": N, "high": N, "medium": N, "low": N },
   "segments_scanned": N,
@@ -77,7 +77,7 @@ After writing the report, update `output/{repo}/.scan-state.json`:
 
 When running in catch-up mode (incremental scan after code changes):
 
-1. Read the existing `security-report.md` alongside new scan outputs
+1. Read the existing `../greybeard-data/output/security-testing/{repo}/security-report.md` alongside new scan outputs
 2. **New findings**: Add to the report under the appropriate severity section, tagged with the scan date
 3. **Fixed findings**: If a previous finding's code location has changed and the vulnerability is no longer present, move it to a `## Resolved` section at the end of the report (before the appendix) with the resolution date
 4. **Changed findings**: If code at a previous finding's location has changed but the vulnerability persists (possibly in a different form), re-verify and update the finding

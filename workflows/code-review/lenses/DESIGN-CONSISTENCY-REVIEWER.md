@@ -2,7 +2,7 @@
 
 Ensure code changes align with the documented design specification: color tokens, typography scale, spacing system, layout conventions, and component patterns.
 
-**Prerequisite:** Design audit output must exist at `workflows/design-audit/output/{repo}/`
+**Prerequisite:** Design audit output must exist at `../greybeard-data/output/design-audit/{repo}/`
 
 ## What to Check
 
