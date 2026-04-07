@@ -20,6 +20,7 @@ Each lens:
 | Compatibility | API-BREAKING-CHANGES, BROWSER-COMPATIBILITY, CLIENT-SERVER-DATA-CONTRACT, CROSS-ORIGIN-REQUEST |
 | Quality | TESTING-COVERAGE, ACCESSIBILITY |
 | Domain | DOMAIN-KNOWLEDGE (requires extracted knowledge) |
+| Design | DESIGN-CONSISTENCY (requires design audit) |
 
 ## Adding a New Lens
 

@@ -4,5 +4,9 @@ sources/*
 
 # Generated output from knowledge extraction (domain-specific, not public)
 workflows/knowledge-extraction/output/
+workflows/design-audit/output
+workflows/security-testing/output
+
+.playwright-mcp/
 
 .claude/

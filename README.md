@@ -1,6 +1,6 @@
 # Greybeard
 
-AI-powered workflows for code review and knowledge extraction. Built for use with [Claude Code](https://github.com/anthropics/claude-code).
+AI-powered workflows centererd around code. Built for use with [Claude Code](https://github.com/anthropics/claude-code).
 
 ## What is this?
 
@@ -8,6 +8,8 @@ Greybeard is a collection of structured AI agent workflows that help you:
 
 1. **Review code** against technical best practices and team-specific context
 2. **Extract knowledge** from codebases into living documentation
+3. **Security test** repositories against 17 focused security lenses
+4. **Audit design** consistency across frontend codebases
 
 Each workflow is a set of prompts and templates that guide AI agents through multi-stage analysis.
 
@@ -19,10 +21,19 @@ greybeard/
 │   ├── code-review/           # Technical code review pipeline
 │   │   ├── lenses/            # General technical criteria (22 lenses)
 │   │   └── context/           # Team/repo-specific criteria
-│   └── knowledge-extraction/  # Business logic documentation pipeline
-│       ├── pipeline/          # 5-spice extraction process
-│       └── templates/         # output templates
-│       └── output/            # output results
+│   ├── knowledge-extraction/  # Business logic documentation pipeline
+│   │   ├── pipeline/          # 5-phase extraction process
+│   │   └── templates/         # Output templates
+│   ├── security-testing/      # Security vulnerability scanning
+│   │   ├── pipeline/          # 3-phase scan process
+│   │   ├── lenses/            # 17 security-focused lenses
+│   │   ├── templates/         # Output templates
+│   │   └── output/            # Generated reports per repo
+│   └── design-audit/          # Frontend design consistency assessment
+│       ├── pipeline/          # 4-phase audit process
+│       ├── lenses/            # Design dimension criteria
+│       ├── templates/         # Output templates
+│       └── output/            # Generated artifacts per repo
 ├── sources/                   # Clone your repos here
 └── sketches/                  # Drafts and ideas
 ```
@@ -64,6 +75,48 @@ Extract business logic from code into structured documentation. Produces:
 
 See [`workflows/knowledge-extraction/`](workflows/knowledge-extraction/) for details.
 
+### Security Testing
+
+Scan entire repositories for security vulnerabilities. Produces a prioritized report ranked by severity.
+
+```
+pen test <repo-name>
+```
+
+**How it works:**
+1. Segment the repo into parallelizable scan units
+2. Scan each segment against applicable security lenses in parallel
+3. Consolidate, deduplicate, fact-check, and rank all findings
+4. Output a prioritized security report (Critical/High/Medium/Low)
+
+Supports incremental catch-up:
+```
+catch up on security in <repo-name>
+```
+
+See [`workflows/security-testing/`](workflows/security-testing/) for details.
+
+### Design Audit
+
+Scan frontend repositories for design consistency and produce a living design specification.
+
+```
+design audit <repo-name>
+```
+
+**How it works:**
+1. Inventory all design metrics from source code (colors, typography, spacing, layout, components)
+2. Capture screenshots at mobile/tablet/desktop viewports via Playwright
+3. Analyze inventory + screenshots against design lenses
+4. Synthesize a living design specification documenting tokens, patterns, and conventions
+
+Supports incremental catch-up:
+```
+catch up on design in <repo-name>
+```
+
+See [`workflows/design-audit/`](workflows/design-audit/) for details.
+
 ## Getting Started
 
 ### 1. Clone this repo
@@ -96,6 +149,8 @@ claude
 Then ask Claude to run a workflow:
 - `"Review feature-branch in my-repo"`
 - `"Extract knowledge from my-repo"`
+- `"Pen test my-repo"`
+- `"Design audit my-repo"`
 
 ## Adding Workflows
 
