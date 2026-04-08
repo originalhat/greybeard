@@ -50,7 +50,7 @@ Private data lives outside the repo:
 
 ## Workflows
 
-### Code Review
+### ⚙️ Code Review
 
 Multi-stage review that evaluates code changes against:
 - **Lenses**: General technical patterns (security, performance, React, TypeScript, etc.)
@@ -69,7 +69,7 @@ review <branch-name> in <repo-name>
 
 See [`workflows/code-review/`](workflows/code-review/) for details.
 
-### Knowledge Extraction
+### 📓 Knowledge Extraction
 
 Extract business logic from code into structured documentation. Produces:
 - **Domain records**: Documented business rules with confidence levels
@@ -85,7 +85,7 @@ Extract business logic from code into structured documentation. Produces:
 
 See [`workflows/knowledge-extraction/`](workflows/knowledge-extraction/) for details.
 
-### Security Testing
+### 🔐 Security Testing
 
 Scan entire repositories for security vulnerabilities. Produces a prioritized report ranked by severity.
 
@@ -106,7 +106,7 @@ catch up security for <repo-name>
 
 See [`workflows/security-testing/`](workflows/security-testing/) for details.
 
-### Design Audit
+### 👓 Design Audit
 
 Scan frontend repositories for design consistency and produce a living design specification.
 
