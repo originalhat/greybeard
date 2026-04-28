@@ -10,6 +10,7 @@ Greybeard is a collection of structured AI agent workflows that help you:
 2. **Extract knowledge** from codebases into living documentation
 3. **Security test** repositories against 17 focused security lenses
 4. **Audit design** consistency across frontend codebases
+5. **Run campaigns** — systematic large-scale refactoring across many files over multiple sessions
 
 Each workflow is a set of prompts and templates that guide AI agents through multi-stage analysis.
 
@@ -28,10 +29,12 @@ greybeard/
 │   │   ├── pipeline/          # 3-phase scan process
 │   │   ├── lenses/            # 17 security-focused lenses
 │   │   └── templates/         # Output templates
-│   └── design-audit/          # Frontend design consistency assessment
-│       ├── pipeline/          # 4-phase audit process
-│       ├── lenses/            # Design dimension criteria
-│       └── templates/         # Output templates
+│   ├── design-audit/          # Frontend design consistency assessment
+│   │   ├── pipeline/          # 4-phase audit process
+│   │   ├── lenses/            # Design dimension criteria
+│   │   └── templates/         # Output templates
+│   └── campaign/              # Large-scale refactoring campaign execution
+│       └── pipeline/          # 6-phase plan → execute → review cycle
 ├── sources/                   # Repo relationship docs
 └── sketches/                  # Drafts and ideas
 ```
@@ -45,7 +48,8 @@ Private data lives outside the repo:
 └── output/                           # Workflow output
     ├── knowledge-extraction/{repo}/
     ├── security-testing/{repo}/
-    └── design-audit/{repo}/
+    ├── design-audit/{repo}/
+    └── campaigns/{repo}/{campaign}/
 ```
 
 ## Workflows
@@ -127,6 +131,35 @@ catch up design for <repo-name>
 
 See [`workflows/design-audit/`](workflows/design-audit/) for details.
 
+### 🗂️ Campaign
+
+Execute large-scale, systematic refactoring campaigns across many files over multiple sessions. The human defines the goal; the pipeline writes the recipe, tracks progress, and makes the changes in reviewable batches.
+
+```
+campaign plan <goal> in <repo-name>
+```
+
+**How it works:**
+1. Interpret the goal and write a recipe with done criteria (Planner, Opus)
+2. Inventory all in-scope items and assess current status in parallel (Inventorier, Sonnet)
+3. Group into prioritized batches (Coordinator, Opus)
+4. Execute the batch — one commit per item (Executor, Sonnet, parallel)
+5. Verify each item against done criteria (Verifier, Sonnet, parallel)
+6. First-pass code review, auto-fix, summarize for human (Reviewer, Opus)
+7. Human reviews and merges the batch branch, then continue
+
+Continue an in-progress campaign:
+```
+campaign continue <campaign-name> in <repo-name>
+```
+
+Check progress without making changes:
+```
+campaign status <campaign-name> in <repo-name>
+```
+
+See [`workflows/campaign/`](workflows/campaign/) for details on execution modes (autonomous vs. guided) and DDD campaign integration.
+
 ## Getting Started
 
 ### 1. Clone this repo
@@ -139,7 +172,7 @@ cd greybeard
 ### 2. Set up the data directory
 
 ```bash
-mkdir -p ../greybeard-data/sources ../greybeard-data/output/{knowledge-extraction,security-testing,design-audit}
+mkdir -p ../greybeard-data/sources ../greybeard-data/output/{knowledge-extraction,security-testing,design-audit,campaigns}
 ```
 
 ### 3. Add your repositories
@@ -167,6 +200,7 @@ Then ask Claude to run a workflow:
 - `"Extract knowledge from my-repo"`
 - `"Pen test my-repo"`
 - `"Design audit my-repo"`
+- `"Campaign plan 'convert all JS to TypeScript' in my-repo"`
 
 ## Adding Workflows
 

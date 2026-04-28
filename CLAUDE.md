@@ -13,12 +13,13 @@ Private data (cloned repos and workflow output) lives **outside this repo** at `
 └── output/                           # Workflow output
     ├── knowledge-extraction/{repo}/  # Domain records, language, questions
     ├── security-testing/{repo}/      # Scan results, security reports
-    └── design-audit/{repo}/          # Inventory, findings, design specs
+    ├── design-audit/{repo}/          # Inventory, findings, design specs
+    └── campaigns/{repo}/{campaign}/  # Campaign strategy, inventory, plan, batch reviews
 ```
 
 Set up the data directory:
 ```bash
-mkdir -p ../greybeard-data/sources ../greybeard-data/output/{knowledge-extraction,security-testing,design-audit}
+mkdir -p ../greybeard-data/sources ../greybeard-data/output/{knowledge-extraction,security-testing,design-audit,campaigns}
 ```
 
 ## Directory Structure
@@ -36,10 +37,12 @@ greybeard/
 │   │   ├── pipeline/          # 3-phase scan process
 │   │   ├── lenses/            # 17 security-focused lenses
 │   │   └── templates/         # Output templates
-│   └── design-audit/          # Frontend design consistency assessment
-│       ├── pipeline/          # 4-phase audit process
-│       ├── lenses/            # Design dimension criteria
-│       └── templates/         # Output templates
+│   ├── design-audit/          # Frontend design consistency assessment
+│   │   ├── pipeline/          # 4-phase audit process
+│   │   ├── lenses/            # Design dimension criteria
+│   │   └── templates/         # Output templates
+│   └── campaign/              # Large-scale refactoring campaign execution
+│       └── pipeline/          # 6-phase plan → execute → review cycle
 ├── sources/                   # Repo relationship docs (repos cloned into ../greybeard-data/sources/)
 └── sketches/                  # Drafts and ideas
 ```
@@ -60,11 +63,12 @@ review <branch-name> in <repo-name>
 **Steps:**
 1. Check out the branch under `../greybeard-data/sources/{repo}/`
 2. Fetch latest (`git fetch origin`) then diff using three-dot syntax (`git diff origin/main...HEAD`)
-3. Evaluate against each lens in `workflows/code-review/lenses/`
-4. Evaluate against `workflows/code-review/context/`
-5. Fact-check findings in the repo
-6. Cross-repo analysis if changes touch integration points (pull latest on related repos first)
-7. Output PASS/FAIL per lens with locations and fixes
+3. Fetch PR description if a PR exists (title, body, linked issues) for additional context
+4. Evaluate against each lens in `workflows/code-review/lenses/`
+5. Evaluate against `workflows/code-review/context/`
+6. Fact-check findings in the repo
+7. Cross-repo analysis if changes touch integration points (pull latest on related repos first)
+8. Output PASS/FAIL per lens with locations and fixes
 
 ### Knowledge Extraction
 
@@ -130,6 +134,40 @@ The `design-spec.md` output is referenced by the `DESIGN-CONSISTENCY-REVIEWER` c
 catch up design for <repo-name>
 ```
 Diffs from last audited SHA, re-inventories only changed files, and updates the living spec.
+
+### Campaign
+
+Executes large-scale, systematic refactoring campaigns — migrations, architectural transitions, coverage sweeps — across many files over multiple sessions. The human defines the goal; the pipeline writes the recipe, tracks progress, and makes the changes in reviewable batches.
+
+**To start:**
+```
+campaign plan <goal> in <repo-name>
+```
+Example: `campaign plan "convert all JS components to TypeScript" in care_platform`
+
+**Steps:**
+1. Interpret the goal and write a recipe with done criteria (Opus)
+2. Inventory all in-scope items and assess current status in parallel (Sonnet)
+3. Group into prioritized batches, produce plan and state file (Opus)
+
+**To continue (execute next batch):**
+```
+campaign continue <campaign-name> in <repo-name>
+```
+
+**Steps:**
+1. Execute next batch — one commit per item, branch per batch (Sonnet, parallel)
+2. Verify each item against done criteria (Sonnet, parallel)
+3. Run first-pass code review, auto-fix unambiguous issues, summarize for human (Opus)
+4. Re-coordinate: update plan and state file for the next batch (Opus)
+5. Human reviews and merges the batch branch, then repeat
+
+**To check progress (read-only):**
+```
+campaign status <campaign-name> in <repo-name>
+```
+
+See `workflows/campaign/CLAUDE.md` for full details including execution modes (autonomous vs. guided) and knowledge-extraction integration for DDD campaigns.
 
 ## Sources
 

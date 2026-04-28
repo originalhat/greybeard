@@ -10,6 +10,7 @@ This directory contains AI agent workflows. Each workflow is a structured pipeli
 | `knowledge-extraction/` | Multi-phase pipeline to extract business logic into documentation |
 | `security-testing/` | Whole-repo security vulnerability assessment with 17 lenses and 3-phase pipeline |
 | `design-audit/` | Frontend design consistency assessment with living design specification |
+| `campaign/` | Large-scale refactoring campaign execution — migrations, architectural transitions, coverage sweeps |
 
 ## Workflow Conventions
 
