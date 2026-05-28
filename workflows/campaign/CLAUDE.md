@@ -9,6 +9,9 @@ Unlike other Greybeard workflows that surface *problems the human doesn't know a
 ```
 campaign/
 ├── CLAUDE.md       # You are here
+├── context/        # Archetype-specific gotchas (domain refactor, JS→TS, etc.)
+│   ├── CLAUDE.md
+│   └── {ARCHETYPE}-GOTCHAS.md
 └── pipeline/
     ├── 01-planner.md       # Interpret goal, write recipe, set execution mode
     ├── 02-inventorier.md   # Enumerate in-scope items, assess current status
@@ -127,6 +130,17 @@ For DDD-style campaigns, the Planner checks for knowledge-extraction output at `
 - References specific domain records as the authority on "what belongs where"
 
 Run `extract knowledge from <repo-name>` before planning a DDD campaign if knowledge extraction hasn't been run yet.
+
+## Archetype Context and Repo Learnings
+
+The Planner draws on two layers of accumulated experience:
+
+- **Archetype gotchas** in `workflows/campaign/context/` — generic patterns and pitfalls for common campaign shapes (e.g., `DOMAIN-REFACTOR-GOTCHAS.md`). Public, version-controlled in this repo, no codebase-specific identifiers. See `workflows/campaign/context/CLAUDE.md`.
+- **Repo learnings** at `../greybeard-data/output/campaigns/{repo}/_learnings.md` — accumulated repo-specific notes (file paths, class names, table specifics, codebase conventions). Lives in the private data dir, not this public repo.
+
+After a campaign finishes, contribute back:
+- Generic, repo-agnostic learnings → add to or update an archetype file in `context/`
+- Repo-specific learnings → append to the repo's `_learnings.md`
 
 ## Campaign Naming
 
