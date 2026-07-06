@@ -10,6 +10,14 @@ Identify gaps in test coverage, test quality issues, and tests that don't actual
 - Error handling paths not tested
 - Edge cases and boundary conditions untested
 
+### Conditionally-Executed Code the Happy Path Never Runs
+Code that only executes on **non-default data** is the most common thing to ship untested — it renders fine in every test, review click-through, and most real records because the branch was empty, then fires in production on the one record that populates it. Flag when new/changed logic lives inside:
+- a block over a collection that is **empty** in all fixtures/factories (`collection.map { … }`, `.each`, `.select`)
+- an **optional association** or nullable field being present (`if record.attachment.attached?`, `record.foo&.bar`)
+- a **rare enum/state/flag** branch (`if status == :escalated`, feature-flag-on path)
+
+For each, ask: **is there a test that actually populates the branch?** "It renders/returns fine" usually means the branch never ran. Require a fixture with a non-empty collection / present association / the rare state — not just a default-shaped record. This is how latent crashes (e.g. a route helper called inside a `.map` over attachments) survive review for weeks.
+
 ### Test Quality Issues
 - Tests that only verify code runs, not correctness
 - Missing or overly generic assertions
