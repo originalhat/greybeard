@@ -34,6 +34,23 @@ When reviewing a presenter/serializer/PORO/job that generates attachment URLs:
 
 See the `ROUTE-URL-HELPER-CONTEXT` and `TESTING-COVERAGE` lenses for the general form.
 
+### Preload Task Associations via `Presenters::Task.preload` — Never Hand-Maintain the List
+
+**Use the shared `Presenters::Task.preload` list wherever tasks are eager-loaded. Do not hand-roll a bespoke `.preload(...)` list.** `TasksController#index` uses the shared list; a drifted, hand-maintained copy in `#care_request_tasks_index` is what shipped ER-1532.
+
+Two stacked traps, both live in this app:
+
+1. **`patient_files: :file` is an invalid preload.** `PatientFile` uses `has_one_attached :file`, so the association is `file_attachment` (+ `file_blob`) — there is no association named `file`. `preload(patient_files: :file)` raises `ActiveRecord::AssociationNotFoundError`. The shared list preloads attachments correctly (`patient_files: { file_attachment: :blob }`); a copy-pasted list gets this wrong.
+2. **An unassigned `.preload(...)` is a no-op that *masks* trap 1.** `#care_request_tasks_index` had `tasks = ...; tasks.preload(..., patient_files: :file)` — the return value was discarded, so the invalid clause never executed and never raised (it just quietly N+1'd). PR #860 "fixed the N+1" by reassigning (`tasks = tasks.preload(...)`), which made the invalid list run for the first time → 500 on every care request with an attached file. The reassignment *looked* like a trivial cleanup; it activated a dormant, invalid code path.
+
+When reviewing task eager-loading:
+
+1. Require `Presenters::Task.preload` (the single source of truth); flag any hand-maintained duplicate list.
+2. Flag `patient_files: :file` (or any `has_one_attached`/`has_many_attached` name) as a preload target — it must be `{ *_attachment: :blob }` / `with_attached_*`.
+3. Treat assigning-back a previously-discarded `.preload` as a behavior change on a code path that likely has no test — require a request spec exercising a task **with an attached file** (the exact repro PR #861 added).
+
+See the `N-PLUS-ONE-QUERY`, `OPPORTUNISTIC-REFACTOR`, and `TESTING-COVERAGE` lenses for the general forms.
+
 ### Patient Submission Endpoints Must Re-Enter the Provider Queue
 
 The provider queue is driven by `ActionItem.unresolved` joined through cards. A care request only appears in `/queue` while it has at least one unresolved `ActionItem`.

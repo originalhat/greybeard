@@ -13,6 +13,17 @@ Only flag something if **all** of these hold:
 
 If a fix fails any of these, it belongs in a separate follow-up, not this lens. Say so rather than flagging it.
 
+## The Behavior-Change Trap (does it change what *runs*, or just what a value *is*?)
+
+The low-blast-radius test (#2) is about **whether you can verify the change by reading it** — and that hinges on a distinction that trivial-looking diffs hide:
+
+- **Mechanical** — changes what a value *is* or how it *reads*: extract a variable, rename a local, dedupe a literal. The set of code that executes is unchanged. Safe to ride along.
+- **Behavioral** — changes what *executes*: activating a no-op (assigning back a discarded `.preload`/`.map`/return value), making a dormant branch live, un-commenting, swapping a discarded result for a used one. **This has the blast radius of new code, not of a cleanup**, because code that never ran now runs — and any latent bug it contained fires for the first time. The diff looks like "assign a variable that was being thrown away"; the danger is the *content that assignment newly executes*.
+
+A behavioral change fails test #2 unless the touched path **already has a test that exercises it** (or you add a characterization test in the same PR). "It reads fine" and "the suite is green" prove nothing about lines no test runs — full-suite green ≠ changed path covered. If the change is behavioral **and** the path is untested, do **not** flag it as a ride-along cleanup: call it out as a separate PR that needs its own test and review. (See `TESTING-COVERAGE`.)
+
+This is not hypothetical: a discarded `.preload(...)` reassigned "to fix an N+1" activated an invalid clause that had been dormant behind the no-op, 500ing a core endpoint in prod.
+
 ## What to Flag
 
 ### Boy-Scout Wins (touch it, improve it)
@@ -79,3 +90,4 @@ If a finding really belongs to one of those lenses and requires work beyond the 
 - Churn for taste alone with no clarity/safety/consistency payoff
 - Re-flagging what a more specific lens already owns
 - Pattern changes that fight the surrounding codebase's established style
+- Suggesting a behavioral "cleanup" (see The Behavior-Change Trap) on an untested path as if it were a safe ride-along — it isn't; route it to its own PR with a test instead
