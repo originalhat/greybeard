@@ -18,6 +18,8 @@ A checklist of common issues to look for during PR reviews.
 
 - [ ] **Use appropriate column types** - Dates should be `date` type, not `string`. Timestamps should be `datetime`. Don't store structured data as strings when a proper type exists.
 
+- [ ] **Combine multiple migrations into one when possible** - If a PR includes more than one migration file, check whether they can be squashed into a single migration. Prefer one migration per PR unless there's a real reason to split (e.g. a data migration that must run separately from a schema change).
+
 ## React Components
 
 - [ ] **Use guard clauses instead of type assertions** - Prefer `if (!value) return;` over `value as Type`. This is safer and removes the need for type casts.
