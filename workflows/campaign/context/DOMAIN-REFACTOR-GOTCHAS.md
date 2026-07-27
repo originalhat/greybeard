@@ -44,6 +44,14 @@ For Single Table Inheritance subclasses, `Subclass.polymorphic_name` falls throu
 
 When auditing, search for `has_many :{snake_case_name}` and `has_one :{snake_case_name}` across the codebase, not just constant references.
 
+### The reverse direction is the easy miss: owner stays, target moves
+
+The trap is worst — and most often missed — when the association *owner* stays put and the *target* is the class being moved. Example: you move `Foo` → `NewNamespace::Foo`, but `Bar` (which stays a top-level model) has `has_many :foos`. Since `Bar` is top-level, AR `compute_type` resolves `:foos` to the now-gone top-level `Foo` and raises `uninitialized constant Bar::Foo` / `Missing model class Foo for the Bar#foos association`.
+
+**Why constant-grep misses it entirely**: the reference is the *symbol* `:foos`, never the constant `Foo`. A grep for `\bFoo\b` returns nothing on `Bar`. Only the symbol-association grep (`has_many :foos` / `has_one :foo` / `belongs_to :foo`) finds it — run it for every moved model, on both sides of every association, including models that are NOT in scope for relocation.
+
+**Why review can't catch it but a test run can**: resolution is lazy — it fires only when the association is exercised (commonly a `dependent: :destroy` cascade on delete). Boot, packwerk, and static lens review all pass; the failure surfaces only when code actually destroys/traverses the owner. **Always run the owner model's destroy/CRUD specs (and any dashboard/serializer path that traverses it) after a move** — a green packwerk + green review is not sufficient evidence for an association-safe move.
+
 ## FactoryBot factories need explicit `class:` after a rename
 
 ```ruby
