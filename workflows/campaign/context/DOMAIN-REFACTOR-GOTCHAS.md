@@ -117,6 +117,22 @@ These reviews catch the above gotchas best (assuming the Greybeard code-review l
 
 Run the lenses before requesting human review — multiple of the issues above are non-obvious from a quick diff scan.
 
+## Spec files travel with their subjects
+
+When a class moves into `domains/{name}/`, its spec file should move alongside it. Most domain-organized Rails codebases adopt a mirror layout — either `domains/{name}/spec/{layer}/...` or `spec/domains/{name}/{layer}/...` — and the dominant convention is usually visible from any already-migrated example in the same domain.
+
+**Don't take a strategy claim of "specs stay in `spec/`" at face value.** Verify by finding the spec for an already-migrated sibling class:
+
+```bash
+find . -name "{already_migrated_class}_spec.rb" -not -path "./node_modules/*"
+```
+
+If that spec lives under the domain (e.g., `domains/claims/spec/...`), the new specs go there too. The strategy must include `git mv` for the spec alongside the implementation.
+
+**Symptom of skipping this:** a reviewer flags the inconsistency during PR review and you take a small follow-up commit on the same branch — fine if caught before merge, awkward to clean up later. If batches have already merged with the wrong layout, those orphan specs are an easy "fold into the next batch's PR" gesture rather than a stand-alone follow-up PR.
+
+**Recipe step to add:** alongside the `git mv app/{layer}/{file}.rb domains/{domain}/{layer}/{file}.rb` step, include `git mv spec/{layer}/{file}_spec.rb domains/{domain}/spec/{layer}/{file}_spec.rb` (or whichever path the repo's convention dictates). No spec-body edits are needed — just the path.
+
 ## Workflow advice
 
 - **Plan the polymorphic story first.** Before writing the recipe, enumerate every consumer of the moved class as a polymorphic target. Each consumer is a potential fix site that the recipe must cover.
