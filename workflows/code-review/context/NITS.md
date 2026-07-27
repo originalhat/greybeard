@@ -84,6 +84,10 @@ const mockVitals = [
 ];
 ```
 
+## Patient Profile (care_platform)
+
+- [ ] **Check the standalone patient profile page, not just the embedded one** - The patient profile renders in two places: embedded on the care request page (where most development happens) and as a standalone page (e.g. `/patients/3000001`). Changes to profile components are easy to ship having only verified the care-request-embedded version. When a PR touches the patient profile, confirm the standalone page still works — it may load a different data shape (missing associations/fields that the care request context provides, which can throw), or it may be missing UX that only got wired into the embedded version.
+
 ## Domain-Specific
 
 - [ ] **Use correct terminology** - Verify abbreviations and terms match industry standards (e.g., SBP/DBP for blood pressure, not SYS/DYS).
