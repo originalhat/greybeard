@@ -14,12 +14,13 @@ Private data (cloned repos and workflow output) lives **outside this repo** at `
     ├── knowledge-extraction/{repo}/  # Domain records, language, questions
     ├── security-testing/{repo}/      # Scan results, security reports
     ├── design-audit/{repo}/          # Inventory, findings, design specs
-    └── campaigns/{repo}/{campaign}/  # Campaign strategy, inventory, plan, batch reviews
+    ├── campaigns/{repo}/{campaign}/  # Campaign strategy, inventory, plan, batch reviews
+    └── on-call/                      # Runbooks (per repo, by domain) and PHI-free audit logs
 ```
 
 Set up the data directory:
 ```bash
-mkdir -p ../greybeard-data/sources ../greybeard-data/output/{knowledge-extraction,security-testing,design-audit,campaigns}
+mkdir -p ../greybeard-data/sources ../greybeard-data/output/{knowledge-extraction,security-testing,design-audit,campaigns,on-call}
 ```
 
 ## Directory Structure
@@ -41,8 +42,12 @@ greybeard/
 │   │   ├── pipeline/          # 4-phase audit process
 │   │   ├── lenses/            # Design dimension criteria
 │   │   └── templates/         # Output templates
-│   └── campaign/              # Large-scale refactoring campaign execution
-│       └── pipeline/          # 6-phase plan → execute → review cycle
+│   ├── campaign/              # Large-scale refactoring campaign execution
+│   │   └── pipeline/          # 6-phase plan → execute → review cycle
+│   └── on-call/               # On-call ticket triage + self-improving runbooks
+│       ├── pipeline/          # 4-phase triage → publish → capture → curate loop
+│       ├── context/           # Authoring standard + escalation map
+│       └── templates/         # Runbook, audit entry, and index templates
 ├── sources/                   # Repo relationship docs (repos cloned into ../greybeard-data/sources/)
 └── sketches/                  # Drafts and ideas
 ```
@@ -168,6 +173,27 @@ campaign status <campaign-name> in <repo-name>
 ```
 
 See `workflows/campaign/CLAUDE.md` for full details including execution modes (autonomous vs. guided) and knowledge-extraction integration for DDD campaigns.
+
+### On-Call
+
+Triages engineering on-call (ER) tickets and turns every resolution into durable knowledge — a hierarchy of short, self-contained runbooks plus a PHI-free audit trail. Spans `origami_claims` (primary), `care_platform`, and `sana_mobile`. This is the canonical, cross-repo home for on-call knowledge; the `/oncall` slash commands inside `origami_claims` are separate and left as-is.
+
+Runbooks and audit logs are the **source of truth** and live in `../greybeard-data/output/on-call/` — not in the app repos, whose clones are disposable.
+
+**To triage a ticket:**
+```
+on-call triage <ticket-or-description> [in <repo>]
+```
+
+**Verbs (one per pipeline phase):**
+1. `triage` — gather → classify → match runbook → investigate → propose (read-only; no JIRA writes)
+2. `publish` — confirmation-gated publish of the reviewed analysis to the live ticket
+3. `capture` — write the PHI-free audit entry; create/update a runbook when the scenario is novel or stale
+4. `curate` — reorganize, dedupe, and re-verify stale runbooks against current code
+
+**PHI policy:** runbooks and audit logs stay PHI/PII-free (members/dependents); the JIRA ticket ID is the pointer to real identifiers. Internal staff names are allowed.
+
+**Setup:** needs the `atlassian` (JIRA) MCP configured for the greybeard session, as it is in `origami_claims`. See `workflows/on-call/CLAUDE.md`.
 
 ## Sources
 
