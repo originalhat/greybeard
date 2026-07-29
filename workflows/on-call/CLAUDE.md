@@ -71,7 +71,7 @@ See `context/RUNBOOK-AUTHORING.md` for the full authoring standard.
 Four verbs. Each maps to a pipeline stage.
 
 ### `on-call triage <ticket-or-description> [in <repo>]`
-Run `pipeline/01-triage.md`. Gather context → classify → match runbook → investigate → propose. Read-only against production; produces an analysis, does not write to JIRA.
+Run `pipeline/01-triage.md`. Gather context → classify → match runbook → investigate → **validate the hypothesis with read-only snippets** → propose. Read-only against production; produces an analysis, does not write to JIRA. **Before recommending any data change, the hypothesis must be confirmed with read-only snippets that the engineer runs and reports back** — this validation gate is required, and a runbook match does not skip it.
 
 ### `on-call publish <ticket>`
 Run `pipeline/02-publish.md`. Confirmation-gated publish of the reviewed analysis back to the live ticket (comment + genuine artifacts).

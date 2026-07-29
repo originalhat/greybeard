@@ -40,6 +40,17 @@ Only include sections that apply — don't pad with "N/A".
 
 Before presenting any fix, gather everything needed to give a specific, correct answer. List the information you'd need to actually execute — affected company/group, record IDs, current state, related records — and ask for all of it up front, in one batch. Ask first, then solve. Do not present a fix and then ask for clarification.
 
+## Confirm the hypothesis with read-only snippets before any data change
+
+Clarifying questions get you the inputs; **read-only snippets get you the truth.** Before recommending any change to data or state, confirm your hypothesis against the real records — this is a hard requirement, not a nicety. A wrong hypothesis acted on is how one incident becomes two.
+
+- Hand the engineer **one or more read-only snippets** that prove or disprove the hypothesis. Prefer **several small, focused checks** over one big one — does the record exist, what state is it in, what related records hang off it, does the guard condition actually hold.
+- **You run nothing.** Assume the engineer runs each snippet and reports the output back. Write them self-contained and copy-pasteable, with `var = nil # fill in` for identifiers and clearly-labeled `puts` output. Say what result confirms vs. refutes the hypothesis so the read-back is decisive.
+- Snippets in this step must be **strictly read-only** — queries, reads, `puts` only. No mutators.
+- **Wait for the reported output before proposing a fix.** If it refutes the hypothesis, revise and check again. A matching runbook does not skip this — confirm the records are in the state the runbook assumes first.
+
+So a runbook's steps should generally *lead* with the read-only checks that confirm the situation, then present the change.
+
 ## Fix priority order (least-invasive first)
 
 Work down this list; stop at the first option that fully solves the problem:

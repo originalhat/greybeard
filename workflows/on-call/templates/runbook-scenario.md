@@ -10,7 +10,7 @@ What the engineer or reporter observes — the exact error text, the greyed-out 
 Why it happens, at the code level. Name the models, services, and the specific condition (`enrollment_managed_in_app?`, a nil policy, a stale derived status). This is what lets an agent adapt the fix to a variant.
 
 **Fix:**
-Step-by-step, least-invasive first (UI → upstream record → console). For console steps, use the `var = nil # fill in: …` convention, include a read-only preview before consequential writes, and add an idempotent guard where a re-run could double-apply.
+**Lead with read-only confirmation.** Before any change step, give the read-only snippet(s) that confirm the records are in the expected state — the engineer runs them and reports back; you never run them. Say what output confirms vs. refutes. Only then the change steps, least-invasive first (UI → upstream record → console). For console steps, use the `var = nil # fill in: …` convention, include a read-only preview before consequential writes, and add an idempotent guard where a re-run could double-apply.
 
 ```ruby
 # example

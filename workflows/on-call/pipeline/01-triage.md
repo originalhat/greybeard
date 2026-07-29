@@ -32,7 +32,7 @@ Identify the **ticket type** — this sets investigation depth:
 - **Data investigation** (discrepancy, reconciliation, "where is X") — query the relevant models, build diagnostic scripts.
 - **Bug report** (errors, unexpected behavior, broken UI) — full codebase investigation, check recent changes, search past tickets. Consider `rollbar` (`mcp__rollbar__list-items` / `get-item-details`) for the error signature.
 
-Then check the runbook INDEX for a matching scenario. **If there is an exact match, read that scenario file and skip to Phase 1d** — propose the runbook solution directly (but still do the code spot-check in Phase 1d). If a *near* match exists, read it as a starting point and adapt.
+Then check the runbook INDEX for a matching scenario. **If there is an exact match, read that scenario file and go straight to the validation gate (Phase 1d)** — a runbook match does *not* let you skip validation; confirm the specific records are in the state the runbook assumes before recommending its fix. If a *near* match exists, read it as a starting point and adapt.
 
 ### Phase 1c — Investigate (parallelize where possible)
 
@@ -49,7 +49,23 @@ Then check the runbook INDEX for a matching scenario. **If there is an exact mat
 
 Calibrate depth to ticket type. An ops change with a runbook match needs minutes, not an hour.
 
-### Phase 1d — Propose a solution
+### Phase 1d — Validate the hypothesis with read-only snippets (REQUIRED before any data-change proposal)
+
+By now you have a hypothesis about the root cause. **You must confirm it against the real records before recommending any change to data or state.** Do not skip this — a plausible-but-wrong hypothesis is how on-call turns one incident into two. A runbook match does not exempt you: verify the records are actually in the state the runbook assumes.
+
+**You run nothing.** Assume the engineer runs every snippet and reports the output back. Your job is to hand over read-only snippets and wait. So:
+
+- Write **one or more read-only snippets** that prove or disprove the hypothesis. Prefer **several small, focused snippets** over one big one when there are distinct things to confirm (does the record exist? what state is it in? what related records hang off it? does the guard condition actually hold?).
+- Snippets must be **strictly read-only** — only queries, reads, and `puts`. No `update`/`create`/`destroy`/`save`/`!` mutators, no service-object calls with side effects, no writes of any kind. If you need a write to learn something, you're doing it wrong — find a read that answers it.
+- Make each snippet **self-contained and copy-pasteable**: `var = nil # fill in: …` for every identifier, and clearly-labeled `puts` output so the reported result is unambiguous.
+- **State up front what result confirms vs. refutes the hypothesis**, so the engineer's report back is decisive. Phrase it as "run this and tell me X" — never "let me check."
+- **Wait for the reported output.** Only proceed to a proposal once the read-back confirms the hypothesis. If it refutes it, revise and validate again — loop here as many times as needed. Never present a data-change fix built on an unconfirmed hypothesis.
+
+This gate applies hardest to **ops data changes** and **data investigations**, but validate before any bug fix that would touch data too. Pure "here's where the code is" answers with no data change are the only thing that can skip it.
+
+### Phase 1e — Propose a solution
+
+Only after the validation gate (Phase 1d) has confirmed the hypothesis.
 
 **First, check for self-service.** If the reporter could resolve this themselves (admin UI, an ops/finance workflow, a documented non-eng procedure), push back: acknowledge the request, explain the self-service path with specific steps (screen, button, workflow), and offer to help if they hit issues. Be helpful, not dismissive. Then note it as a self-service redirect for the capture phase.
 
@@ -69,6 +85,7 @@ Calibrate depth to ticket type. An ops change with a runbook match needs minutes
 
 ## Guidelines
 
+- **Confirm the hypothesis with read-only snippets before recommending any data change (Phase 1d) — this is non-negotiable.** Assume the engineer runs every snippet and reports back; you never run them yourself. Share read-only checks, wait for the output, then propose.
 - Be specific — exact files, line numbers, methods.
 - Don't propose changes to code you haven't read.
 - If ambiguous, list the most likely interpretations and investigate the top one.
