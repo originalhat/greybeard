@@ -57,7 +57,9 @@ By now you have a hypothesis about the root cause. **You must confirm it against
 
 - Write **one or more read-only snippets** that prove or disprove the hypothesis. Prefer **several small, focused snippets** over one big one when there are distinct things to confirm (does the record exist? what state is it in? what related records hang off it? does the guard condition actually hold?).
 - Snippets must be **strictly read-only** — only queries, reads, and `puts`. No `update`/`create`/`destroy`/`save`/`!` mutators, no service-object calls with side effects, no writes of any kind. If you need a write to learn something, you're doing it wrong — find a read that answers it.
-- Make each snippet **self-contained and copy-pasteable**: `var = nil # fill in: …` for every identifier, and clearly-labeled `puts` output so the reported result is unambiguous.
+- **Make each snippet complete — don't offload lookups to the engineer.** Bake in every value you can derive: pull IDs, group numbers, and dates straight from the ticket; reuse values the engineer already reported from an earlier snippet; and chain lookups inside one snippet (find the record, then read its associations in the same script) instead of asking for an intermediate value. A snippet should be runnable as-is. Only leave a `# fill in` placeholder for a value that genuinely isn't known yet and can't be derived — and when that happens, prefer making a first read-only snippet that *discovers* it over asking the engineer to supply it. (This is the opposite of the generic runbook files, which keep `var = nil # fill in` because they're reusable and PHI-safe — here you're instantiating for one real ticket.)
+- **One snippet at a time when they chain.** If a later check needs a value from an earlier check's output, send them sequentially: give the first, wait for the reported output, then give the next with that value baked in. Only batch snippets together when they're independent (none consumes another's output).
+- Give **clearly-labeled `puts` output** so the reported result is unambiguous.
 - **State up front what result confirms vs. refutes the hypothesis**, so the engineer's report back is decisive. Phrase it as "run this and tell me X" — never "let me check."
 - **Wait for the reported output.** Only proceed to a proposal once the read-back confirms the hypothesis. If it refutes it, revise and validate again — loop here as many times as needed. Never present a data-change fix built on an unconfirmed hypothesis.
 
@@ -78,7 +80,7 @@ Only after the validation gate (Phase 1d) has confirmed the hypothesis.
 - **Recent changes** — relevant commits/PRs.
 - **Runbook match** — the matched scenario file and any ticket-specific adaptation. Note any drift between the runbook and current code.
 - **Prior art** — similar past tickets and how they were resolved.
-- **Proposed fix** — specific code changes with file paths and line numbers, or a console script. Use the `var = nil # fill in` convention for any identifying values. Show the diff if straightforward.
+- **Proposed fix** — specific code changes with file paths and line numbers, or a console script. Like the validation snippets, make any console script **complete** — bake in values confirmed during Phase 1d rather than leaving `# fill in` placeholders — and keep the read-only preview / idempotent guard. Show the diff if straightforward.
 - **Risk assessment** — low/medium/high, what could go wrong.
 - **Quick fix vs. proper fix** — if there's a tradeoff.
 - **Who to talk to** — code experts (git blame) and past handlers.

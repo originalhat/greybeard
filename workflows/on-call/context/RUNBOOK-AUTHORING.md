@@ -45,11 +45,14 @@ Before presenting any fix, gather everything needed to give a specific, correct 
 Clarifying questions get you the inputs; **read-only snippets get you the truth.** Before recommending any change to data or state, confirm your hypothesis against the real records — this is a hard requirement, not a nicety. A wrong hypothesis acted on is how one incident becomes two.
 
 - Hand the engineer **one or more read-only snippets** that prove or disprove the hypothesis. Prefer **several small, focused checks** over one big one — does the record exist, what state is it in, what related records hang off it, does the guard condition actually hold.
-- **You run nothing.** Assume the engineer runs each snippet and reports the output back. Write them self-contained and copy-pasteable, with `var = nil # fill in` for identifiers and clearly-labeled `puts` output. Say what result confirms vs. refutes the hypothesis so the read-back is decisive.
+- **You run nothing.** Assume the engineer runs each snippet and reports the output back. Say what result confirms vs. refutes the hypothesis so the read-back is decisive.
 - Snippets in this step must be **strictly read-only** — queries, reads, `puts` only. No mutators.
+- **One at a time when they chain.** If a later check needs a value from an earlier one's output, send them sequentially — give the first, wait for the report, then the next with that value baked in. Only batch checks that are independent.
 - **Wait for the reported output before proposing a fix.** If it refutes the hypothesis, revise and check again. A matching runbook does not skip this — confirm the records are in the state the runbook assumes first.
 
 So a runbook's steps should generally *lead* with the read-only checks that confirm the situation, then present the change.
+
+**Generic file vs. live instantiation.** In the runbook file itself, keep the `var = nil # fill in` convention (see below) — the file is a reusable, PHI-safe template. But when the `triage` phase instantiates these checks for a real ticket, it hands the engineer a **complete, runnable** snippet: known values derived from the ticket or a prior snippet's output are baked in, and only genuinely-unknown values remain to discover. The file teaches the shape; the live snippet is ready to paste.
 
 ## Fix priority order (least-invasive first)
 
