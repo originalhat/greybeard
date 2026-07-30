@@ -43,7 +43,7 @@ Runbook domain folders loosely mirror the knowledge-extraction domains (`account
 
 ## Inputs
 
-- A JIRA ER ticket ID (e.g. `ER-1477`) or a free-text problem description.
+- A JIRA ticket URL (e.g. `https://sanabenefits.atlassian.net/browse/ER-1477`), a bare ER ticket ID, or a free-text problem description. The **`triage`** shorthand starts one.
 - Read access to `../greybeard-data/sources/{repo}/` (pull latest before investigating).
 - The `atlassian` MCP (JIRA, `sanabenefits.atlassian.net`, project key `ER`). **Setup required** — see below.
 - Optional: `rollbar` MCP for error-item investigation.
@@ -68,9 +68,9 @@ See `context/RUNBOOK-AUTHORING.md` for the full authoring standard.
 
 ## Execution
 
-Four verbs. Each maps to a pipeline stage.
+Four verbs. Each maps to a pipeline stage. The first has a single-word shorthand (`triage`); the rest keep the `on-call` prefix.
 
-### `on-call triage <ticket-or-description> [in <repo>]`
+### `triage <Jira ticket URL>`  (also `triage <ticket-id>` / `on-call triage <description> [in <repo>]`)
 Run `pipeline/01-triage.md`. Gather context → classify → match runbook → investigate → **validate the hypothesis with read-only snippets** → propose. Read-only against production; produces an analysis, does not write to JIRA. **Before recommending any data change, the hypothesis must be confirmed with read-only snippets that the engineer runs and reports back** — this validation gate is required, and a runbook match does not skip it.
 
 ### `on-call publish <ticket>`

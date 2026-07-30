@@ -13,7 +13,9 @@ code-review/
 
 ## Inputs
 
-- A branch to review (checked out under `../greybeard-data/sources/{repo}/`)
+Triggered by **`review <github PR URL>`** (also accepts `review <branch-name> in <repo-name>` when there's no PR yet).
+
+- A GitHub PR URL, or a branch to review (checked out under `../greybeard-data/sources/{repo}/`). From a PR URL, resolve the repo and branch.
 - The diff against `origin/main`
 
 ## Outputs

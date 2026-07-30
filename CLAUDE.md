@@ -56,17 +56,33 @@ greybeard/
 
 Each workflow has its own directory under `workflows/` with a `CLAUDE.md` containing detailed instructions.
 
+### Routing shorthand
+
+The leading word routes the request to a workflow. Match on it directly.
+
+| Say | Runs | Example |
+|-----|------|---------|
+| `review` | Code Review | `review https://github.com/sana/origami_claims/pull/8842` |
+| `triage` | On-Call | `triage https://sanabenefits.atlassian.net/browse/ER-1477` |
+| `extract knowledge from` | Knowledge Extraction | `extract knowledge from care_platform` |
+| `pen test` | Security Testing | `pen test origami_claims` |
+| `design audit` | Design Audit | `design audit care_platform` |
+| `campaign` | Campaign | `campaign plan "…" in origami_claims` |
+
+`review` and `triage` are the two single-word entry points: **`review` always means code review** (of a GitHub PR or branch), and **`triage` always means on-call** (of a JIRA ticket). On-call's other phases keep the `on-call` prefix (`on-call publish/capture/curate`); bare `triage` is the shorthand for starting one.
+
 ### Code Review
 
 Reviews code changes against technical lenses and team-specific context.
 
 **To run:**
 ```
-review <branch-name> in <repo-name>
+review <github PR URL>
 ```
+Also accepts `review <branch-name> in <repo-name>` when there's no PR yet.
 
 **Steps:**
-1. Check out the branch under `../greybeard-data/sources/{repo}/`
+1. Resolve the input: from a GitHub PR URL, derive the repo and branch (and fetch the PR); otherwise use the given branch/repo. Check the branch out under `../greybeard-data/sources/{repo}/`.
 2. Fetch latest (`git fetch origin`) then diff using three-dot syntax (`git diff origin/main...HEAD`)
 3. Fetch PR description if a PR exists (title, body, linked issues) for additional context
 4. Evaluate against each lens in `workflows/code-review/lenses/`
@@ -182,11 +198,12 @@ Runbooks and audit logs are the **source of truth** and live in `../greybeard-da
 
 **To triage a ticket:**
 ```
-on-call triage <ticket-or-description> [in <repo>]
+triage <Jira ticket URL>
 ```
+Also accepts a bare ticket ID (`triage ER-1477`) or a pasted description, optionally `in <repo>`.
 
 **Verbs (one per pipeline phase):**
-1. `triage` — gather → classify → match runbook → investigate → propose (read-only; no JIRA writes)
+1. `triage` — gather → classify → match runbook → investigate → validate (read-only) → propose (read-only; no JIRA writes)
 2. `publish` — confirmation-gated publish of the reviewed analysis to the live ticket
 3. `capture` — write the PHI-free audit entry; create/update a runbook when the scenario is novel or stale
 4. `curate` — reorganize, dedupe, and re-verify stale runbooks against current code
