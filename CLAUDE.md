@@ -205,7 +205,7 @@ Also accepts a bare ticket ID (`triage ER-1477`) or a pasted description, option
 **Verbs (one per pipeline phase):**
 1. `triage` — gather → classify → match runbook → investigate → validate (read-only) → propose (read-only; no JIRA writes)
 2. `publish` — confirmation-gated publish of the reviewed analysis to the live ticket
-3. `capture` — write the PHI-free audit entry; create/update a runbook when the scenario is novel or stale
+3. `capture` — write the PHI-free audit entry; create/update a runbook when the scenario is novel or stale; log surfaced code bugs to the **On-call bugs** Linear project (confirmation-gated)
 4. `curate` — reorganize, dedupe, and re-verify stale runbooks against current code
 
 **PHI policy:** runbooks and audit logs stay PHI/PII-free (members/dependents); the JIRA ticket ID is the pointer to real identifiers. Internal staff names are allowed.

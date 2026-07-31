@@ -47,6 +47,7 @@ Runbook domain folders loosely mirror the knowledge-extraction domains (`account
 - Read access to `../greybeard-data/sources/{repo}/` (pull latest before investigating).
 - The `atlassian` MCP (JIRA, `sanabenefits.atlassian.net`, project key `ER`). **Setup required** — see below.
 - Optional: `rollbar` MCP for error-item investigation.
+- The `Linear` MCP for logging surfaced bugs to the **On-call bugs** project.
 
 ## Outputs
 
@@ -54,13 +55,15 @@ Runbook domain folders loosely mirror the knowledge-extraction domains (`account
 - A published JIRA comment + attachments (only on explicit confirmation).
 - A PHI-free audit entry under `audit/{YYYY}/{MM}/`.
 - New or updated runbook files, and an updated `INDEX.md` + `.oncall-state.json`.
+- Linear bug tickets (confirmation-gated) in the **On-call bugs** project for genuine code defects surfaced during investigation.
 
 ## PHI / PII policy
 
-**No member/dependent PHI or PII in any file this workflow writes.** Runbooks and audit logs stay generic; the JIRA ticket (BAA in place) is the pointer to real identifiers.
+**No member/dependent PHI or PII in any file this workflow writes.** Runbooks, audit logs, and Linear bug tickets stay generic; the JIRA ticket (BAA in place) is the pointer to real identifiers.
 
 - Runbook console snippets use the `var = nil # fill in: …` placeholder convention — never hardcode real IDs.
 - Audit entries record the *shape* of the problem and the fix, keyed by ticket ID — no member names, subscriber IDs, group numbers, UUIDs, emails, or DOBs.
+- **Linear is not the BAA'd system JIRA is** — bug tickets there must be PHI-free too; describe the defect generically and link the JIRA ER ticket for the concrete case.
 - **Internal Sana staff names are allowed** (escalation contacts, git-blame experts). The rule is about members/dependents/customers only.
 - Generalize any real member example in a runbook unless a concrete example is genuinely necessary to explain the scenario.
 
@@ -77,7 +80,7 @@ Run `pipeline/01-triage.md`. Gather context → classify → match runbook → i
 Run `pipeline/02-publish.md`. Confirmation-gated publish of the reviewed analysis back to the live ticket (comment + genuine artifacts).
 
 ### `on-call capture <ticket>`
-Run `pipeline/03-capture.md`. Write the PHI-free audit entry; if the scenario was novel or an existing runbook was wrong/stale, create or update the runbook and refresh `INDEX.md` + `.oncall-state.json`.
+Run `pipeline/03-capture.md`. Write the PHI-free audit entry; if the scenario was novel or an existing runbook was wrong/stale, create or update the runbook and refresh `INDEX.md` + `.oncall-state.json`. Also log any genuine code defects surfaced during triage to the **On-call bugs** Linear project (confirmation-gated, PHI-free).
 
 ### `on-call curate [<repo>]`
 Run `pipeline/04-curate.md`. Housekeeping sweep: reorganize the hierarchy, merge duplicates, split overgrown files, and re-verify runbooks whose `last_verified` SHA is behind the repo's current `main`.

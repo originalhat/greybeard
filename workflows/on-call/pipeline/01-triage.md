@@ -84,6 +84,7 @@ Only after the validation gate (Phase 1d) has confirmed the hypothesis.
 - **Risk assessment** — low/medium/high, what could go wrong.
 - **Quick fix vs. proper fix** — if there's a tradeoff.
 - **Who to talk to** — code experts (git blame) and past handlers.
+- **Bugs surfaced** — any genuine code defects noticed during investigation that are distinct from this ticket's immediate ops/data fix (e.g. a guard that misfires, a service that hardcodes the wrong value, a path that errors for anyone). Flag them here; `capture` logs real defects to the **On-call bugs** Linear project.
 
 ## Guidelines
 

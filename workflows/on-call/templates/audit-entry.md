@@ -25,6 +25,9 @@ If the fix differed from the triage proposal, what changed and why. High-value s
 - [ ] Self-service redirect captured
 - [ ] No runbook impact
 
+**Bugs logged:**
+Genuine code defects surfaced during investigation and filed in the On-call bugs Linear project — list each `PROD-XXXX` (or note "none"). PHI-free, like everything else here.
+
 **Risk / outcome:**
 Risk level of the fix and how it played out (confirmed working / awaiting vendor / monitoring).
 
