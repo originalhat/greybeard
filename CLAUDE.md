@@ -45,7 +45,7 @@ greybeard/
 │   ├── campaign/              # Large-scale refactoring campaign execution
 │   │   └── pipeline/          # 6-phase plan → execute → review cycle
 │   └── on-call/               # On-call ticket triage + self-improving runbooks
-│       ├── pipeline/          # 4-phase triage → publish → capture → curate loop
+│       ├── pipeline/          # 5-phase triage → publish → capture → curate → sync loop
 │       ├── context/           # Authoring standard + escalation map
 │       └── templates/         # Runbook, audit entry, and index templates
 ├── sources/                   # Repo relationship docs (repos cloned into ../greybeard-data/sources/)
@@ -207,6 +207,7 @@ Also accepts a bare ticket ID (`triage ER-1477`) or a pasted description, option
 2. `publish` — confirmation-gated publish of the reviewed analysis to the live ticket
 3. `capture` — write the PHI-free audit entry; create/update a runbook when the scenario is novel or stale; log surfaced code bugs to the **On-call bugs** Linear project (confirmation-gated)
 4. `curate` — reorganize, dedupe, and re-verify stale runbooks against current code
+5. `sync` — end-of-shift branch + PR publishing the runbooks into the app repo's `docs/runbooks/` (one-directional; canonical store stays source of truth)
 
 **PHI policy:** runbooks and audit logs stay PHI/PII-free (members/dependents); the JIRA ticket ID is the pointer to real identifiers. Internal staff names are allowed.
 

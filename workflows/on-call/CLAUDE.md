@@ -10,6 +10,7 @@ On-call engineers field a stream of Engineering Request (ER) tickets — ops dat
 2. **Publishes** the reviewed analysis back to the live ticket (confirmation-gated).
 3. **Captures** the resolution as a PHI-free audit entry and, when the scenario is novel, a new/updated runbook.
 4. **Curates** the runbook corpus over time: keeps the hierarchy organized, dedupes, and re-verifies stale runbooks against the current code.
+5. **Syncs** the runbooks into the app repo at the end of a shift via a branch + pull request (one-directional publish; the canonical store stays the source of truth).
 
 ## Relationship to the `origami_claims` `/oncall` commands
 
@@ -56,6 +57,7 @@ Runbook domain folders loosely mirror the knowledge-extraction domains (`account
 - A PHI-free audit entry under `audit/{YYYY}/{MM}/`.
 - New or updated runbook files, and an updated `INDEX.md` + `.oncall-state.json`.
 - Linear bug tickets (confirmation-gated) in the **On-call bugs** project for genuine code defects surfaced during investigation.
+- An end-of-shift branch + PR (confirmation-gated) publishing the runbooks into the app repo's `docs/runbooks/`.
 
 ## PHI / PII policy
 
@@ -71,7 +73,7 @@ See `context/RUNBOOK-AUTHORING.md` for the full authoring standard.
 
 ## Execution
 
-Four verbs. Each maps to a pipeline stage. The first has a single-word shorthand (`triage`); the rest keep the `on-call` prefix.
+Five verbs. Each maps to a pipeline stage. The first has a single-word shorthand (`triage`); the rest keep the `on-call` prefix.
 
 ### `triage <Jira ticket URL>`  (also `triage <ticket-id>` / `on-call triage <description> [in <repo>]`)
 Run `pipeline/01-triage.md`. Gather context → classify → match runbook → investigate → **validate the hypothesis with read-only snippets** → propose. Read-only against production; produces an analysis, does not write to JIRA. **Before recommending any data change, the hypothesis must be confirmed with read-only snippets that the engineer runs and reports back** — this validation gate is required, and a runbook match does not skip it.
@@ -85,6 +87,9 @@ Run `pipeline/03-capture.md`. Write the PHI-free audit entry; if the scenario wa
 ### `on-call curate [<repo>]`
 Run `pipeline/04-curate.md`. Housekeeping sweep: reorganize the hierarchy, merge duplicates, split overgrown files, and re-verify runbooks whose `last_verified` SHA is behind the repo's current `main`.
 
+### `on-call sync <repo>`
+Run `pipeline/05-sync.md`. End-of-shift: copy the canonical runbooks for the repo into its `docs/runbooks/` (preserving the domain hierarchy, non-destructive to the legacy flat runbooks), then open a branch + PR from the `greybeard-data/sources/{repo}` clone. Confirmation-gated; one-directional (canonical store → app repo).
+
 ## Components
 
 | Path | Contents |
@@ -93,6 +98,7 @@ Run `pipeline/04-curate.md`. Housekeeping sweep: reorganize the hierarchy, merge
 | `pipeline/02-publish.md` | Confirmation-gated publish to JIRA |
 | `pipeline/03-capture.md` | Audit entry + runbook create/update |
 | `pipeline/04-curate.md` | Reorg, dedupe, freshness re-verification |
+| `pipeline/05-sync.md` | End-of-shift branch + PR of runbooks into the app repo |
 | `context/RUNBOOK-AUTHORING.md` | The authoring standard every runbook follows |
 | `context/ESCALATION-MAP.md` | Domain experts and non-code escalation contacts |
 | `templates/runbook-scenario.md` | Per-scenario runbook template |
