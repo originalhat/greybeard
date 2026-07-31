@@ -11,6 +11,7 @@ Greybeard is a collection of structured AI agent workflows that help you:
 3. **Security test** repositories against 17 focused security lenses
 4. **Audit design** consistency across frontend codebases
 5. **Run campaigns** — systematic large-scale refactoring across many files over multiple sessions
+6. **Triage on-call tickets** — investigate incidents, propose fixes, and turn each resolution into durable runbooks
 
 Each workflow is a set of prompts and templates that guide AI agents through multi-stage analysis.
 
@@ -33,8 +34,12 @@ greybeard/
 │   │   ├── pipeline/          # 4-phase audit process
 │   │   ├── lenses/            # Design dimension criteria
 │   │   └── templates/         # Output templates
-│   └── campaign/              # Large-scale refactoring campaign execution
-│       └── pipeline/          # 6-phase plan → execute → review cycle
+│   ├── campaign/              # Large-scale refactoring campaign execution
+│   │   └── pipeline/          # 6-phase plan → execute → review cycle
+│   └── on-call/               # On-call ticket triage + self-improving runbooks
+│       ├── pipeline/          # 5-phase triage → publish → capture → curate → sync
+│       ├── context/           # Authoring standard + escalation map
+│       └── templates/         # Runbook, audit, and index templates
 ├── sources/                   # Repo relationship docs
 └── sketches/                  # Drafts and ideas
 ```
@@ -49,7 +54,8 @@ Private data lives outside the repo:
     ├── knowledge-extraction/{repo}/
     ├── security-testing/{repo}/
     ├── design-audit/{repo}/
-    └── campaigns/{repo}/{campaign}/
+    ├── campaigns/{repo}/{campaign}/
+    └── on-call/                       # Runbooks (by repo/domain) + PHI-free audit logs
 ```
 
 ## Workflows
@@ -61,11 +67,12 @@ Multi-stage review that evaluates code changes against:
 - **Context**: Team-specific gotchas and conventions
 
 ```
-review <branch-name> in <repo-name>
+review <github PR URL>
 ```
+(also accepts `review <branch-name> in <repo-name>` when there's no PR yet)
 
 **How it works:**
-1. Diff the branch against `origin/main`
+1. Resolve the PR URL to a repo + branch (or use the given branch), then diff against `origin/main`
 2. Evaluate in parallel against each lens
 3. Evaluate against team context
 4. Fact-check findings against the actual codebase
@@ -160,6 +167,28 @@ campaign status <campaign-name> in <repo-name>
 
 See [`workflows/campaign/`](workflows/campaign/) for details on execution modes (autonomous vs. guided) and DDD campaign integration.
 
+### 📟 On-Call
+
+Triage engineering on-call (ER) tickets and turn each resolution into durable knowledge — a hierarchy of short, self-contained runbooks plus a PHI-free audit trail. Spans `origami_claims`, `care_platform`, and `sana_mobile`. This is the canonical, cross-repo home for on-call knowledge; the `/oncall` slash commands inside `origami_claims` are separate and left as-is.
+
+```
+triage <Jira ticket URL>
+```
+
+**How it works:**
+1. Gather the ticket, classify it (ops change / investigation / bug), match a runbook, and investigate the code
+2. **Confirm the root-cause hypothesis with read-only snippets before proposing any data change** — the engineer runs them and reports back (one at a time when they chain; complete, ready-to-paste snippets)
+3. Propose a fix — a self-service redirect where possible, otherwise a specific, confirmed change
+4. **Publish** the reviewed analysis back to the ticket (confirmation-gated)
+5. **Capture** a PHI-free audit entry, create/update runbooks, and log any surfaced code bugs to the **On-call bugs** Linear project
+6. **Curate** the corpus over time, and at end of shift **sync** the runbooks into the app repo via a branch + PR
+
+Five verbs: `triage`, `on-call publish`, `on-call capture`, `on-call curate`, `on-call sync`.
+
+Runbooks and audit logs are the source of truth in `../greybeard-data/output/on-call/` — PHI/PII-free (the JIRA ticket ID is the pointer to real identifiers). Needs the `atlassian` (JIRA) MCP configured for the session.
+
+See [`workflows/on-call/`](workflows/on-call/) for details.
+
 ## Getting Started
 
 ### 1. Clone this repo
@@ -172,7 +201,7 @@ cd greybeard
 ### 2. Set up the data directory
 
 ```bash
-mkdir -p ../greybeard-data/sources ../greybeard-data/output/{knowledge-extraction,security-testing,design-audit,campaigns}
+mkdir -p ../greybeard-data/sources ../greybeard-data/output/{knowledge-extraction,security-testing,design-audit,campaigns,on-call}
 ```
 
 ### 3. Add your repositories
@@ -196,11 +225,12 @@ claude
 ```
 
 Then ask Claude to run a workflow:
-- `"Review feature-branch in my-repo"`
+- `"Review <github PR URL>"`
 - `"Extract knowledge from my-repo"`
 - `"Pen test my-repo"`
 - `"Design audit my-repo"`
 - `"Campaign plan 'convert all JS to TypeScript' in my-repo"`
+- `"Triage <Jira ticket URL>"`
 
 ## Adding Workflows
 
