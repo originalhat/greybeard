@@ -71,23 +71,35 @@ Only after the validation gate (Phase 1d) has confirmed the hypothesis.
 
 **First, check for self-service.** If the reporter could resolve this themselves (admin UI, an ops/finance workflow, a documented non-eng procedure), push back: acknowledge the request, explain the self-service path with specific steps (screen, button, workflow), and offer to help if they hit issues. Be helpful, not dismissive. Then note it as a self-service redirect for the capture phase.
 
-**If no self-service option exists,** present the findings. Include only applicable sections — don't pad with "None found":
+**If no self-service option exists,** lead with impact, not internals. The default output is a **short, plain-language summary** an on-call engineer or a non-eng stakeholder can act on in seconds — hold the deep technical detail back and offer to expand it. You still did the full investigation (Phases 1c–1d); this is about what you surface *first*, not what you know.
 
-- **Ticket summary** — one-line restatement.
-- **Ticket type** — ops change / investigation / bug.
+**Open with three tight parts (a few sentences total, no jargon):**
+
+- **What's happening** — what the affected person experiences and can't do. ("A member's dependents can't see their invite cards, so they can't create accounts." Not "`registration_token` cooldown in `DashboardView`.")
+- **Impact** — who and how many are affected, the member/business consequence, and urgency: blocking vs. degraded vs. cosmetic, one member vs. a whole group vs. systemic.
+- **Recommendation** — the fix (or self-service path) in one plain sentence, whether it's low-risk, and whether you can do it now or need approval/input.
+
+**Then go only as deep as the moment needs:**
+
+- If the fix is a **data change**, hand over the read-only validation snippet(s) from Phase 1d (the human runs them), then the fix script — keep the framing plain even though the snippet itself is technical.
+- **Offer the technical breakdown; don't dump it.** Close with a one-liner inviting expansion — e.g. *"Say the word for root cause, exact code paths, the console script, prior tickets, or who to loop in."* Expand a section only when asked, or when it's genuinely needed to execute the fix.
+
+Keep this depth **ready on request** (only applicable ones — don't pad with "None found"):
+
+- **Root cause** — the code-level why (file:line, service/method, the specific condition).
 - **Affected area** — key files and modules.
-- **Root cause** (if identifiable).
-- **Recent changes** — relevant commits/PRs.
-- **Runbook match** — the matched scenario file and any ticket-specific adaptation. Note any drift between the runbook and current code.
+- **Proposed fix (full)** — specific code changes with file paths and line numbers, or a console script. Make any console script **complete** — bake in values confirmed during Phase 1d rather than leaving `# fill in` placeholders — and keep the read-only preview / idempotent guard.
+- **Runbook match** — the matched scenario file and any ticket-specific adaptation; note drift from current code.
+- **Recent changes** — relevant commits/PRs; whether deployed or only on `main`.
 - **Prior art** — similar past tickets and how they were resolved.
-- **Proposed fix** — specific code changes with file paths and line numbers, or a console script. Like the validation snippets, make any console script **complete** — bake in values confirmed during Phase 1d rather than leaving `# fill in` placeholders — and keep the read-only preview / idempotent guard. Show the diff if straightforward.
 - **Risk assessment** — low/medium/high, what could go wrong.
 - **Quick fix vs. proper fix** — if there's a tradeoff.
 - **Who to talk to** — code experts (git blame) and past handlers.
-- **Bugs surfaced** — any genuine code defects noticed during investigation that are distinct from this ticket's immediate ops/data fix (e.g. a guard that misfires, a service that hardcodes the wrong value, a path that errors for anyone). Flag them here; `capture` logs real defects to the **On-call bugs** Linear project.
+- **Bugs surfaced** — genuine code defects noticed during investigation, distinct from this ticket's immediate fix (a guard that misfires, a hardcoded wrong value, a path that errors for anyone). Flag them so `capture` can log real defects to the **On-call bugs** Linear project.
 
 ## Guidelines
 
+- **Lead concise and impact-first; go deep on demand.** Open with plain-language impact/UX and a recommendation an on-call engineer can act on in seconds. Keep root cause, code paths, scripts, and prior art ready but offer them rather than dumping them. Technical depth is available, not absent.
 - **Confirm the hypothesis with read-only snippets before recommending any data change (Phase 1d) — this is non-negotiable.** Assume the engineer runs every snippet and reports back; you never run them yourself. Share read-only checks, wait for the output, then propose.
 - Be specific — exact files, line numbers, methods.
 - Don't propose changes to code you haven't read.
