@@ -30,7 +30,8 @@ greybeard/
 ├── workflows/                 # AI-powered workflows
 │   ├── code-review/           # Technical code review pipeline
 │   │   ├── lenses/            # General technical criteria
-│   │   └── context/           # Team/repo-specific criteria
+│   │   ├── context/           # Team/repo-specific criteria
+│   │   └── templates/         # Canonical report format
 │   ├── knowledge-extraction/  # Business logic documentation pipeline
 │   │   ├── pipeline/          # 5-phase extraction process
 │   │   └── templates/         # Output templates
@@ -89,7 +90,7 @@ Also accepts `review <branch-name> in <repo-name>` when there's no PR yet.
 5. Evaluate against `workflows/code-review/context/`
 6. Fact-check findings in the repo
 7. Cross-repo analysis if changes touch integration points (pull latest on related repos first)
-8. Output PASS/FAIL per lens with locations and fixes
+8. Report per `workflows/code-review/templates/REPORT-FORMAT.md` — a pass/fail/nit tally, then numbered failures led by their user-facing impact. Depth on request.
 
 ### Knowledge Extraction
 

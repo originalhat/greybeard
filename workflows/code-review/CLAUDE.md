@@ -8,7 +8,8 @@ A multi-stage, multi-modal code review pipeline that evaluates changes against t
 code-review/
 ├── CLAUDE.md           # You are here
 ├── lenses/             # Generalized technical review criteria
-└── context/            # Repo/team-specific review criteria
+├── context/            # Repo/team-specific review criteria
+└── templates/          # Canonical output format
 ```
 
 ## Inputs
@@ -20,8 +21,9 @@ Triggered by **`review <github PR URL>`** (also accepts `review <branch-name> in
 
 ## Outputs
 
-- A concise summary with PASS/FAIL per lens
-- Issue descriptions with location and potential fix for any failures
+A single impact-first report: a pass/fail/nit tally, then numbered failures where each heading states the user-facing consequence and the body is one short paragraph. Technical depth is held in context for follow-up, not printed.
+
+**The format is defined in `templates/REPORT-FORMAT.md` and is not optional.** Read it before writing the report.
 
 ## Execution
 
@@ -38,12 +40,12 @@ These steps are **strictly sequential** — do not start a step until all prior 
 2. **Fetch Latest**: Run `git fetch origin main` and `git fetch origin {branch}` to ensure refs are current
 3. **Diff**: Use three-dot diff (`git diff origin/main...HEAD`) to see only branch changes, excluding unrelated changes merged to main after the branch was created
 4. **PR Context** (optional): If a PR exists for the branch, fetch its title, description, and linked issues (`gh pr view {branch} --json title,body,url` or the GitHub MCP tools). Feed this as additional context to lens and context evaluation. Skip gracefully if no PR exists.
-5. **Parallel Evaluation** (mid-tier model): Run each lens in `lenses/` against the diff (include PR context from step 4 if available). Steps 5 and 6 may run in parallel with each other.
+5. **Parallel Evaluation** (mid-tier model): Run each lens in `lenses/` against the diff (include PR context from step 4 if available). Steps 5 and 6 may run in parallel with each other. Each lens agent returns, per finding: the **consequence** (what breaks, for whom), the mechanism in one or two sentences, `file:line`, and a suggested fix — plus whether it rises above a nit. Lens agents report raw; they do not format.
 6. **Context Evaluation** (mid-tier model): Run `context/` criteria against the diff (include PR context from step 4 if available)
-7. **Report**: Generate initial findings from steps 5–6. Wait for both to complete before proceeding.
-8. **Fact-Check** (frontier model): Verify each finding from step 7 in the actual repo to ensure contextual correctness. Do not start until step 7 is complete.
+7. **Report**: Aggregate findings from steps 5–6. Wait for both to complete before proceeding.
+8. **Fact-Check** (frontier model): Verify each finding from step 7 in the actual repo to ensure contextual correctness. Do not start until step 7 is complete. Discard anything that doesn't hold up — an unconfirmed finding is dropped, not hedged.
 9. **Cross-Repo Analysis** (frontier model): If needed, check related repos in `../greybeard-data/sources/` for breaking changes (see below)
-10. **Final Summary**: PASS/FAIL per lens with actionable details on failures
+10. **Final Summary**: Write the report per `templates/REPORT-FORMAT.md`. Retain each finding's `file:line`, call path, and suggested fix in context to answer follow-ups — none of it goes in the report.
 
 ### Cross-Repo Analysis
 
@@ -70,8 +72,13 @@ Repo and team-specific criteria:
 - Style nits
 - Business-specific patterns
 
+### Templates (`templates/`)
+
+`REPORT-FORMAT.md` — the canonical output format. Single source of truth, shared with the `/review` skill.
+
 ## Notes
 
+- **Output format is fixed**: `templates/REPORT-FORMAT.md`. Lead with impact, number the failures, tally the passes, count the nits. Never enumerate all lenses.
 - Lenses are designed to be quickly skimmable (all under 100 lines)
 - Repos in `../greybeard-data/sources/` are not working environments—tests/console may not work
 - **Always fetch before diffing**: `git fetch origin` ensures you have current refs
