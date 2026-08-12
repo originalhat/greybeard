@@ -70,6 +70,10 @@ tasks = record.tasks.order(:created_at).preload(Presenters::Task.preload)
 - **HIGH**: Slow but works, affects paginated results
 - **MEDIUM**: Slow only with large datasets
 
+## Related
+
+When a PR *fixes* an N+1 by replacing a per-record loop with set-based writes (`insert_all`, `upsert_all`, `update_all`), the speedup is not the whole story — see `BULK-WRITE-SAFETY` for the validations, callbacks, and audit rows those methods skip, and `BEHAVIORAL-PARITY` for verifying the rewritten path still rejects what the loop rejected.
+
 ## False Positives to Avoid
 
 - Single-record fetches (not iterating)

@@ -14,6 +14,8 @@ A checklist of common issues to look for during PR reviews.
 
 - [ ] **Add explicit order when using `.first`** - When calling `.first` on associations, add `.order(...)` to ensure consistent results. Without ordering, the database may return records unpredictably.
 
+- [ ] **Normalize before truncating, and normalize every field the same way** - When building an attribute hash, apply the same normalization (`strip`/`squish`) to every string field, and do it *before* any truncation. `" 85001".first(5)` yields `" 8500"` — a silently wrong value that still looks like a valid one. If the field also feeds a dedup or lookup key, inconsistent normalization creates false-distinct records. One field in the hash skipping the `strip` its siblings get is the tell.
+
 ## Migrations
 
 - [ ] **Use appropriate column types** - Dates should be `date` type, not `string`. Timestamps should be `datetime`. Don't store structured data as strings when a proper type exists.
