@@ -21,7 +21,7 @@ Triggered by **`review <github PR URL>`** (also accepts `review <branch-name> in
 
 ## Outputs
 
-A single impact-first report: a pass/fail/nit tally, then numbered failures where each heading states the user-facing consequence and the body is one short paragraph. Technical depth is held in context for follow-up, not printed.
+A single impact-first report: a pass/fail/nit tally, then numbered failures. Each heading states the user-facing consequence; the body gives one sentence of context, then what goes wrong; a one-sentence **Fix** closes it. Written in Simplified Technical English at roughly a 10th grade reading level. Technical depth is held in context for follow-up, not printed.
 
 **The format is defined in `templates/REPORT-FORMAT.md` and is not optional.** Read it before writing the report.
 
@@ -78,7 +78,8 @@ Repo and team-specific criteria:
 
 ## Notes
 
-- **Output format is fixed**: `templates/REPORT-FORMAT.md`. Lead with impact, number the failures, tally the passes, count the nits. Never enumerate all lenses.
+- **Output format is fixed**: `templates/REPORT-FORMAT.md`. Impact in the heading, context then consequence in the body, one-sentence Fix, lens name in the footer. Number the failures, tally the passes, count the nits. Never enumerate all lenses.
+- **No metaphors in findings.** No "blast radius", "retry storm", "footgun". Say what happens. Short active sentences, one term per concept.
 - Lenses are designed to be quickly skimmable (all under 100 lines)
 - Repos in `../greybeard-data/sources/` are not working environments—tests/console may not work
 - **Always fetch before diffing**: `git fetch origin` ensures you have current refs
