@@ -90,7 +90,7 @@ Also accepts `review <branch-name> in <repo-name>` when there's no PR yet.
 5. Evaluate against `workflows/code-review/context/`
 6. Fact-check findings in the repo
 7. Cross-repo analysis if changes touch integration points (pull latest on related repos first)
-8. Report per `workflows/code-review/templates/REPORT-FORMAT.md` — a pass/fail/nit tally, then numbered failures led by their user-facing impact. Depth on request.
+8. Report per `workflows/code-review/templates/REPORT-FORMAT.md` — a pass/fail/nit tally, then numbered failures led by their user-facing impact, then the nits as one line each. Depth on request.
 
 ### Knowledge Extraction
 

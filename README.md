@@ -76,7 +76,7 @@ review <github PR URL>
 2. Evaluate in parallel against each lens
 3. Evaluate against team context
 4. Fact-check findings against the actual codebase
-5. Output PASS/FAIL per lens with locations and fixes
+5. Output an impact-first report: a pass/fail/nit tally, numbered failures with a one-sentence fix, then the nits as one line each
 
 See [`workflows/code-review/`](workflows/code-review/) for details.
 
