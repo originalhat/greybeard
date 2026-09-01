@@ -9,7 +9,7 @@ The reader is the engineer who wrote the code. They want to know **what breaks, 
 ```
 Review · {repo} {#pr or branch} · {N} lenses
 
-✅ {N} passed   ❌ {N} failed   ⚠️ {N} nits
+✅ {N} passed   ❌ {N} failed   ⚠️ {N} nits   · {N} pre-existing
 
 ## ❌ Failures
 
@@ -29,12 +29,16 @@ Review · {repo} {#pr or branch} · {N} lenses
 {N}. {The change, in one sentence.} ↳ {LENS-NAME} · `{file or class}`
 {N}. {The change.} ↳ {LENS-NAME} · `{file or class}`
 
+## Pre-Existing
+
+{N}. {The finding, in one sentence — state real severity even though the line is short.} ↳ {LENS-NAME} · `{file or class}`
+
 Cross-repo: {one line — clean, or the breakage folded in as a numbered failure above}
 
 Ask for any number for file:line, the call path, and a full fix.
 ```
 
-Print the `## ⚠️ Nits` heading only when there is at least one nit. If nothing failed and nothing was nitted, the tally line plus `Cross-repo:` and the closing offer is the entire report. Do not pad it.
+Print the `## ⚠️ Nits` heading only when there is at least one nit, and the `## Pre-Existing` heading only when at least one finding was pre-existing. If nothing failed, nothing was nitted, and nothing was pre-existing, the tally line plus `Cross-repo:` and the closing offer is the entire report. Do not pad it.
 
 ## Worked example
 
@@ -60,9 +64,13 @@ pharmacy and it fails.
 3. Rename `data` to `claim_lines`; the name does not say what the array holds. ↳ CLARITY-SIMPLICITY · `ClaimForm.tsx`
 4. Extract the repeated date format string into a constant. ↳ OPPORTUNISTIC-REFACTOR · `EligibilitySyncJob`
 5. Wrap the icon-only Retry button in a label so a screen reader announces it. ↳ ACCESSIBILITY · `ClaimForm.tsx`
+
+## Pre-Existing
+
+6. The claims worker retries a failed webhook forever with no backoff or dead-letter queue, so one bad payload can pin a thread indefinitely. ↳ IDEMPOTENCY · `WebhookWorker`
 ```
 
-Each nit is one line: the change, then the footer. No context sentence, no consequence, no separate `Fix:` line — the line already is the fix.
+Each nit is one line: the change, then the footer. No context sentence, no consequence, no separate `Fix:` line — the line already is the fix. A pre-existing finding uses the same one-line shape even when the underlying defect is severe — severity decided whether it left the Failures section, not how long its line reads.
 
 ## Language
 
@@ -95,6 +103,8 @@ The full ASD-STE100 controlled dictionary — roughly 900 approved words, one me
 
 **Order by severity, not by lens.** Most severe first. Severity means how much damage the bug does and how hard it is to undo. Silent data corruption outranks a missing test, which outranks an unmemoized calculation.
 
+**Pre-existing issues rank last, and never inflate the failed count.** A finding is pre-existing when the defect it describes was already present and reachable on `origin/main` before this branch — not introduced, exposed, or made newly reachable by it. Fact-check determines this: check whether the finding's file:line falls inside a hunk this branch's diff actually touches; if it doesn't, confirm the branch didn't add a new caller, remove a guard, or otherwise make the defect newly reachable before calling it pre-existing. A pre-existing finding never counts toward `❌ N failed` or `⚠️ N nits` — it moves to its own `## Pre-Existing` section, after the nits, in the same one-line shape as a nit. State real severity in that line (`still lets an expired token authenticate`, not `token check could be better`) — the shape is compressed because no fix is owed here, not because the defect is minor.
+
 **The heading is the impact, not the mechanism.** Write the sentence the reader would use to explain the bug to a teammate who does not know the codebase.
 
 - ✅ `Error banners stay on screen after a successful submission`
@@ -125,6 +135,14 @@ If the fix needs a decision you cannot make, say that in the same shape: `**Fix:
 - **The same `↳` footer,** on the same line as the nit rather than below it.
 - **No grouping, no theme headings, no prose.** A flat list, ordered by file so a reader can fix them in one pass.
 - **Twelve is the ceiling.** Past that, print the first twelve and add one line: `+{N} more nits — ask to see them.` A wall of nits buries the failures, which is the problem this format exists to prevent.
+
+**Pre-existing findings get their own section, one line each, after the nits.** They are real, but fixing them isn't this PR's job — the shape says so before the reader even reads the line.
+
+- **The line states the finding, not a fix.** No `Fix:` line — nobody owes one here. State what's wrong and, if it matters, how bad, in one sentence.
+- **Numbered in the same run as everything above.** Failures, nits, and pre-existing findings share one numbering sequence.
+- **The same `↳` footer**, same line.
+- **Twelve is the ceiling**, same as nits, for the same reason.
+- **Never merge this section into Nits.** A pre-existing item and a nit both render as one line, but they mean different things — one is cheap to fix now, the other isn't this PR's to fix at all. Keep them visually and structurally separate.
 
 ## Lenses that resist impact framing
 
@@ -159,3 +177,5 @@ These are the specific noise sources this format exists to kill:
 - Metaphors doing the work a plain sentence should do
 - Telegraphic phrasing with the articles stripped out, as if the report were a commit subject line
 - Four nouns stacked into one phrase because it was faster to write than to unpack
+- A pre-existing bug counted in `❌ N failed`, making an unrelated branch look risky
+- A pre-existing finding written in the failure shape with its own `Fix:` line, as if this PR owed one

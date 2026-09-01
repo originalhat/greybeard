@@ -15,12 +15,13 @@ Private data (cloned repos and workflow output) lives **outside this repo** at `
     ├── security-testing/{repo}/      # Scan results, security reports
     ├── design-audit/{repo}/          # Inventory, findings, design specs
     ├── campaigns/{repo}/{campaign}/  # Campaign strategy, inventory, plan, batch reviews
+    ├── code-review/{repo}/fix-runs/  # review-fix audit records (one per run)
     └── on-call/                      # Runbooks (per repo, by domain) and PHI-free audit logs
 ```
 
 Set up the data directory:
 ```bash
-mkdir -p ../greybeard-data/sources ../greybeard-data/output/{knowledge-extraction,security-testing,design-audit,campaigns,on-call}
+mkdir -p ../greybeard-data/sources ../greybeard-data/output/{knowledge-extraction,security-testing,design-audit,campaigns,code-review,on-call}
 ```
 
 ## Directory Structure
@@ -32,6 +33,9 @@ greybeard/
 │   │   ├── lenses/            # General technical criteria
 │   │   ├── context/           # Team/repo-specific criteria
 │   │   └── templates/         # Canonical report format
+│   ├── review-fix/            # Loop-based auto-fix on top of code review
+│   │   ├── pipeline/          # 3-phase triage → fix → gate loop
+│   │   └── templates/         # Fix-run audit record format
 │   ├── knowledge-extraction/  # Business logic documentation pipeline
 │   │   ├── pipeline/          # 5-phase extraction process
 │   │   └── templates/         # Output templates
@@ -64,13 +68,14 @@ The leading word routes the request to a workflow. Match on it directly.
 | Say | Runs | Example |
 |-----|------|---------|
 | `review` | Code Review | `review https://github.com/sana/origami_claims/pull/8842` |
+| `review --fix` | Code Review — Auto-Fix | `review --fix` (current branch) |
 | `triage` | On-Call | `triage https://sanabenefits.atlassian.net/browse/ER-1477` |
 | `extract knowledge from` | Knowledge Extraction | `extract knowledge from care_platform` |
 | `pen test` | Security Testing | `pen test origami_claims` |
 | `design audit` | Design Audit | `design audit care_platform` |
 | `campaign` | Campaign | `campaign plan "…" in origami_claims` |
 
-`review` and `triage` are the two single-word entry points: **`review` always means code review** (of a GitHub PR or branch), and **`triage` always means on-call** (of a JIRA ticket). On-call's other phases keep the `on-call` prefix (`on-call publish/capture/curate`); bare `triage` is the shorthand for starting one.
+`review` and `triage` are the two single-word entry points: **`review` always means code review** (of a GitHub PR or branch), and **`triage` always means on-call** (of a JIRA ticket). On-call's other phases keep the `on-call` prefix (`on-call publish/capture/curate`); bare `triage` is the shorthand for starting one. `review --fix` is the one exception to "one word, one workflow" — it stays under the `review` verb because it's the same evaluation with a fix loop bolted on, not a different concern.
 
 ### Code Review
 
@@ -91,6 +96,18 @@ Also accepts `review <branch-name> in <repo-name>` when there's no PR yet.
 6. Fact-check findings in the repo
 7. Cross-repo analysis if changes touch integration points (pull latest on related repos first)
 8. Report per `workflows/code-review/templates/REPORT-FORMAT.md` — a pass/fail/nit tally, then numbered failures led by their user-facing impact, then the nits as one line each. Depth on request.
+
+### Code Review — Auto-Fix Mode
+
+Runs the same lenses and context as `review`, but instead of stopping at a report, classifies findings, auto-applies the safe ones, commits them separately from the author's original commits, and re-reviews with a fresh pass — looping (bounded) until nothing auto-fixable remains or a 3-round cap is hit. Never pushes; never runs against a branch you don't own — reviewing someone else's PR stays exclusively on plain `review`.
+
+**To run:**
+```
+review --fix
+```
+Also accepts `review --fix <branch-name> in <repo-name>`.
+
+**Steps:** see `workflows/review-fix/CLAUDE.md` for the full pipeline (triage → fixer → gate, one pass per round).
 
 ### Knowledge Extraction
 

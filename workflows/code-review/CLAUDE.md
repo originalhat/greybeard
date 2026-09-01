@@ -21,7 +21,7 @@ Triggered by **`review <github PR URL>`** (also accepts `review <branch-name> in
 
 ## Outputs
 
-A single impact-first report: a pass/fail/nit tally, then numbered failures, then the nits. Each failure heading states the user-facing consequence; the body gives one sentence of context, then what goes wrong; a one-sentence **Fix** closes it. Nits print as one line each, numbered in the same run as the failures. Written in Simplified Technical English at roughly a 10th grade reading level. Technical depth is held in context for follow-up, not printed.
+A single impact-first report: a pass/fail/nit tally, then numbered failures, then the nits, then any pre-existing findings. Each failure heading states the user-facing consequence; the body gives one sentence of context, then what goes wrong; a one-sentence **Fix** closes it. Nits print as one line each, numbered in the same run as the failures. A pre-existing finding — a defect already present and reachable on `origin/main` before this branch — gets the same one-line treatment, ranks last, and never counts as a failure or a nit. Written in Simplified Technical English at roughly a 10th grade reading level. Technical depth is held in context for follow-up, not printed.
 
 **The format is defined in `templates/REPORT-FORMAT.md` and is not optional.** Read it before writing the report.
 
@@ -43,9 +43,9 @@ These steps are **strictly sequential** — do not start a step until all prior 
 5. **Parallel Evaluation** (mid-tier model): Run each lens in `lenses/` against the diff (include PR context from step 4 if available). Steps 5 and 6 may run in parallel with each other. Each lens agent returns, per finding: the **consequence** (what breaks, for whom), the mechanism in one or two sentences, `file:line`, and a suggested fix — plus whether it rises above a nit. Lens agents report raw; they do not format.
 6. **Context Evaluation** (mid-tier model): Run `context/` criteria against the diff (include PR context from step 4 if available)
 7. **Report**: Aggregate findings from steps 5–6. Wait for both to complete before proceeding.
-8. **Fact-Check** (frontier model): Verify each finding from step 7 in the actual repo to ensure contextual correctness. Do not start until step 7 is complete. Discard anything that doesn't hold up — an unconfirmed finding is dropped, not hedged.
+8. **Fact-Check** (frontier model): Verify each finding from step 7 in the actual repo to ensure contextual correctness. Do not start until step 7 is complete. Discard anything that doesn't hold up — an unconfirmed finding is dropped, not hedged. For each finding that survives, determine whether it's pre-existing: check whether its file:line falls inside a hunk this branch's diff actually touches (`git diff origin/main...HEAD -- {file}`); if it doesn't, confirm the branch didn't add a new caller, remove a guard, or otherwise make the defect newly reachable before marking it pre-existing. This determination happens once, centrally, here — not per-lens.
 9. **Cross-Repo Analysis** (frontier model): If needed, check related repos in `../greybeard-data/sources/` for breaking changes (see below)
-10. **Final Summary**: Write the report per `templates/REPORT-FORMAT.md`. Retain each finding's `file:line`, call path, and suggested fix in context to answer follow-ups — none of it goes in the report.
+10. **Final Summary**: Write the report per `templates/REPORT-FORMAT.md`. Pre-existing findings go in their own section, ranked last, never counted as a failure or nit. Retain each finding's `file:line`, call path, and suggested fix in context to answer follow-ups — none of it goes in the report.
 
 ### Cross-Repo Analysis
 
@@ -78,7 +78,8 @@ Repo and team-specific criteria:
 
 ## Notes
 
-- **Output format is fixed**: `templates/REPORT-FORMAT.md`. Impact in the heading, context then consequence in the body, one-sentence Fix, lens name in the footer. Number the failures, tally the passes, then list the nits one line each. Never enumerate all lenses.
+- **Output format is fixed**: `templates/REPORT-FORMAT.md`. Impact in the heading, context then consequence in the body, one-sentence Fix, lens name in the footer. Number the failures, tally the passes, then list the nits one line each, then any pre-existing findings one line each. Never enumerate all lenses.
+- **Pre-existing findings are determined in fact-check, not per-lens**: a finding is pre-existing if its file:line isn't part of this branch's diff and the branch didn't newly expose or make it reachable. It's real, but it isn't this PR's to fix, so it ranks last and is never counted as a failure or nit.
 - **No metaphors in findings.** No "blast radius", "retry storm", "footgun". Say what happens. Short active sentences, one term per concept.
 - Lenses are designed to be quickly skimmable (all under 100 lines)
 - Repos in `../greybeard-data/sources/` are not working environments—tests/console may not work
