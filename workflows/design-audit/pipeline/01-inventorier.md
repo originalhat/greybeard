@@ -2,8 +2,8 @@
 
 - **Role:** Design Token Extractor
 - **Model:** Sonnet
-- **Input:** `../greybeard-data/sources/{repo}/` — frontend codebase
-- **Output:** `../greybeard-data/output/design-audit/{repo}/inventory.md` (following `templates/inventory.md`)
+- **Input:** `$GREYBEARD_DATA/sources/{repo}/` — frontend codebase
+- **Output:** `$GREYBEARD_DATA/output/design-audit/{repo}/inventory.md` (following `templates/inventory.md`)
 
 ## Mission
 

@@ -2,8 +2,8 @@
 
 - **Role:** Visual Capture Agent
 - **Model:** Sonnet
-- **Input:** Running dev server or deployed URL for `../greybeard-data/sources/{repo}/`
-- **Output:** Screenshots in `../greybeard-data/output/design-audit/{repo}/screenshots/` + manifest
+- **Input:** Running dev server or deployed URL for `$GREYBEARD_DATA/sources/{repo}/`
+- **Output:** Screenshots in `$GREYBEARD_DATA/output/design-audit/{repo}/screenshots/` + manifest
 
 ## Mission
 

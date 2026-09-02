@@ -24,7 +24,7 @@ Each lens:
 
 ## Difference from Code Review Lenses
 
-Code review lenses (`workflows/code-review/lenses/`) evaluate branch diffs — they catch new issues being introduced. Security testing lenses scan entire codebases — they find existing vulnerabilities regardless of when they were introduced. Security testing lenses go deeper on each category and include more framework-specific patterns.
+Code review lenses (`${CLAUDE_PLUGIN_ROOT}/workflows/code-review/lenses/`) evaluate branch diffs — they catch new issues being introduced. Security testing lenses scan entire codebases — they find existing vulnerabilities regardless of when they were introduced. Security testing lenses go deeper on each category and include more framework-specific patterns.
 
 ## Adding a New Lens
 
