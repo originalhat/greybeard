@@ -26,7 +26,7 @@ Read `campaign-strategy.md` and extract the done criteria checklist. You will ve
 Find your assigned item's commit on the batch branch:
 
 ```bash
-cd ../greybeard-data/sources/{repo}
+cd "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/{repo}"
 git log campaign/{name}/batch-{N} --oneline | grep "{file-path}"
 git show {commit-sha}
 ```

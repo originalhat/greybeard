@@ -15,7 +15,7 @@ security-testing/
 └── templates/          # Output format templates
 ```
 
-Output lives at `../greybeard-data/output/security-testing/{repo}/`:
+Output lives at `$GREYBEARD_DATA/output/security-testing/{repo}/`:
 ```
 {repo}/
 ├── .scan-state.json        # Tracks last scanned SHA for incremental catch-up
@@ -27,11 +27,11 @@ Output lives at `../greybeard-data/output/security-testing/{repo}/`:
 
 ## Inputs
 
-- A target repository cloned under `../greybeard-data/sources/{repo}/`
+- A target repository cloned under `$GREYBEARD_DATA/sources/{repo}/`
 
 ## Outputs
 
-Per-repo living records under `../greybeard-data/output/security-testing/{repo}/`:
+Per-repo living records under `$GREYBEARD_DATA/output/security-testing/{repo}/`:
 
 - `.scan-state.json` — tracks last scanned SHA for incremental catch-up
 - `segment-manifest.md` — repo partitioning map
@@ -52,7 +52,7 @@ pen test <repo-name> # or security scan <repo name>
 
 ### Steps
 
-1. **Segment** (one Sonnet agent): Run `pipeline/01-segmenter.md` against `../greybeard-data/sources/{repo}/`. Produces a segment manifest partitioning the repo into groups of 10-30 files, each tagged with applicable lenses and risk priority.
+1. **Segment** (one Sonnet agent): Run `pipeline/01-segmenter.md` against `$GREYBEARD_DATA/sources/{repo}/`. Produces a segment manifest partitioning the repo into groups of 10-30 files, each tagged with applicable lenses and risk priority.
 
 2. **Scan** (one Sonnet agent per segment, parallel): For each segment in the manifest, run `pipeline/02-scanner.md`. Each scanner agent reads every file in its segment and evaluates against all applicable lenses from `lenses/`. Produces raw vulnerability findings with confidence levels.
 
@@ -124,7 +124,7 @@ This will:
 
 **Manual diff command:**
 ```bash
-cd ../greybeard-data/sources/<repo> && git fetch origin
+cd "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/<repo>" && git fetch origin
 git log <last_sha>..origin/main --oneline --no-merges
 git diff <last_sha>..origin/main --stat
 ```

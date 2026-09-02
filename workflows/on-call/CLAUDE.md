@@ -14,14 +14,14 @@ On-call engineers field a stream of Engineering Request (ER) tickets — ops dat
 
 ## Relationship to the `origami_claims` `/oncall` commands
 
-The `origami_claims` repo has its own `/oncall` and `/oncall-publish` slash commands that read `docs/runbooks/` **in that repo**. Those are left as-is — other engineers depend on them. This workflow is the **canonical, cross-repo, self-improving** home for on-call knowledge. Its runbooks and audit logs live in `greybeard-data` (see below), independent of any single app repo, because the app-repo clones are disposable and may eventually be consolidated.
+The `origami_claims` repo has its own `/oncall` and `/oncall-publish` slash commands that read `docs/runbooks/` **in that repo**. Those are left as-is — other engineers depend on them. This workflow is the **canonical, cross-repo, self-improving** home for on-call knowledge. Its runbooks and audit logs live in `$GREYBEARD_DATA` (see below), independent of any single app repo, because the app-repo clones are disposable and may eventually be consolidated.
 
 ## Data layout (source of truth)
 
-Everything this workflow produces lives **outside this repo**, under `../greybeard-data/output/on-call/`:
+Everything this workflow produces lives **outside this repo**, under `$GREYBEARD_DATA/output/on-call/`:
 
 ```
-../greybeard-data/output/on-call/
+$GREYBEARD_DATA/output/on-call/
 ├── runbooks/
 │   ├── origami_claims/
 │   │   ├── INDEX.md                 # router: symptom/keyword → scenario file
@@ -36,7 +36,7 @@ Everything this workflow produces lives **outside this repo**, under `../greybea
 └── .oncall-state.json               # runbook catalog, last-verified SHA per file, audit index
 ```
 
-Runbook code (models, services) lives in `../greybeard-data/sources/{repo}/` — the cloned repos the other workflows use. Read code from there; write knowledge to `output/on-call/`.
+Runbook code (models, services) lives in `$GREYBEARD_DATA/sources/{repo}/` — the cloned repos the other workflows use. Read code from there; write knowledge to `output/on-call/`.
 
 ### Domain hierarchy
 
@@ -45,7 +45,7 @@ Runbook domain folders loosely mirror the knowledge-extraction domains (`account
 ## Inputs
 
 - A JIRA ticket URL (e.g. `https://sanabenefits.atlassian.net/browse/ER-1477`), a bare ER ticket ID, or a free-text problem description. The **`triage`** shorthand starts one.
-- Read access to `../greybeard-data/sources/{repo}/` (pull latest before investigating).
+- Read access to `$GREYBEARD_DATA/sources/{repo}/` (pull latest before investigating).
 - The `atlassian` MCP (JIRA, `sanabenefits.atlassian.net`, project key `ER`). **Setup required** — see below.
 - Optional: `rollbar` MCP for error-item investigation.
 - The `Linear` MCP for logging surfaced bugs to the **On-call bugs** project.
@@ -88,7 +88,7 @@ Run `pipeline/03-capture.md`. Write the PHI-free audit entry; if the scenario wa
 Run `pipeline/04-curate.md`. Housekeeping sweep: reorganize the hierarchy, merge duplicates, split overgrown files, and re-verify runbooks whose `last_verified` SHA is behind the repo's current `main`.
 
 ### `on-call sync <repo>`
-Run `pipeline/05-sync.md`. End-of-shift: copy the canonical runbooks for the repo into its `docs/runbooks/` (preserving the domain hierarchy, non-destructive to the legacy flat runbooks), then open a branch + PR from the `greybeard-data/sources/{repo}` clone. Confirmation-gated; one-directional (canonical store → app repo).
+Run `pipeline/05-sync.md`. End-of-shift: copy the canonical runbooks for the repo into its `docs/runbooks/` (preserving the domain hierarchy, non-destructive to the legacy flat runbooks), then open a branch + PR from the `$GREYBEARD_DATA/sources/{repo}` clone. Confirmation-gated; one-directional (canonical store → app repo).
 
 ## Components
 

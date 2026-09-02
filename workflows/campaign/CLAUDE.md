@@ -21,7 +21,7 @@ campaign/
     └── 06-reviewer.md      # First-pass code review, auto-fix, summarize for human
 ```
 
-Output lives at `../greybeard-data/output/campaigns/{repo}/{campaign-name}/`:
+Output lives at `$GREYBEARD_DATA/output/campaigns/{repo}/{campaign-name}/`:
 ```
 {campaign-name}/
 ├── .campaign-state.json    # Tracks progress and last-run SHA for incremental continue
@@ -32,13 +32,13 @@ Output lives at `../greybeard-data/output/campaigns/{repo}/{campaign-name}/`:
 
 ## Inputs
 
-- A target repository cloned under `../greybeard-data/sources/{repo}/`
+- A target repository cloned under `$GREYBEARD_DATA/sources/{repo}/`
 - A campaign goal stated in plain English (e.g., "convert all JS components to TypeScript")
-- Optional: existing knowledge-extraction output at `../greybeard-data/output/knowledge-extraction/{repo}/` (used by Planner for DDD-style campaigns)
+- Optional: existing knowledge-extraction output at `$GREYBEARD_DATA/output/knowledge-extraction/{repo}/` (used by Planner for DDD-style campaigns)
 
 ## Outputs
 
-Per-repo, per-campaign living records under `../greybeard-data/output/campaigns/{repo}/{campaign-name}/`:
+Per-repo, per-campaign living records under `$GREYBEARD_DATA/output/campaigns/{repo}/{campaign-name}/`:
 
 - `.campaign-state.json` — progress counters, last-run SHA, batch number
 - `campaign-strategy.md` — the recipe: done criteria, step-by-step approach, edge cases, execution mode
@@ -124,7 +124,7 @@ Set by the Planner in `campaign-strategy.md`, overridable by the user:
 
 ## Knowledge-Extraction Integration
 
-For DDD-style campaigns, the Planner checks for knowledge-extraction output at `../greybeard-data/output/knowledge-extraction/{repo}/`. If present:
+For DDD-style campaigns, the Planner checks for knowledge-extraction output at `$GREYBEARD_DATA/output/knowledge-extraction/{repo}/`. If present:
 - Reads domain records to understand intended bounded contexts and boundaries
 - Reads ubiquitous language to inform naming conventions in the recipe
 - References specific domain records as the authority on "what belongs where"
@@ -135,8 +135,8 @@ Run `extract knowledge from <repo-name>` before planning a DDD campaign if knowl
 
 The Planner draws on two layers of accumulated experience:
 
-- **Archetype gotchas** in `workflows/campaign/context/` — generic patterns and pitfalls for common campaign shapes (e.g., `DOMAIN-REFACTOR-GOTCHAS.md`). Public, version-controlled in this repo, no codebase-specific identifiers. See `workflows/campaign/context/CLAUDE.md`.
-- **Repo learnings** at `../greybeard-data/output/campaigns/{repo}/_learnings.md` — accumulated repo-specific notes (file paths, class names, table specifics, codebase conventions). Lives in the private data dir, not this public repo.
+- **Archetype gotchas** in `${CLAUDE_PLUGIN_ROOT}/workflows/campaign/context/` — generic patterns and pitfalls for common campaign shapes (e.g., `DOMAIN-REFACTOR-GOTCHAS.md`). Public, version-controlled in this repo, no codebase-specific identifiers. See `${CLAUDE_PLUGIN_ROOT}/workflows/campaign/context/CLAUDE.md`.
+- **Repo learnings** at `$GREYBEARD_DATA/output/campaigns/{repo}/_learnings.md` — accumulated repo-specific notes (file paths, class names, table specifics, codebase conventions). Lives in the private data dir, not this public repo.
 
 After a campaign finishes, contribute back:
 - Generic, repo-agnostic learnings → add to or update an archetype file in `context/`

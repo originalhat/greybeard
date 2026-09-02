@@ -13,14 +13,14 @@ A target repo (`origami_claims`, `care_platform`, `sana_mobile`). Reads `runbook
 Pull latest on the repo clone, then find runbooks whose `last_verified` SHA is behind current `main`:
 
 ```bash
-git -C ../greybeard-data/sources/{repo} fetch origin && git -C ../greybeard-data/sources/{repo} checkout main && git -C ../greybeard-data/sources/{repo} pull
-git -C ../greybeard-data/sources/{repo} rev-parse HEAD   # current SHA
+git -C "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/{repo}" fetch origin && git -C "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/{repo}" checkout main && git -C "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/{repo}" pull
+git -C "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/{repo}" rev-parse HEAD   # current SHA
 ```
 
 For each stale runbook, check whether the files/symbols it references changed since its `last_verified` SHA:
 
 ```bash
-git -C ../greybeard-data/sources/{repo} diff --name-only <last_verified_sha> HEAD -- <paths the runbook references>
+git -C "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/{repo}" diff --name-only <last_verified_sha> HEAD -- <paths the runbook references>
 ```
 
 If referenced code changed, re-read it and reconcile the runbook against current behavior. Prioritize runbooks whose referenced paths actually changed — don't re-verify everything blindly. Update `last_verified` to the current SHA for each runbook you confirm or fix.

@@ -1,6 +1,6 @@
 # Greybeard
 
-AI-powered workflows centererd around code. Built for use with [Claude Code](https://github.com/anthropics/claude-code).
+AI-powered workflows centered around code. Installable as a [Claude Code](https://github.com/anthropics/claude-code) plugin.
 
 ## What is this?
 
@@ -15,46 +15,105 @@ Greybeard is a collection of structured AI agent workflows that help you:
 
 Each workflow is a set of prompts and templates that guide AI agents through multi-stage analysis.
 
-## Directory Structure
+## Install
+
+Install the plugin, then set up the data directory.
+
+### 1. Install the plugin
+
+This repo is its own marketplace (`.claude-plugin/marketplace.json`). Add it as a marketplace, then install:
+
+```
+/plugin marketplace add casconed/greybeard
+/plugin install greybeard@greybeard
+```
+
+Or, for a local clone you're developing against, add it by path instead of by GitHub repo:
+```
+/plugin marketplace add /path/to/greybeard
+/plugin install greybeard@greybeard
+```
+
+### 2. Set up the data directory
+
+Greybeard keeps cloned repos and workflow output outside the plugin, at `$GREYBEARD_DATA/` (defaults to `~/.greybeard-data/`). Set `GREYBEARD_DATA` to relocate it.
+
+```bash
+mkdir -p "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources" "${GREYBEARD_DATA:-$HOME/.greybeard-data}/output"/{knowledge-extraction,security-testing,design-audit,campaigns,on-call}
+```
+
+### 3. Add your repositories
+
+Clone the repos you want to analyze into the data directory:
+
+```bash
+git clone https://github.com/your-org/your-repo.git "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/your-repo"
+```
+
+### 4. Customize context (optional)
+
+Add team-specific review criteria to `workflows/code-review/context/`:
+- `GOTCHYAS.md` — Known pitfalls
+- `NITS.md` — Style preferences
+
+### 5. Run
+
+Then ask Claude to run a workflow (the leading word routes it):
+- `"Review <github PR URL>"`
+- `"Extract knowledge from my-repo"`
+- `"Pen test my-repo"`
+- `"Design audit my-repo"`
+- `"Campaign plan 'convert all JS to TypeScript' in my-repo"`
+- `"Triage <Jira ticket URL>"`
+
+## Layout
 
 ```
 greybeard/
-├── workflows/
-│   ├── code-review/           # Technical code review pipeline
-│   │   ├── lenses/            # General technical criteria (22 lenses)
-│   │   └── context/           # Team/repo-specific criteria
-│   ├── knowledge-extraction/  # Business logic documentation pipeline
-│   │   ├── pipeline/          # 5-phase extraction process
-│   │   └── templates/         # Output templates
-│   ├── security-testing/      # Security vulnerability scanning
-│   │   ├── pipeline/          # 3-phase scan process
-│   │   ├── lenses/            # 17 security-focused lenses
-│   │   └── templates/         # Output templates
-│   ├── design-audit/          # Frontend design consistency assessment
-│   │   ├── pipeline/          # 4-phase audit process
-│   │   ├── lenses/            # Design dimension criteria
-│   │   └── templates/         # Output templates
-│   ├── campaign/              # Large-scale refactoring campaign execution
-│   │   └── pipeline/          # 6-phase plan → execute → review cycle
-│   └── on-call/               # On-call ticket triage + self-improving runbooks
-│       ├── pipeline/          # 5-phase triage → publish → capture → curate → sync
-│       ├── context/           # Authoring standard + escalation map
-│       └── templates/         # Runbook, audit, and index templates
-├── sources/                   # Repo relationship docs
-└── sketches/                  # Drafts and ideas
+├── .claude-plugin/plugin.json   # Plugin manifest
+├── skills/                      # One skill per workflow — auto-activates on its trigger words
+│   └── <workflow>/SKILL.md      # Thin router → workflows/<workflow>/CLAUDE.md
+├── workflows/                   # Shared instruction tree (lenses, pipelines, templates, context)
+│   ├── code-review/             # Technical code review pipeline
+│   │   ├── lenses/              # General technical criteria
+│   │   ├── context/             # Team/repo-specific criteria
+│   │   └── templates/           # Canonical report format
+│   ├── review-fix/              # Loop-based auto-fix on top of code review
+│   │   ├── pipeline/            # 3-phase triage → fix → gate loop
+│   │   └── templates/           # Fix-run audit record format
+│   ├── knowledge-extraction/    # Business logic documentation pipeline
+│   │   ├── pipeline/            # 5-phase extraction process
+│   │   └── templates/           # Output templates
+│   ├── security-testing/        # Security vulnerability scanning
+│   │   ├── pipeline/            # 3-phase scan process
+│   │   ├── lenses/              # 17 security-focused lenses
+│   │   └── templates/           # Output templates
+│   ├── design-audit/            # Frontend design consistency assessment
+│   │   ├── pipeline/            # 4-phase audit process
+│   │   ├── lenses/              # Design dimension criteria
+│   │   └── templates/           # Output templates
+│   ├── campaign/                # Large-scale refactoring campaign execution
+│   │   └── pipeline/            # 6-phase plan → execute → review cycle
+│   └── on-call/                 # On-call ticket triage + self-improving runbooks
+│       ├── pipeline/            # 5-phase triage → publish → capture → curate → sync
+│       ├── context/             # Authoring standard + escalation map
+│       └── templates/           # Runbook, audit, and index templates
+├── sources/                     # Repo relationship docs
+└── sketches/                    # Drafts and ideas
 ```
 
-Private data lives outside the repo:
+Private data lives outside the plugin:
 
 ```
-../greybeard-data/
-├── sources/                          # Cloned repositories
+$GREYBEARD_DATA/                       # default ~/.greybeard-data/
+├── sources/                           # Cloned repositories
 │   └── {repo}/
-└── output/                           # Workflow output
+└── output/                            # Workflow output
     ├── knowledge-extraction/{repo}/
     ├── security-testing/{repo}/
     ├── design-audit/{repo}/
     ├── campaigns/{repo}/{campaign}/
+    ├── code-review/{repo}/fix-runs/    # review-fix audit records (one per run)
     └── on-call/                       # Runbooks (by repo/domain) + PHI-free audit logs
 ```
 
@@ -77,6 +136,10 @@ review <github PR URL>
 3. Evaluate against team context
 4. Fact-check findings against the actual codebase
 5. Output an impact-first report: a pass/fail/nit tally, numbered failures with a one-sentence fix, then the nits as one line each
+
+**Auto-fix mode** (`review --fix`): instead of stopping at a report, classifies findings, auto-applies the safe ones, commits them separately from the author's original commits, and re-reviews with a fresh pass — looping (bounded) until nothing auto-fixable remains or a 3-round cap is hit. Never pushes; only runs on a branch you own. See [`workflows/review-fix/`](workflows/review-fix/).
+
+**Interactive mode** (`review --interactive`): prints the report, then walks failures 1-by-1 — drafting a PR review comment in your voice (concise, question-framed, user-impact focused), revising on feedback, and posting inline to GitHub only after approval. Skips pre-existing findings; nits skipped by default.
 
 See [`workflows/code-review/`](workflows/code-review/) for details.
 
@@ -185,60 +248,13 @@ triage <Jira ticket URL>
 
 Five verbs: `triage`, `on-call publish`, `on-call capture`, `on-call curate`, `on-call sync`.
 
-Runbooks and audit logs are the source of truth in `../greybeard-data/output/on-call/` — PHI/PII-free (the JIRA ticket ID is the pointer to real identifiers). Needs the `atlassian` (JIRA) MCP configured for the session.
+Runbooks and audit logs are the source of truth in `$GREYBEARD_DATA/output/on-call/` — PHI/PII-free (the JIRA ticket ID is the pointer to real identifiers). Needs the `atlassian` (JIRA) MCP, declared in the plugin's `.mcp.json`.
 
 See [`workflows/on-call/`](workflows/on-call/) for details.
 
-## Getting Started
-
-### 1. Clone this repo
-
-```bash
-git clone https://github.com/your-org/greybeard.git
-cd greybeard
-```
-
-### 2. Set up the data directory
-
-```bash
-mkdir -p ../greybeard-data/sources ../greybeard-data/output/{knowledge-extraction,security-testing,design-audit,campaigns,on-call}
-```
-
-### 3. Add your repositories
-
-Clone the repos you want to analyze into the data directory:
-
-```bash
-git clone https://github.com/your-org/your-repo.git ../greybeard-data/sources/your-repo
-```
-
-### 4. Customize context (optional)
-
-Add team-specific review criteria to `workflows/code-review/context/`:
-- `GOTCHYAS.md` — Known pitfalls
-- `NITS.md` — Style preferences
-
-### 5. Run with Claude Code
-
-```bash
-claude
-```
-
-Then ask Claude to run a workflow:
-- `"Review <github PR URL>"`
-- `"Extract knowledge from my-repo"`
-- `"Pen test my-repo"`
-- `"Design audit my-repo"`
-- `"Campaign plan 'convert all JS to TypeScript' in my-repo"`
-- `"Triage <Jira ticket URL>"`
-
 ## Adding Workflows
 
-New workflows go in `workflows/{workflow-name}/` with:
-- `CLAUDE.md` — Instructions and execution steps
-- Component subdirectories as needed
-
-See [`workflows/CLAUDE.md`](workflows/CLAUDE.md) for conventions.
+New workflows go in `workflows/{workflow-name}/` with a matching `skills/{workflow-name}/SKILL.md` entry point. See [`workflows/CLAUDE.md`](workflows/CLAUDE.md) for conventions.
 
 ## Lenses Included
 

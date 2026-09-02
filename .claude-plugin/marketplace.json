@@ -1,0 +1,19 @@
+{
+  "name": "greybeard",
+  "owner": {
+    "name": "Jason Moore",
+    "url": "https://github.com/casconed"
+  },
+  "metadata": {
+    "description": "AI-powered code workflows: code review, knowledge extraction, security testing, design audit, refactoring campaigns, and on-call triage."
+  },
+  "plugins": [
+    {
+      "name": "greybeard",
+      "source": "./",
+      "description": "AI-powered code workflows: code review, knowledge extraction, security testing, design audit, refactoring campaigns, and on-call triage. Install once, run from any project.",
+      "version": "0.1.1",
+      "author": { "name": "Jason Moore", "email": "casconed@gmail.com" }
+    }
+  ]
+}

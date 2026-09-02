@@ -2,7 +2,7 @@
 
 **Date:** {date}
 **Agent:** Segmenter (Sonnet)
-**Repo:** `../greybeard-data/sources/{repo}/`
+**Repo:** `$GREYBEARD_DATA/sources/{repo}/`
 **Total files:** {N}
 **Total segments:** {N}
 

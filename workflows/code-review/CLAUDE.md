@@ -16,7 +16,7 @@ code-review/
 
 Triggered by **`review <github PR URL>`** (also accepts `review <branch-name> in <repo-name>` when there's no PR yet).
 
-- A GitHub PR URL, or a branch to review (checked out under `../greybeard-data/sources/{repo}/`). From a PR URL, resolve the repo and branch.
+- A GitHub PR URL, or a branch to review (checked out under `$GREYBEARD_DATA/sources/{repo}/`). From a PR URL, resolve the repo and branch.
 - The diff against `origin/main`
 
 ## Outputs
@@ -36,7 +36,7 @@ A single impact-first report: a pass/fail/nit tally, then numbered failures, the
 
 These steps are **strictly sequential** — do not start a step until all prior steps are complete.
 
-1. **Setup**: Check out the branch under `../greybeard-data/sources/{repo}/`
+1. **Setup**: Check out the branch under `$GREYBEARD_DATA/sources/{repo}/`
 2. **Fetch Latest**: Run `git fetch origin main` and `git fetch origin {branch}` to ensure refs are current
 3. **Diff**: Use three-dot diff (`git diff origin/main...HEAD`) to see only branch changes, excluding unrelated changes merged to main after the branch was created
 4. **PR Context** (optional): If a PR exists for the branch, fetch its title, description, and linked issues (`gh pr view {branch} --json title,body,url` or the GitHub MCP tools). Feed this as additional context to lens and context evaluation. Skip gracefully if no PR exists.
@@ -44,14 +44,14 @@ These steps are **strictly sequential** — do not start a step until all prior 
 6. **Context Evaluation** (mid-tier model): Run `context/` criteria against the diff (include PR context from step 4 if available)
 7. **Report**: Aggregate findings from steps 5–6. Wait for both to complete before proceeding.
 8. **Fact-Check** (frontier model): Verify each finding from step 7 in the actual repo to ensure contextual correctness. Do not start until step 7 is complete. Discard anything that doesn't hold up — an unconfirmed finding is dropped, not hedged. For each finding that survives, determine whether it's pre-existing: check whether its file:line falls inside a hunk this branch's diff actually touches (`git diff origin/main...HEAD -- {file}`); if it doesn't, confirm the branch didn't add a new caller, remove a guard, or otherwise make the defect newly reachable before marking it pre-existing. This determination happens once, centrally, here — not per-lens.
-9. **Cross-Repo Analysis** (frontier model): If needed, check related repos in `../greybeard-data/sources/` for breaking changes (see below)
+9. **Cross-Repo Analysis** (frontier model): If needed, check related repos in `$GREYBEARD_DATA/sources/` for breaking changes (see below)
 10. **Final Summary**: Write the report per `templates/REPORT-FORMAT.md`. Pre-existing findings go in their own section, ranked last, never counted as a failure or nit. Retain each finding's `file:line`, call path, and suggested fix in context to answer follow-ups — none of it goes in the report.
 
 ### Cross-Repo Analysis
 
-Before comparing against other repos in `../greybeard-data/sources/`:
+Before comparing against other repos in `$GREYBEARD_DATA/sources/`:
 
-1. **Pull latest main** for each related repo: `git -C ../greybeard-data/sources/{other-repo} checkout main && git -C ../greybeard-data/sources/{other-repo} pull`
+1. **Pull latest main** for each related repo: `git -C "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/{other-repo}" checkout main && git -C "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/{other-repo}" pull`
 2. Search for dependencies on changed interfaces (endpoints, types, etc.)
 3. Verify whether dependencies still exist or have already been updated
 
@@ -82,7 +82,7 @@ Repo and team-specific criteria:
 - **Pre-existing findings are determined in fact-check, not per-lens**: a finding is pre-existing if its file:line isn't part of this branch's diff and the branch didn't newly expose or make it reachable. It's real, but it isn't this PR's to fix, so it ranks last and is never counted as a failure or nit.
 - **No metaphors in findings.** No "blast radius", "retry storm", "footgun". Say what happens. Short active sentences, one term per concept.
 - Lenses are designed to be quickly skimmable (all under 100 lines)
-- Repos in `../greybeard-data/sources/` are not working environments—tests/console may not work
+- Repos in `$GREYBEARD_DATA/sources/` are not working environments—tests/console may not work
 - **Always fetch before diffing**: `git fetch origin` ensures you have current refs
 - **Use three-dot diff**: `git diff origin/main...HEAD` shows only branch changes; two-dot diff (`git diff origin/main`) includes unrelated changes merged to main and will produce misleading results
 - **Pull related repos before cross-repo checks**: Stale local copies can cause false positives for breaking changes
