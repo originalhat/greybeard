@@ -36,7 +36,7 @@ Or, for a local clone you're developing against, add it by path instead of by Gi
 
 ### 2. Set up the data directory
 
-Greybeard keeps cloned repos and workflow output outside the plugin, at `$GREYBEARD_DATA/` (defaults to `~/.greybeard-data/`). Set `GREYBEARD_DATA` to relocate it.
+Greybeard keeps cloned repos and workflow output outside the plugin, at `$GREYBEARD_DATA/` (defaults to `~/.greybeard-data/`). Set `GREYBEARD_DATA` to relocate it. The data directory is created automatically on the first session after install (a `SessionStart` hook runs `mkdir -p` idempotently), so this step is optional — run it manually only if you want to populate `sources/` before launching Claude:
 
 ```bash
 mkdir -p "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources" "${GREYBEARD_DATA:-$HOME/.greybeard-data}/output"/{knowledge-extraction,security-testing,design-audit,campaigns,on-call}

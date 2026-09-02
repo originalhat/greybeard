@@ -1,0 +1,13 @@
+{
+  "SessionStart": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "mkdir -p \"${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources\" \"${GREYBEARD_DATA:-$HOME/.greybeard-data}/output\"/{knowledge-extraction,security-testing,design-audit,campaigns,on-call}",
+          "timeout": 5
+        }
+      ]
+    }
+  ]
+}

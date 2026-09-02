@@ -9,5 +9,6 @@
   "license": "MIT",
   "keywords": ["code-review", "security", "knowledge-extraction", "design-audit", "refactoring", "on-call", "triage"],
   "homepage": "https://github.com/casconed/greybeard",
-  "repository": "https://github.com/casconed/greybeard"
+  "repository": "https://github.com/casconed/greybeard",
+  "hooks": "./hooks/hooks.json"
 }
