@@ -22,8 +22,8 @@ curl -s -L -u "$ATLASSIAN_EMAIL:$ATLASSIAN_API_TOKEN" "<attachment_content_url>"
 
 Run in parallel — they are independent:
 - **Fetch the ticket** from JIRA.
-- **Pull latest** on the target repo clone: `git -C ../greybeard-data/sources/{repo} fetch origin && git -C ../greybeard-data/sources/{repo} checkout main && git -C ../greybeard-data/sources/{repo} pull`.
-- **Read the runbook INDEX** at `../greybeard-data/output/on-call/runbooks/{repo}/INDEX.md`.
+- **Pull latest** on the target repo clone: `git -C "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/{repo}" fetch origin && git -C "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/{repo}" checkout main && git -C "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/{repo}" pull`.
+- **Read the runbook INDEX** at `$GREYBEARD_DATA/output/on-call/runbooks/{repo}/INDEX.md`.
 
 ### Phase 1b — Classify and match
 
@@ -36,14 +36,14 @@ Then check the runbook INDEX for a matching scenario. **If there is an exact mat
 
 ### Phase 1c — Investigate (parallelize where possible)
 
-- **Search the codebase** in `../greybeard-data/sources/{repo}/` — find related models, controllers, services, jobs. If the affected area is inside `domains/`, read that domain's `CLAUDE.md`. Cross-reference the knowledge-extraction domain record at `../greybeard-data/output/knowledge-extraction/{repo}/domains/{domain}.md` for business-logic context.
+- **Search the codebase** in `$GREYBEARD_DATA/sources/{repo}/` — find related models, controllers, services, jobs. If the affected area is inside `domains/`, read that domain's `CLAUDE.md`. Cross-reference the knowledge-extraction domain record at `$GREYBEARD_DATA/output/knowledge-extraction/{repo}/domains/{domain}.md` for business-logic context.
 - **Check recent changes** for the affected paths:
-  - `git -C ../greybeard-data/sources/{repo} log --oneline --since="2 weeks ago" -- <paths>`
+  - `git -C "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/{repo}" log --oneline --since="2 weeks ago" -- <paths>`
   - `gh pr list --state merged --search "<keywords>" --limit 5` (run from the repo clone)
   - If relevant, read the diff; note whether the fix is deployed or only on `main`.
 - **Search similar past tickets** with `mcp__atlassian__searchJiraIssuesUsingJql` (`cloudId: "sanabenefits.atlassian.net"`). Build JQL from summary terms, e.g. `project = ER AND status = Done AND summary ~ "extend plan" ORDER BY created DESC`. Read the resolution (usually in the comments) of the top 2–3. If a match carries an `ER-*.md` attachment, download and read it.
 - **Identify escalation contacts:**
-  - Git expertise: `git -C ../greybeard-data/sources/{repo} log --since="6 months ago" --format='%an' -- <paths> | sort | uniq -c | sort -rn | head -5`.
+  - Git expertise: `git -C "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/{repo}" log --since="6 months ago" --format='%an' -- <paths> | sort | uniq -c | sort -rn | head -5`.
   - Past handlers: the `assignee` of similar resolved ER tickets.
   - Static map: `context/ESCALATION-MAP.md` for non-code contacts (finance, ops).
 

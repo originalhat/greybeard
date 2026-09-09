@@ -2,8 +2,8 @@
 
 - **Role:** Design Consistency Analyst
 - **Model:** Opus (vision capabilities required)
-- **Input:** `../greybeard-data/output/design-audit/{repo}/inventory.md` + `../greybeard-data/output/design-audit/{repo}/screenshots/` + `lenses/`
-- **Output:** `../greybeard-data/output/design-audit/{repo}/findings.md` (following `templates/findings.md`)
+- **Input:** `$GREYBEARD_DATA/output/design-audit/{repo}/inventory.md` + `$GREYBEARD_DATA/output/design-audit/{repo}/screenshots/` + `lenses/`
+- **Output:** `$GREYBEARD_DATA/output/design-audit/{repo}/findings.md` (following `templates/findings.md`)
 
 ## Mission
 

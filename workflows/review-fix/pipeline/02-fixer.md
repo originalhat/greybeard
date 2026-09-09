@@ -40,7 +40,7 @@ Make every fix in this round before checking any of them. Once they're all appli
 ### Step 6: Commit
 
 ```bash
-cd ../greybeard-data/sources/{repo}
+cd "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/{repo}"
 git add {changed files}
 git commit -m "review-fix: address review findings — {one-line summary}
 

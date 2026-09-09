@@ -2,8 +2,8 @@
 
 **Role:** Repo Structure Analyst and Work Partitioner
 **Model:** Sonnet
-**Input:** A target repo under `../greybeard-data/sources/{repo}/`
-**Output:** `../greybeard-data/output/security-testing/{repo}/segment-manifest.md`
+**Input:** A target repo under `$GREYBEARD_DATA/sources/{repo}/`
+**Output:** `$GREYBEARD_DATA/output/security-testing/{repo}/segment-manifest.md`
 
 ## Mission
 

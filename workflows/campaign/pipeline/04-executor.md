@@ -64,7 +64,7 @@ If the item does not yet satisfy all criteria and you cannot complete it, do not
 If the item is complete:
 
 ```bash
-cd ../greybeard-data/sources/{repo}
+cd "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/{repo}"
 git add {changed files}
 git commit -m "{campaign-name}: {brief description of what was done to this item}
 

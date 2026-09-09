@@ -1,6 +1,6 @@
 # Review Report Format
 
-The canonical output format for the code-review workflow. Both `workflows/code-review/CLAUDE.md` and the `/review` skill point here — edit this file, not the copies.
+The canonical output format for the code-review workflow. Both `${CLAUDE_PLUGIN_ROOT}/workflows/code-review/CLAUDE.md` and the `/review` skill point here — edit this file, not the copies.
 
 The reader is the engineer who wrote the code. They want to know **what breaks, who feels it, and what to do**, in that order. They do not want to reverse-engineer impact from a call chain. Depth is available on request; it is never the opening move.
 

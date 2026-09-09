@@ -27,7 +27,7 @@ Run the standard Greybeard code review against the batch branch:
 review campaign/{name}/batch-{N} in {repo}
 ```
 
-This evaluates the batch diff against all applicable lenses in `workflows/code-review/lenses/` and the repo-specific context in `workflows/code-review/context/`.
+This evaluates the batch diff against all applicable lenses in `${CLAUDE_PLUGIN_ROOT}/workflows/code-review/lenses/` and the repo-specific context in `${CLAUDE_PLUGIN_ROOT}/workflows/code-review/context/`.
 
 Read the full review output before proceeding.
 
@@ -67,7 +67,7 @@ Write a summary that tells the human reviewer exactly what to look at. This goes
 
 ## Output Format
 
-Write a review summary to `../greybeard-data/output/campaigns/{repo}/{campaign-name}/batch-{N}-review.md`:
+Write a review summary to `$GREYBEARD_DATA/output/campaigns/{repo}/{campaign-name}/batch-{N}-review.md`:
 
 ```markdown
 # Batch {N} Review Summary

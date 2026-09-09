@@ -2,8 +2,8 @@
 
 - **Role:** Design Spec Author
 - **Model:** Opus
-- **Input:** `../greybeard-data/output/design-audit/{repo}/inventory.md` + `../greybeard-data/output/design-audit/{repo}/findings.md` + `../greybeard-data/sources/{repo}/`
-- **Output:** `../greybeard-data/output/design-audit/{repo}/design-spec.md` + `../greybeard-data/output/design-audit/{repo}/.design-state.json`
+- **Input:** `$GREYBEARD_DATA/output/design-audit/{repo}/inventory.md` + `$GREYBEARD_DATA/output/design-audit/{repo}/findings.md` + `$GREYBEARD_DATA/sources/{repo}/`
+- **Output:** `$GREYBEARD_DATA/output/design-audit/{repo}/design-spec.md` + `$GREYBEARD_DATA/output/design-audit/{repo}/.design-state.json`
 
 ## Mission
 

@@ -16,7 +16,7 @@ design-audit/
 └── templates/          # Output format templates
 ```
 
-Output lives at `../greybeard-data/output/design-audit/{repo}/`:
+Output lives at `$GREYBEARD_DATA/output/design-audit/{repo}/`:
 ```
 {repo}/
 ├── .design-state.json
@@ -27,12 +27,12 @@ Output lives at `../greybeard-data/output/design-audit/{repo}/`:
 
 ## Inputs
 
-- A frontend repository cloned under `../greybeard-data/sources/{repo}/`
+- A frontend repository cloned under `$GREYBEARD_DATA/sources/{repo}/`
 - Optionally: a running dev server or deployed URL for visual capture
 
 ## Outputs
 
-All outputs live under `../greybeard-data/output/design-audit/{repo}/`:
+All outputs live under `$GREYBEARD_DATA/output/design-audit/{repo}/`:
 
 | File | Description |
 |------|-------------|
@@ -60,7 +60,7 @@ The `design-spec.md` is the canonical artifact. The code-review `DESIGN-CONSISTE
 
 ### Steps
 
-1. Clone or verify repo under `../greybeard-data/sources/{repo}/`
+1. Clone or verify repo under `$GREYBEARD_DATA/sources/{repo}/`
 2. **Parallel**: Run Phase 1 (Inventorier) and Phase 2 (Screenshotter)
    - Phase 2 requires a running app — if unavailable, skip and proceed static-only
 3. Run Phase 3 (Analyzer) against inventory, screenshots (if available), and each lens
@@ -120,4 +120,4 @@ Visual analysis uses Claude vision API calls. Approximate cost for a full audit:
 
 - Playwright is required for Phase 2 (visual capture). Install: `npm i -D playwright @playwright/test`
 - The design-spec.md should be treated as a living document — re-audit after major UI changes
-- Lenses here are audit-specific. The code-review lens (`DESIGN-CONSISTENCY-REVIEWER`) is separate and lives in `workflows/code-review/lenses/`
+- Lenses here are audit-specific. The code-review lens (`DESIGN-CONSISTENCY-REVIEWER`) is separate and lives in `${CLAUDE_PLUGIN_ROOT}/workflows/code-review/lenses/`

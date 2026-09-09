@@ -35,37 +35,37 @@ Before writing the strategy, check for relevant existing workflow output AND arc
 
 **Archetype gotchas** (always check first):
 ```bash
-ls workflows/campaign/context/
+ls ${CLAUDE_PLUGIN_ROOT}/workflows/campaign/context/
 ```
 Each file is named for the campaign pattern it covers (e.g., `DOMAIN-REFACTOR-GOTCHAS.md`). Identify the archetype that matches this campaign and read that file in full. It contains predictive guidance — pitfalls, suggested done criteria, edge cases — distilled from prior campaigns of the same shape. Bake the relevant points into the strategy: done criteria, recipe steps, and the edge-case catalog.
 
 **Repo-specific learnings** (always check):
 ```bash
-ls ../greybeard-data/output/campaigns/{repo}/_learnings.md
+ls "${GREYBEARD_DATA:-$HOME/.greybeard-data}/output/campaigns/{repo}/_learnings.md"
 ```
 If present, this is accumulated context from prior campaigns in this specific repo: file paths, class names, conventions, codebase quirks. Read it before writing the strategy — it'll spare you discovering the same things the hard way.
 
 **Knowledge extraction** (relevant for DDD campaigns, architectural restructuring):
 ```bash
-ls ../greybeard-data/output/knowledge-extraction/{repo}/
+ls "${GREYBEARD_DATA:-$HOME/.greybeard-data}/output/knowledge-extraction/{repo}/"
 ```
 If domain records exist, read them. They are the authority on intended bounded contexts, naming conventions, and what belongs where.
 
 **Design audit** (relevant for design system adoption campaigns):
 ```bash
-ls ../greybeard-data/output/design-audit/{repo}/
+ls "${GREYBEARD_DATA:-$HOME/.greybeard-data}/output/design-audit/{repo}/"
 ```
 If a design spec exists, read it. It defines the target design system tokens and component patterns.
 
 **Existing campaign** (if this is a resumption of a previous effort):
 ```bash
-ls ../greybeard-data/output/campaigns/{repo}/
+ls "${GREYBEARD_DATA:-$HOME/.greybeard-data}/output/campaigns/{repo}/"
 ```
 If a previous campaign exists for a similar goal, read its strategy as a starting point.
 
 **After the campaign finishes, contribute back:**
-- Generic, repo-agnostic learnings → add or update an archetype file in `workflows/campaign/context/`
-- Repo-specific learnings → append to `../greybeard-data/output/campaigns/{repo}/_learnings.md`
+- Generic, repo-agnostic learnings → add or update an archetype file in `${CLAUDE_PLUGIN_ROOT}/workflows/campaign/context/`
+- Repo-specific learnings → append to `$GREYBEARD_DATA/output/campaigns/{repo}/_learnings.md`
 
 ### Step 3: Define Done Criteria
 
@@ -123,7 +123,7 @@ Examples: `js-to-ts`, `design-system-adoption`, `ddd-claims`, `add-test-coverage
 
 ## Output Format
 
-Write `campaign-strategy.md` to `../greybeard-data/output/campaigns/{repo}/{campaign-name}/`:
+Write `campaign-strategy.md` to `$GREYBEARD_DATA/output/campaigns/{repo}/{campaign-name}/`:
 
 ```markdown
 # Campaign Strategy: {Campaign Name}

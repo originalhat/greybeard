@@ -21,14 +21,14 @@ Reuses, unmodified: `../code-review/lenses/`, `../code-review/context/`, `../cod
 
 Triggered by **`review --fix`** (current branch) or **`review --fix <branch> in <repo>`**.
 
-- The current git checkout, under `../greybeard-data/sources/{repo}/`. Unlike plain `review`, this is never a PR URL for someone else's fork — `review-fix` commits to the branch it runs against, so it only ever runs on a branch you can write to.
+- The current git checkout, under `$GREYBEARD_DATA/sources/{repo}/`. Unlike plain `review`, this is never a PR URL for someone else's fork — `review-fix` commits to the branch it runs against, so it only ever runs on a branch you can write to.
 - Everything plain `review` needs: fetched `origin/main`, a three-dot diff, optional PR context.
 
 ## Outputs
 
 - Local commits on the branch — one per fix round, kept separate from the author's original commits.
 - A final report in `REPORT-FORMAT.md`'s shape, covering whatever `ask-user` findings are still open after the loop stops, prefixed with a short "Auto-fixed" table of what was resolved automatically.
-- A run record at `../greybeard-data/output/code-review/{repo}/fix-runs/{branch}-{timestamp}.md` per `templates/FIX-RUN-RECORD.md` — rounds run, per-round counts, commits created, final status. One-shot audit trail, not resumable state; there is no catch-up mode for this workflow.
+- A run record at `$GREYBEARD_DATA/output/code-review/{repo}/fix-runs/{branch}-{timestamp}.md` per `templates/FIX-RUN-RECORD.md` — rounds run, per-round counts, commits created, final status. One-shot audit trail, not resumable state; there is no catch-up mode for this workflow.
 - Never a push. The branch stays local until the human pushes it.
 
 ## Execution

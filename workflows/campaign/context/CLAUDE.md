@@ -2,7 +2,7 @@
 
 Archetype-specific gotchas, patterns, and pitfalls that apply to common kinds of refactoring campaigns. These are **general** — they apply to any codebase doing this kind of work, not just any one repo.
 
-Repo-specific learnings (file paths, class names, table specifics, codebase conventions) live separately under `../greybeard-data/output/campaigns/{repo}/_learnings.md` so private context stays out of the public greybeard repo.
+Repo-specific learnings (file paths, class names, table specifics, codebase conventions) live separately under `$GREYBEARD_DATA/output/campaigns/{repo}/_learnings.md` so private context stays out of the public greybeard repo.
 
 ## Contents
 

@@ -36,14 +36,15 @@ Every workflow CLAUDE.md should include:
 
 ## Adding a New Workflow
 
-1. Create a new directory under `workflows/`
+1. Create a new directory under `${CLAUDE_PLUGIN_ROOT}/workflows/`
 2. Add a `CLAUDE.md` with the sections above
 3. Organize components into logical subdirectories
-4. Update the root `CLAUDE.md` to list the new workflow
+4. Add a matching `skills/<workflow-name>/SKILL.md` entry point (YAML frontmatter `name` + a `description` carrying the trigger words; body points at the workflow `CLAUDE.md`)
+5. Update the root `CLAUDE.md` routing table to list the new workflow
 
 ## Shared Resources
 
 All workflows can access:
-- `../greybeard-data/sources/` — Cloned repositories for domain knowledge
-- `../greybeard-data/output/` — Workflow output (per-workflow, per-repo)
-- `sketches/` — Draft ideas (read-only reference)
+- `$GREYBEARD_DATA/sources/` — Cloned repositories for domain knowledge (default `~/.greybeard-data/`; override with `$GREYBEARD_DATA`)
+- `$GREYBEARD_DATA/output/` — Workflow output (per-workflow, per-repo)
+- `${CLAUDE_PLUGIN_ROOT}/sketches/` — Draft ideas (read-only reference)

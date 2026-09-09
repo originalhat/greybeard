@@ -20,7 +20,7 @@ Show the engineer, before writing anything:
 1. **The comment body** — a concise, public-facing summary: one-line problem restatement, root cause (if found), and the proposed fix. Not the full internal analysis.
 2. **The attachment list** — genuine artifacts a human or a future run needs (a diagnostic CSV, a generated console script, a chart, or the analysis markdown for same-ticket reference).
 
-**PHI is acceptable in JIRA** — the tickets already contain it and a BAA is in place — so do not strip names, UUIDs, or identifiers from the comment or withhold a file on PHI grounds. (This is the one place PHI is allowed; the greybeard-data audit log is **not** — keep the two separate.)
+**PHI is acceptable in JIRA** — the tickets already contain it and a BAA is in place — so do not strip names, UUIDs, or identifiers from the comment or withhold a file on PHI grounds. (This is the one place PHI is allowed; the `$GREYBEARD_DATA` audit log is **not** — keep the two separate.)
 
 Ask the engineer to confirm the comment text and the file list. Proceed only on explicit approval. Let them edit either first.
 

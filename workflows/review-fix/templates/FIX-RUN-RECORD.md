@@ -1,6 +1,6 @@
 # Fix Run Record
 
-The audit record for one `review-fix` run. Written once, at the end of the run, to `../greybeard-data/output/code-review/{repo}/fix-runs/{branch}-{timestamp}.md`.
+The audit record for one `review-fix` run. Written once, at the end of the run, to `$GREYBEARD_DATA/output/code-review/{repo}/fix-runs/{branch}-{timestamp}.md`.
 
 Unlike `.scan-state.json` or `.campaign-state.json`, this is not read back in on a later run — there is no catch-up mode for `review-fix`. Each run is a one-shot loop against the branch as it stood when it started; the record exists so a human (or a later conversation) can see what happened without re-deriving it from git history.
 

@@ -58,7 +58,7 @@ If nothing was auto-fixed across any round, state that in one line instead of an
 
 ### Step 6: Write the Run Record
 
-Write `../greybeard-data/output/code-review/{repo}/fix-runs/{branch}-{timestamp}.md` per `../templates/FIX-RUN-RECORD.md` — every round's counts, commits created, and the final status (`clean`, `capped`, or `parked`).
+Write `$GREYBEARD_DATA/output/code-review/{repo}/fix-runs/{branch}-{timestamp}.md` per `${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/templates/FIX-RUN-RECORD.md` — every round's counts, commits created, and the final status (`clean`, `capped`, or `parked`).
 
 ---
 

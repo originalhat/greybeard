@@ -10,7 +10,7 @@ Ticket ID and the triage analysis / actual resolution (what the engineer really 
 
 ### Phase 3a — Write the audit entry (always)
 
-Write `../greybeard-data/output/on-call/audit/{YYYY}/{MM}/<TICKET-ID>.md` using `templates/audit-entry.md`. Create the `{YYYY}/{MM}` directory if needed (bucket by resolution date).
+Write `$GREYBEARD_DATA/output/on-call/audit/{YYYY}/{MM}/<TICKET-ID>.md` using `templates/audit-entry.md`. Create the `{YYYY}/{MM}` directory if needed (bucket by resolution date).
 
 **This file must be PHI-free.** Record the *shape* of the problem and the fix, not the identifiers:
 - ✅ ticket ID, date, repo(s), domain, ticket type, generalized symptom, root cause, the fix pattern (which runbook + generalized approach), risk, outcome, escalation contacts used (internal staff names OK).
@@ -38,7 +38,7 @@ Follow `context/RUNBOOK-AUTHORING.md` and `templates/runbook-scenario.md`. Key p
 - **One scenario per file**, short and self-contained. If it's growing past a screen or two, it's probably two scenarios.
 - Place it in the closest **domain folder** under `runbooks/{repo}/{domain}/`. Check `INDEX.md` for precedent; don't invent a new folder without cause.
 - **Generalize member examples** — use the `var = nil # fill in: …` convention; no real PHI.
-- **Verify every code reference against the current code** in `../greybeard-data/sources/{repo}/` before writing it down. Record the repo SHA you verified against as `last_verified`.
+- **Verify every code reference against the current code** in `$GREYBEARD_DATA/sources/{repo}/` before writing it down. Record the repo SHA you verified against as `last_verified`.
 - Cross-link related scenarios with relative links.
 
 ### Phase 3d — Update the INDEX and state file
