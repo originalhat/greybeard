@@ -1,3 +1,5 @@
 .playwright-mcp/
 .claude/
 .DS_Store
+.bb/
+skills/triage/
