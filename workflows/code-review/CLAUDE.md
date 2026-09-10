@@ -46,6 +46,12 @@ For each failure, in order:
 3. **Revise on feedback.** If the user rewrites or asks for tone changes, re-draft and re-present. If they push back on whether the finding is real or in scope ("was this pre-existing?"), verify against `origin/main` and drop or reclassify rather than defending it.
 4. **Post on approval** as an inline PR review comment via `gh api repos/{owner}/{repo}/pulls/{n}/comments`, anchored at the `file:line` held from step 8, with the PR's head SHA as `commit_id`. Print the returned `html_url`.
 5. **Move to the next** finding without waiting for a nudge.
+6. **When the author replies, test the reply before answering it.** Fetch the thread with `gh api repos/{owner}/{repo}/pulls/{n}/comments` and read the `in_reply_to_id` chain. Author pushback comes in three shapes, and each has its own test:
+   - *"That is pre-existing"* or *"that is out of scope."* Go find the recovery path or the prior behavior in the repo. If it is there, concede in one line and stop. Do not restate the conceded point in softer words.
+   - *"The other thing is wrong, not this."* Work out which rule is authoritative, the same way step 8b does. If the author is right, the finding inverts rather than disappears: the inconsistency is real, it points at the code they named, and it becomes a follow-up instead of a change to this PR.
+   - *"That is intentional."* Look for the comment, the doc, or the test that says so. Design intent that lives only in a PR reply is worth one question about where it is written down.
+
+   After conceding anything, re-read the findings still open. A conceded premise usually promotes one of them — if the author is right that the gate is wrong, then every path that skips that gate matters more than it did, not less.
 
 **Voice rules for interactive drafts** (do not restyle):
 
@@ -63,7 +69,7 @@ For each failure, in order:
 ### Model Tiers
 
 - **Steps 5–6 (Evaluation):** Fast, economical mid-tier model (currently Sonnet) — pattern matching against lenses and context, fast and parallelizable
-- **Steps 8–9 (Fact-Check, Cross-Repo):** Most capable available frontier model — requires judgment, cross-referencing, and contextual reasoning
+- **Steps 8, 8b, 9 (Fact-Check, Falsify, Cross-Repo):** Most capable available frontier model — requires judgment, cross-referencing, and contextual reasoning
 
 ### Steps
 
@@ -78,6 +84,13 @@ These steps are **strictly sequential** — do not start a step until all prior 
 6. **Context Evaluation** (mid-tier model): Run `context/` criteria against the diff (include PR context from step 4 and repo docs from step 4b if available). Evaluate the repo docs from step 4b as context files in their own right: an invariant stated in a domain `CLAUDE.md` that the diff violates is a finding, with the doc's path in place of a lens name.
 7. **Report**: Aggregate findings from steps 5–6. Wait for both to complete before proceeding.
 8. **Fact-Check** (frontier model): Verify each finding from step 7 in the actual repo to ensure contextual correctness. Do not start until step 7 is complete. Discard anything that doesn't hold up — an unconfirmed finding is dropped, not hedged. Also check the PR description's **premises** against the repo docs from step 4b and the models the diff touches: a claim like "brokers no-op naturally" or "X is the stale copy" that the code or a domain `CLAUDE.md` contradicts is itself a finding, ranked by the consequence of the code having been written on that premise. For each finding that survives, determine whether it's pre-existing: check whether its file:line falls inside a hunk this branch's diff actually touches (`git diff origin/main...HEAD -- {file}`); if it doesn't, confirm the branch didn't add a new caller, remove a guard, or otherwise make the defect newly reachable before marking it pre-existing. This determination happens once, centrally, here — not per-lens.
+8b. **Falsify** (frontier model): Step 8 confirms a finding is internally consistent. This step tries to break it. For each surviving finding, write down the one fact that would make it false, then go look for that fact. Two failure modes recur and are worth naming:
+
+   - **Escape hatch.** A finding that says a user is stuck, blocked, never prompted again, or has no way to recover is a claim about *every* path, not the one you read. Search for the recovery by the **state the user is in**, not by the field the finding named — a member with no patient record is found by `patient.nil?`, not by the consent timestamp. Cross the language boundary while you look: the backend sets a flag, and the React bundle that recovers from it often keys off something else entirely, in a different directory, with a different name. If any path lets the user out, the finding is a severity downgrade at most, and usually a drop.
+   - **Assumed authority.** A finding of the form "this diverges from how X already works" is only as good as X. Confirm X is the rule that actually governs the capability, not the nearest predicate with a matching name. A dashboard flag and an eligibility service can disagree about who gets access, and when they do, the one the diff contradicts may be the wrong one. Read the comments around X before trusting it — a deliberate divergence is usually documented right there, in the file you are about to cite as the spec.
+
+   A finding that fails falsification is dropped, not softened. Dropping one is not free: when a finding rested on a premise you just removed, re-rank everything that shared it before step 10. A finding ranked low because the main gate looked correct gets promoted the moment that gate turns out to be wrong.
+
 9. **Cross-Repo Analysis** (frontier model): If needed, check related repos in `$GREYBEARD_DATA/sources/` for breaking changes (see below)
 10. **Final Summary**: Write the report per `templates/REPORT-FORMAT.md`. Pre-existing findings go in their own section, ranked last, never counted as a failure or nit. Retain each finding's `file:line`, call path, and suggested fix in context to answer follow-ups — none of it goes in the report.
 
@@ -113,6 +126,7 @@ Repo and team-specific criteria:
 ## Notes
 
 - **Output format is fixed**: `templates/REPORT-FORMAT.md`. Impact in the heading, context then consequence in the body, one-sentence Fix, lens name in the footer. Number the failures, tally the passes, then list the nits one line each, then any pre-existing findings one line each. Never enumerate all lenses.
+- **Fact-check confirms; step 8b tries to falsify.** These are different jobs and the second one is the one that gets skipped. Confirming a mechanism is easy and feels like verification. The finding still dies if some other path recovers the user, or if the behavior it calls a divergence is the correct one. Name the falsifier, go look for it, and drop what fails.
 - **Pre-existing findings are determined in fact-check, not per-lens**: a finding is pre-existing if its file:line isn't part of this branch's diff and the branch didn't newly expose or make it reachable. It's real, but it isn't this PR's to fix, so it ranks last and is never counted as a failure or nit.
 - **No metaphors in findings.** No "blast radius", "retry storm", "footgun". Say what happens. Short active sentences, one term per concept.
 - Lenses are designed to be quickly skimmable (all under 100 lines)
