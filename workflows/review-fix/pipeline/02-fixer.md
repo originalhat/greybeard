@@ -29,18 +29,22 @@ For each finding, read the surrounding code — not just the flagged line — be
 
 If the original change added something on purpose, fix it forward — add validation, handle the edge case, tighten the logic — rather than deleting it. If the original change intentionally removed or simplified something, don't restore it unless the finding is a genuine correctness, reliability, or security issue and the smallest fix happens to reintroduce a small amount of what was removed. When you can't tell whether code is intentional, leave it and report the finding as unresolved rather than guessing.
 
-### Step 4: No Comments Explaining the Fix
+### Step 4: Fix Propagation, Never Bypass the Canonical Record
+
+If a finding says a value is stale on the record the code reads from, and a related record has the fresher value, the fix is to make the fresher value **flow into** the canonical record — add the field to the existing propagation (`update_individual!`-style sync, callback, denormalizer). Do not change the read to the other record, and do not add an `a || b` fallback chain between associations. Reading around the canonical record leaves every other reader stale and turns one source of truth into two. If you cannot find the propagation path, or adding the field to it would be new machinery, stop and report the finding as `ask-user` instead.
+
+### Step 5: No Comments Explaining the Fix
 
 Match the repo's existing comment density. Don't narrate what you changed or why in the code itself — that belongs in the commit message.
 
-### Step 5: Apply Every Fix First, Then One Focused Check
+### Step 6: Apply Every Fix First, Then One Focused Check
 
 Make every fix in this round before checking any of them. Once they're all applied, do one focused check limited to the files and tests you touched — read them back, run the relevant test file if one exists. `review-fix` has no test or lint execution step of its own; it doesn't run the full suite, and it doesn't substitute for CI.
 
-### Step 6: Commit
+### Step 7: Commit
 
 ```bash
-cd "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/{repo}"
+cd ../greybeard-data/sources/{repo}
 git add {changed files}
 git commit -m "review-fix: address review findings — {one-line summary}
 
@@ -72,5 +76,6 @@ And any finding you could not resolve as handed:
 - **Fix what you were handed. Don't go finding more.** New issues you notice along the way get reported, not fixed in this round — they'll surface (or not) in the next re-review.
 - **No verification between individual fixes.** Apply all of them, then check once.
 - **Never run the full test or lint suite.** That's not this workflow's job.
+- **Never switch a read source or a trigger to fix staleness.** Propagate into the canonical record, or hand it back as `ask-user`.
 - **One commit per round, always separate from the author's commits.**
 - **If a fix would need to be broader than what Step 2 allows, don't build it — report the finding as unresolved instead.**

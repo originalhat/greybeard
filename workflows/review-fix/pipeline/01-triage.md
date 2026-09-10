@@ -25,6 +25,7 @@ For each finding, ask: **what would actually have to change to fix this?** — n
 
 - **`auto-fix`** — the remedy is non-functional and doesn't touch product behavior: a missing null check, an unhandled error path, a security bug that's fixed by hardening existing logic, an unmemoized calculation, a duplicated block, an unclear name. Fixable with no discussion of what the author intended.
 - **`ask-user`** — the finding challenges the author's deliberate intent, or its smallest honest remedy would **extend** the change rather than correct it: new durable state, a schema change, new background/retry/persistence machinery, a new subsystem, a hardcoded value someone might argue should stay hardcoded. Classify by the remedy even when the defect itself looks mechanical — if fixing it right means building something new, that decision belongs to the human. When genuinely in doubt, choose `ask-user`.
+- **`ask-user`, always: source-of-truth and trigger changes.** A remedy that changes **which record a value is read from** (`patient.individual` → `patient.member || patient.individual`), or **which event, callback, or scope fires a behavior**, is a data-model decision even when the finding frames it as correctness ("X is stale", "Y is the fresher source"). These remedies pick winners between records that can disagree, and the wrong pick overwrites current data for populations the finding never mentioned. Route them to the human with the finding's evidence attached; never auto-apply.
 - **`no-op`** — informational only. A nit that notes a pattern or acknowledges a tradeoff with nothing to act on.
 
 ### Step 3: Treat Nits as Auto-Fix Candidates by Default
@@ -56,6 +57,7 @@ For any finding whose file:line falls inside a commit from a prior `review-fix` 
 ## Rules
 
 - **Classify by remedy, not by how the finding reads.** A one-line diff that papers over a missing subsystem is still `ask-user`.
+- **A one-line change to a read source or a trigger is still `ask-user`.** `a || b` fallbacks between associations and swapped event subscriptions are the two shapes that look mechanical and are not.
 - **When in doubt, `ask-user`.** A wrongly-parked mechanical fix costs the human thirty seconds. A wrongly-auto-fixed intent call costs a silent behavior change.
 - **Don't re-litigate the finding.** Fact-checking already happened in `review`. You are routing, not re-reviewing.
 - **Every finding gets exactly one classification.** No finding is both `auto-fix` and `ask-user`.

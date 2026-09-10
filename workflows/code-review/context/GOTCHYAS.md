@@ -74,3 +74,24 @@ When reviewing a new `PatientApi::*Controller` action (or any flow where a patie
 If the PR adds a new "patient submits X" flow and none of the above are present, the care request will silently disappear from the provider queue after submission (this exact bug shipped in PROD-1684).
 
 The longer-term fix is to move action-item creation into model `after_commit` callbacks on the submission model itself (e.g. `Patients::MentalHealthScreening`, `QuestionSet`) so future submission types only need a model-level invariant rather than controller discipline.
+
+### origami_claims: `Individual` Is the Person. `Member`, `Dependent`, `Broker`, `Admin` Are Roles.
+
+In `origami_claims`, `Groups::Models::Individual` is the one row per human. `Member`, `Dependent`, `Broker`, and `Admin` are roles that hang off it (`Individual has_many :members / :dependents / :brokers / :admins`), and one person can hold several over time (a member at two companies) or none of them.
+
+**Anything keyed to a person hangs off `Individual`, not off a role.** `SanaCare::Models::Patient` `belongs_to :individual` (required); `member` and `dependent` are optional and are only the role that existed when the patient was created. `Patient.for` accepts only an `Individual`. Phones and addresses resolve through `owner.individual`.
+
+**Populations that have an `Individual` and a Sana Care `Patient` but no `Member` row:**
+- **Brokers** — `Patient.create_through_api!` is called with `person: nil` and writes `external_id: 'BROKER'`; consent lives in `Individual#sc_broker_consent_at`.
+- **SCaaSA standalone registrants** — `Individual#standalone?` (no member, dependent, admin, or broker) with `sc_standalone_consent_at`; reconciled via `IndividualReconciliation` state `scaasa_access`.
+
+Shipped as review feedback on PR #9049 (PROD-2097): the Care Platform demographic sync subscribed to `MemberUpdatedEvent` / `DependentUpdatedEvent`, so brokers and SCaaSA registrants never synced. The `review --fix` pass then changed the worker to read `patient.member || patient.dependent || patient.individual`, which reads a possibly terminated or superseded role row and would overwrite current data on CP. The correct shape was an `IndividualUpdatedEvent` and a payload built from `patient.individual`.
+
+When reviewing anything that syncs, notifies, or recalculates for a person:
+
+1. The trigger is on `Individual` (an `Individual*Event` or an `Individual` callback), or the PR explains why a role-only trigger is correct for every population above.
+2. The payload reads from `patient.individual` / `owner.individual`, never from `patient.member || ...` fallbacks. Any `member || dependent || individual` chain is a finding.
+3. `Member`/`Dependent` edits reach `Individual` only through `Groups::Models::Concerns::Person#update_individual!`. If a field the sync needs is missing there (sex was, until #9049), add it to `update_individual!`. Do not read the role directly to get a "fresher" value — that re-splits the source of truth.
+4. Specs cover at least one `Patient` with `member: nil, dependent: nil`.
+
+See the `TRIGGER-COVERAGE` lens for the general form.
