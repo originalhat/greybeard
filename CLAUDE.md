@@ -46,6 +46,7 @@ greybeard/
 │   ├── review-fix/              # Loop-based auto-fix on top of code review
 │   │   ├── pipeline/            # 3-phase triage → fix → gate loop
 │   │   └── templates/           # Fix-run audit record format
+│   ├── implement/               # Ticket/requirements → TDD → review --fix → browser validation
 │   ├── knowledge-extraction/    # Business logic documentation pipeline
 │   │   ├── pipeline/            # 5-phase extraction process
 │   │   └── templates/           # Output templates
@@ -78,6 +79,7 @@ The leading word routes the request to a workflow. Match on it directly.
 | `review` | Code Review | `code-review` | `review https://github.com/sana/origami_claims/pull/8842` |
 | `review --fix` | Code Review — Auto-Fix | `code-review` (`--fix`) | `review --fix` (current branch) |
 | `review --interactive` | Code Review — Interactive | `code-review` (`--interactive`) | `review --interactive` |
+| `implement` | Implement | `implement` | `implement https://sanabenefits.atlassian.net/browse/ER-1477` |
 | `triage` | On-Call | `on-call` | `triage https://sanabenefits.atlassian.net/browse/ER-1477` |
 | `extract knowledge from` | Knowledge Extraction | `knowledge-extraction` | `extract knowledge from care_platform` |
 | `pen test` | Security Testing | `security-testing` | `pen test origami_claims` |
@@ -94,6 +96,9 @@ Runs the same lenses and context as `review`, but instead of stopping at a repor
 
 ### Code Review — Interactive Mode
 Runs the review, prints the report, then walks failures one by one — drafting a PR review comment in the user's voice (concise, question-framed, user-impact focused), revising on feedback, and posting inline to GitHub only after approval. Skips pre-existing findings; nits skipped by default. `review --interactive`. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/code-review/CLAUDE.md`.
+
+### Implement
+Takes a ticket or a set of requirements and turns it into working, tested, reviewed code on a branch — test-first (red then green, testing behavior not implementation), then reviewed and auto-fixed via `review --fix`, then, when the change is reachable through a UI, checked by a subagent driving a real browser. `implement <Jira ticket URL | ticket ID | GitHub issue URL | freeform requirements>`, optionally `in <repo>`. Never pushes, never opens a PR. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/implement/CLAUDE.md`.
 
 ### Knowledge Extraction
 Extracts business logic from code into structured documentation. `extract knowledge from <repo>` / `catch up knowledge for <repo>`. 5-phase pipeline → domain records, ubiquitous language, open questions. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/knowledge-extraction/CLAUDE.md`.

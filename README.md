@@ -7,11 +7,12 @@ AI-powered workflows centered around code. Installable as a [Claude Code](https:
 Greybeard is a collection of structured AI agent workflows that help you:
 
 1. **Review code** against technical best practices and team-specific context
-2. **Extract knowledge** from codebases into living documentation
-3. **Security test** repositories against 17 focused security lenses
-4. **Audit design** consistency across frontend codebases
-5. **Run campaigns** — systematic large-scale refactoring across many files over multiple sessions
-6. **Triage on-call tickets** — investigate incidents, propose fixes, and turn each resolution into durable runbooks
+2. **Implement tickets** — requirements in, a test-first, reviewed, browser-checked branch out
+3. **Extract knowledge** from codebases into living documentation
+4. **Security test** repositories against 17 focused security lenses
+5. **Audit design** consistency across frontend codebases
+6. **Run campaigns** — systematic large-scale refactoring across many files over multiple sessions
+7. **Triage on-call tickets** — investigate incidents, propose fixes, and turn each resolution into durable runbooks
 
 Each workflow is a set of prompts and templates that guide AI agents through multi-stage analysis.
 
@@ -142,6 +143,23 @@ review <github PR URL>
 **Interactive mode** (`review --interactive`): prints the report, then walks failures 1-by-1 — drafting a PR review comment in your voice (concise, question-framed, user-impact focused), revising on feedback, and posting inline to GitHub only after approval. Skips pre-existing findings; nits skipped by default.
 
 See [`workflows/code-review/`](workflows/code-review/) for details.
+
+### 🛠️ Implement
+
+Takes a ticket or a set of requirements and turns it into working, tested, reviewed code on a branch.
+
+```
+implement <Jira ticket URL | ticket ID | GitHub issue URL | freeform requirements> [in <repo-name>]
+```
+
+**How it works:**
+1. Intake the ticket and investigate the target repo's conventions and existing patterns
+2. Implement test-first, one behavior at a time — red, green, refactor
+3. Commit once the whole suite is green
+4. Run `review --fix` against the branch, then apply any remaining in-scope corrections in a separate commit
+5. When the change has a UI, drive it in a real browser against the acceptance criteria
+
+Never pushes, never opens a PR. See [`workflows/implement/`](workflows/implement/) for details.
 
 ### 📓 Knowledge Extraction
 
