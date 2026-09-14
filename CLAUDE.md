@@ -36,6 +36,8 @@ git clone <repo-url> "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/<repo-nam
 ```
 greybeard/
 ├── .claude-plugin/plugin.json   # Plugin manifest
+├── agents/                      # Custom subagents (canonical Claude Code frontmatter)
+│   └── sync-local.sh            # Generates ~/.claude/agents + ~/.pi/agent/agents copies
 ├── skills/                      # One skill per workflow — auto-activates on its trigger words
 │   └── <workflow>/SKILL.md      # Thin router → workflows/<workflow>/CLAUDE.md
 ├── workflows/                   # Shared instruction tree (lenses, pipelines, templates, context)
