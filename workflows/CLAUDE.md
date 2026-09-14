@@ -22,9 +22,11 @@ Each workflow directory should contain:
 ```
 {workflow-name}/
 ├── CLAUDE.md           # Workflow instructions and execution steps
-├── {components}/       # Workflow-specific modules, phases, or lenses
+├── {components}/       # Workflow-specific modules, phases, or lenses (if applicable)
 └── templates/          # Output format templates (if applicable)
 ```
+
+Both are optional — a workflow simple enough to run from a single file (e.g. `implement/`) can skip them.
 
 ### CLAUDE.md Requirements
 

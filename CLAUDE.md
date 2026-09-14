@@ -1,6 +1,6 @@
 # Greybeard
 
-A multi-workflow system for code review, knowledge extraction, security testing, design analysis, refactoring campaigns, and on-call triage — powered by AI agents. Installable as a Claude Code plugin: install once, run from any project.
+A multi-workflow system for code review, implementation, knowledge extraction, security testing, design analysis, refactoring campaigns, and on-call triage — powered by AI agents. Installable as a Claude Code plugin: install once, run from any project.
 
 ## Data Directory
 
@@ -36,6 +36,7 @@ git clone <repo-url> "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/<repo-nam
 ```
 greybeard/
 ├── .claude-plugin/plugin.json   # Plugin manifest
+├── hooks/hooks.json             # SessionStart hook: creates $GREYBEARD_DATA dirs
 ├── agents/                      # Custom subagents (canonical Claude Code frontmatter)
 │   └── sync-local.sh            # Generates ~/.claude/agents + ~/.pi/agent/agents copies
 ├── skills/                      # One skill per workflow — auto-activates on its trigger words
@@ -61,6 +62,7 @@ greybeard/
 │   │   ├── lenses/              # Design dimension criteria
 │   │   └── templates/           # Output templates
 │   ├── campaign/                # Large-scale refactoring campaign execution
+│   │   ├── context/             # Archetype-specific gotchas
 │   │   └── pipeline/            # 6-phase plan → execute → review cycle
 │   └── on-call/                 # On-call ticket triage + self-improving runbooks
 │       ├── pipeline/            # 5-phase triage → publish → capture → curate → sync

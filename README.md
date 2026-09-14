@@ -40,7 +40,7 @@ Or, for a local clone you're developing against, add it by path instead of by Gi
 Greybeard keeps cloned repos and workflow output outside the plugin, at `$GREYBEARD_DATA/` (defaults to `~/.greybeard-data/`). Set `GREYBEARD_DATA` to relocate it. The data directory is created automatically on the first session after install (a `SessionStart` hook runs `mkdir -p` idempotently), so this step is optional — run it manually only if you want to populate `sources/` before launching Claude:
 
 ```bash
-mkdir -p "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources" "${GREYBEARD_DATA:-$HOME/.greybeard-data}/output"/{knowledge-extraction,security-testing,design-audit,campaigns,on-call}
+mkdir -p "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources" "${GREYBEARD_DATA:-$HOME/.greybeard-data}/output"/{knowledge-extraction,security-testing,design-audit,campaigns,code-review,on-call}
 ```
 
 ### 3. Add your repositories
@@ -72,6 +72,9 @@ Then ask Claude to run a workflow (the leading word routes it):
 ```
 greybeard/
 ├── .claude-plugin/plugin.json   # Plugin manifest
+├── hooks/hooks.json             # SessionStart hook: creates $GREYBEARD_DATA dirs
+├── agents/                      # Custom subagents (canonical Claude Code frontmatter)
+│   └── sync-local.sh            # Generates ~/.claude/agents + ~/.pi/agent/agents copies
 ├── skills/                      # One skill per workflow — auto-activates on its trigger words
 │   └── <workflow>/SKILL.md      # Thin router → workflows/<workflow>/CLAUDE.md
 ├── workflows/                   # Shared instruction tree (lenses, pipelines, templates, context)
@@ -82,6 +85,7 @@ greybeard/
 │   ├── review-fix/              # Loop-based auto-fix on top of code review
 │   │   ├── pipeline/            # 3-phase triage → fix → gate loop
 │   │   └── templates/           # Fix-run audit record format
+│   ├── implement/               # Ticket/requirements → TDD → review --fix → browser validation
 │   ├── knowledge-extraction/    # Business logic documentation pipeline
 │   │   ├── pipeline/            # 5-phase extraction process
 │   │   └── templates/           # Output templates
@@ -94,6 +98,7 @@ greybeard/
 │   │   ├── lenses/              # Design dimension criteria
 │   │   └── templates/           # Output templates
 │   ├── campaign/                # Large-scale refactoring campaign execution
+│   │   ├── context/             # Archetype-specific gotchas
 │   │   └── pipeline/            # 6-phase plan → execute → review cycle
 │   └── on-call/                 # On-call ticket triage + self-improving runbooks
 │       ├── pipeline/            # 5-phase triage → publish → capture → curate → sync
