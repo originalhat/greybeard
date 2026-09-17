@@ -95,3 +95,19 @@ When reviewing anything that syncs, notifies, or recalculates for a person:
 4. Specs cover at least one `Patient` with `member: nil, dependent: nil`.
 
 See the `TRIGGER-COVERAGE` lens for the general form.
+
+### origami_claims: `Address` and `Phone` Are Shared Models. `owner` Is Not a Person.
+
+`Address#owner` and `Phone#owner` are polymorphic. `Address` allows ten owner types (`app/models/address.rb`): `Member`, `Dependent`, `Broker`, `Company`, `Provider`, `ProviderLocation`, `ProviderRequest`, `ProviderSelfNomination`, `ProviderSearch::Location`, `Ancillary::Beneficiary`. `Phone` allows `Member`, `Dependent`, `Broker`. Only `Member`, `Dependent`, and `Broker` respond to `individual`. `owner_type` strings are unqualified (`"Broker"`, not `"Groups::Models::Broker"`) because `PolymorphicClasses` overrides domain namespacing.
+
+`AddressUpdatedEvent` and `PhoneUpdatedEvent` publish from `after_save_commit` on every row, for every owner type. A listener that does `owner.individual` runs for provider and company addresses too.
+
+Shipped as PR #9049 → Rollbar 16233 (2,472 `NoMethodError` occurrences in three days, every one a Sidekiq retry) → PR #9069. The #9069 fix allowlisted `Member` and `Dependent` and left out `Broker`, so broker address changes stopped reaching Care Platform.
+
+When reviewing anything that subscribes to `AddressUpdatedEvent` / `PhoneUpdatedEvent` or reaches through `address.owner` / `phone.owner`:
+
+1. The handler filters by owner type or by `respond_to?(:individual)`, and the filter includes `Broker`.
+2. A spec exercises a non-person owner (`create(:address, owner: create(:company))`) and asserts the handler returns without raising and without enqueueing.
+3. A spec exercises a `Broker`-owned record and asserts it does enqueue.
+
+See the `TRIGGER-COVERAGE` lens for the general form and the `Individual` entry above for why brokers count.

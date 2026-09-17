@@ -41,9 +41,9 @@
 
 ## Data This Domain Owns
 
-| Entity | Location | Key Fields | Notes |
-|--------|----------|------------|-------|
-| [EntityName] | [file or table name] | [field1, field2, field3] | [anything notable] |
+| Entity | Location | Key Fields | Shape | Notes |
+|--------|----------|------------|-------|-------|
+| [EntityName] | [file or table name] | [field1, field2, field3] | [polymorphic `owner`: TypeA \| TypeB \| …; STI; enum values; or `plain`] | [anything notable, including which other domains reach this entity] |
 
 ---
 

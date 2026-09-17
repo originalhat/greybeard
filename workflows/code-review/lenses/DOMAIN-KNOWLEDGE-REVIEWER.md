@@ -23,6 +23,7 @@ Check changes against `domains/*.md` business rules:
 - **Threshold changes**: Modifying magic numbers that are documented as product decisions
 - **Missing guards**: Removing or bypassing documented constraints
 - **Undocumented exceptions**: Adding special cases not reflected in domain docs
+- **Shape assumptions**: Reaching through an association the domain record marks polymorphic or STI while handling only some of the documented types — confirm the code handles or filters every one
 
 ### 3. Domain Boundary Respect
 

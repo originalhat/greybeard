@@ -53,7 +53,7 @@ For large files (>300 lines), also note:
 
 Identify how data is structured and flows through this scope:
 
-1. **Data models:** List all entities/schemas (database models, TypeScript interfaces, Pydantic models, etc.) with their key fields
+1. **Data models:** List all entities/schemas (database models, TypeScript interfaces, Pydantic models, etc.) with their key fields and their **shape**: polymorphic associations with the allowed type list (`inclusion` validations, type-mapping registries), STI hierarchies, and enum/type columns with their values. Mark a model owned or referenced by several domains as **shared** and list who uses it.
 2. **Data flow:** Trace the path of a request or event from entry point to persistence and back out
 3. **State:** Where is state stored? (DB, cache, in-memory, external service)
 4. **Boundaries:** What data enters this scope from outside? What data leaves?
@@ -124,7 +124,9 @@ Produce a single markdown document structured as follows:
 ## Data Map
 
 ### Entities
-[list of data models with key fields]
+| Entity | Key Fields | Shape | Shared by |
+|--------|------------|-------|-----------|
+| [EntityName] | [field1, field2] | [polymorphic `owner`: TypeA \| TypeB \| …; STI; enum values; or `plain`] | [domains/scopes that own or reach it, or `—`] |
 
 ### Data Flow
 [narrative or diagram of request/event lifecycle]

@@ -49,7 +49,7 @@ Follow the template in `templates/domain-record.md`. Use plain language. Write f
 **What to include:**
 - What this domain is responsible for (its scope within the business)
 - The key business rules, with evidence and confidence
-- The data entities this domain owns or reads
+- The data entities this domain owns or reads, carrying the crawler's **Shape** column (polymorphic allowlists, STI, enum values) so a reviewer can see every type a shared model admits
 - The boundaries: what systems/services it interacts with and how
 - Known constraints (legal, technical, product decisions)
 - What to check / who to ask before making changes

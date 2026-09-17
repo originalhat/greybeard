@@ -32,6 +32,7 @@ Code that only executes on **non-default data** is the most common thing to ship
 - a block over a collection that is **empty** in all fixtures/factories (`collection.map { … }`, `.each`, `.select`)
 - an **optional association** or nullable field being present (`if record.attachment.attached?`, `record.foo&.bar`)
 - a **rare enum/state/flag** branch (`if status == :escalated`, feature-flag-on path)
+- a **polymorphic association, STI base, or type column** where every fixture builds the same concrete type (`owner: member` when `owner_type` allows ten); require one example per type the code treats differently, plus one for a type it should ignore
 
 For each, ask: **is there a test that actually populates the branch?** "It renders/returns fine" usually means the branch never ran. Require a fixture with a non-empty collection / present association / the rare state — not just a default-shaped record. This is how latent crashes (e.g. a route helper called inside a `.map` over attachments) survive review for weeks.
 

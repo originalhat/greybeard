@@ -140,4 +140,5 @@ Good gap questions are:
 - **Name rules precisely.** A rule named `subscription-grace-period` is more useful than `billing-check`.
 - **Be honest about confidence.** A `LOW` confidence record that triggers an SME question is more valuable than a `MED` guess that gets accepted without scrutiny.
 - **Don't over-extract.** Not every line of code is a business rule. Focus on decisions — thresholds, gates, special cases, transformations with business meaning.
+- **Allowlists of kinds are decisions.** A polymorphic owner allowlist, an STI subclass set, or an enum's values decides who or what may participate (which kinds of things may own an address). Extract it as a rule, usually `HIGH` — the validation itself is the evidence — and name every type so a reviewer can check a handler against the full list.
 - **Preserve all locations.** Every rule must trace back to specific code.
