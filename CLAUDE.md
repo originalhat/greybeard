@@ -73,7 +73,10 @@ greybeard/
 │   ├── on-call/                 # On-call ticket triage + self-improving runbooks
 │   │   ├── pipeline/            # 5-phase triage → publish → capture → curate → sync
 │   │   ├── context/             # Authoring standard + escalation map
-│       └── templates/           # Runbook, audit entry, and index templates
+│   │   └── templates/           # Runbook, audit entry, and index templates
+│   └── retro/                   # Retrospective over recent threads → quantified, ranked improvements
+│       ├── pipeline/            # 5-phase gather → summarize → synthesize → report → apply
+│       └── templates/           # Report, thread summary, state schema
 ├── sources/CLAUDE.md            # Repo-relationship docs (edit in place)
 └── sketches/                    # Drafts and ideas
 ```
