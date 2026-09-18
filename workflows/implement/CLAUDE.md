@@ -13,7 +13,7 @@ No lenses or templates of its own. Step 5 reuses `review-fix` and `code-review` 
 
 ## Inputs
 
-Triggered by **`/implement <ticket-or-requirements>`**, optionally **`in <repo>`** and/or **`--skip-ui`** (skip the render check in step 7).
+Triggered by **`/implement <ticket-or-requirements>`**, optionally **`in <repo>`** and/or **`--skip-ui`** (skip the render check in step 7) and/or **`--pr`** (push and open a draft PR in step 8).
 
 - A JIRA ticket URL (`https://sanabenefits.atlassian.net/browse/ER-1477`) or bare ticket ID, a GitHub issue URL, or pasted freeform requirements.
 - The target repo: explicit `in <repo>`, else inferred from the ticket, else the current working directory's repo.
@@ -25,8 +25,8 @@ Triggered by **`/implement <ticket-or-requirements>`**, optionally **`in <repo>`
   - One implementation commit covering the tests and the code together (or a small number, if the requirements naturally split into independent pieces).
   - `review-fix`'s own auto-fix commits, unmodified from how that pipeline already commits.
   - One correction commit, if step 6 finds anything to fix.
-- A closing summary: what was implemented, what `review --fix` found and fixed, what's still open and needs a human, and the render-check result from step 7 (screenshot paths, or why it was skipped).
-- Never a push, never a PR. The branch stays local until the human decides it's ready.
+- A closing summary: what was implemented, the design chosen and what was **not built** (step 2), what `review --fix` found and fixed, what's still open and needs a human, and the render-check result from step 7 (screenshot paths, or why it was skipped).
+- No push and no PR unless `--pr` was passed. With `--pr`, the branch is pushed and a draft PR is opened with the closing summary as its body. Otherwise the branch stays local until the human decides it's ready.
 
 ## Execution
 
@@ -47,6 +47,7 @@ These steps are **strictly sequential** — later steps depend on earlier ones a
 - Locate the relevant files, existing tests, and existing patterns for this kind of change. Use an `Explore` subagent for this on a large or unfamiliar repo; do it directly on a small, well-known one.
 - Identify every distinct behavior the ticket/requirements imply. This list is what step 3 iterates over.
 - If investigation surfaces a requirement that conflicts with existing behavior, or a genuinely ambiguous acceptance criterion, stop and ask — don't guess and build the wrong thing.
+- **Design choice.** If the ticket admits more than one materially different implementation — a feature flag vs. a removal, a new model vs. a column, sync vs. async, a config table vs. a constant — pick the one with the smallest diff that satisfies the acceptance criteria. "Turn off for now" means remove, not gate. This is the repo rule "keep it simple, especially to start"; the human can ask for the bigger design after seeing the small one work. Write the alternative and one sentence on why it lost into the closing summary under **Not built**, never into the code. If the choice is genuinely a product call rather than a size call, ask before step 3.
 
 ### 3. TDD — red, then green, one behavior at a time
 
@@ -67,6 +68,7 @@ Test behavior, not implementation: assert on what the system does, not how it do
 ### 5. `review --fix`
 
 - Follow `${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/CLAUDE.md` exactly against this branch — the same pipeline plain `review --fix` runs, unmodified. This produces its own auto-fix commits and a final report of whatever's left.
+- Progress messages: one line when `review --fix` starts and one when it finishes. Lens-by-lens and round-by-round status belongs in the fix-run record, not in chat. The same cap applies to the rest of this pipeline: no per-behavior or per-test narration; the closing summary is the report.
 
 ### 6. Correct what's left
 
@@ -86,9 +88,15 @@ A smoke check, not validation. `validate` walks the acceptance criteria; this st
 - If a page fails to render or is visibly inconsistent with its neighbours, fix that before the closing summary and re-check once. Anything that needs a design decision goes in the summary instead.
 - Put the screenshot paths in the closing summary.
 
+### 8. Draft PR, only with `--pr`
+
+- Without `--pr`: end the closing summary with one line, `Say pr to push and open a draft PR.` Do nothing else.
+- With `--pr` (or when the human says `pr` afterwards): push the branch to `origin` and open a **draft** PR against `main` with `gh pr create --draft` (or the GitHub MCP), title from the ticket, body = the closing summary with the **Not built** section included. Print the URL. Never mark it ready for review; that is the human's call.
+- This is the only place in the greybeard workflows that pushes, and only on request.
+
 ## Notes
 
-- Never pushes and never opens a PR — same convention as `review --fix`. The human decides when the branch is ready.
+- Never pushes and never opens a PR unless asked with `--pr` or a `pr` reply, and then only a draft — otherwise the same convention as `review --fix`. The human decides when the branch is ready for review.
 - Never runs against a branch the user doesn't own — this pipeline commits as it goes, so it only ever runs on a branch you can write to, same reasoning as `review --fix`.
-- If step 1 or step 2 turns up real ambiguity, stop and ask. Steps 3–7 assume the scope is already settled.
+- If step 1 or step 2 turns up real ambiguity, stop and ask. Steps 3–8 assume the scope is already settled.
 - Resuming: if the branch from a prior `/implement` run already exists with partial work, step 1 picks it up rather than starting over.
