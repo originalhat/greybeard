@@ -78,7 +78,7 @@ greybeard/
 ├── agents/                      # Custom subagents (canonical Claude Code frontmatter)
 │   └── sync-local.sh            # Generates ~/.claude/agents + ~/.pi/agent/agents copies
 ├── skills/                      # One skill per workflow — auto-activates on its trigger words
-│   └── <workflow>/SKILL.md      # Thin router → workflows/<workflow>/CLAUDE.md
+│   └── <workflow>/SKILL.md      # Thin router → workflows/<workflow>/AGENTS.md
 ├── workflows/                   # Shared instruction tree (lenses, pipelines, templates, context)
 │   ├── code-review/             # Technical code review pipeline
 │   │   ├── lenses/              # General technical criteria
@@ -284,7 +284,7 @@ See [`workflows/on-call/`](workflows/on-call/) for details.
 
 ## Adding Workflows
 
-New workflows go in `workflows/{workflow-name}/` with a matching `skills/{workflow-name}/SKILL.md` entry point. See [`workflows/CLAUDE.md`](workflows/CLAUDE.md) for conventions.
+New workflows go in `workflows/{workflow-name}/` with a matching `skills/{workflow-name}/SKILL.md` entry point. See [`workflows/AGENTS.md`](workflows/AGENTS.md) for conventions.
 
 ## Lenses Included
 

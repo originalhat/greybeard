@@ -19,7 +19,7 @@ auto-applies the safe ones, commits them, and re-reviews in a bounded loop.
 **Trigger:** `review --fix` / `review --fix <branch-name> in <repo-name>`, or
 equivalent phrasing ("fix this branch", "auto-fix mode", "review and fix").
 
-**Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/CLAUDE.md`.
+**Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/AGENTS.md`.
 
 That file drives the 3-phase `pipeline/` (triage → fixer → gate, one pass per
 round) and writes a one-shot audit record to

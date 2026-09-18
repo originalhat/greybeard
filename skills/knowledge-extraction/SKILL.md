@@ -17,7 +17,7 @@ base of business rules.
 
 **Trigger:** `extract knowledge from <repo-name>` / `catch up knowledge for <repo-name>`.
 
-**Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/knowledge-extraction/CLAUDE.md`.
+**Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/knowledge-extraction/AGENTS.md`.
 
 That file drives the 5-phase `pipeline/` (crawler → extractor → researcher →
 interrogator → synthesizer) and writes domain records, ubiquitous language,

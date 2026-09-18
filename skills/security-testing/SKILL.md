@@ -15,7 +15,7 @@ Whole-repo security assessment: segment → scan → consolidate → rank.
 
 **Trigger:** `pen test <repo-name>` / `catch up security for <repo-name>`.
 
-**Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/security-testing/CLAUDE.md`.
+**Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/security-testing/AGENTS.md`.
 
 That file runs the 3-phase `pipeline/` (segmenter → scanner → consolidator)
 against the 17 lenses in `${CLAUDE_PLUGIN_ROOT}/workflows/security-testing/lenses/`,

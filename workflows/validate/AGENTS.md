@@ -8,7 +8,7 @@ Split out of `implement`'s former "browser-validate" step so it can run standalo
 
 ```
 validate/
-├── CLAUDE.md                    # You are here
+├── AGENTS.md                    # You are here
 ├── pipeline/
 │   ├── 01-acceptance-check.md   # Drive the UI through each stated acceptance criterion
 │   └── 02-exploratory.md        # Bounded, loop-based exploration beyond the stated criteria

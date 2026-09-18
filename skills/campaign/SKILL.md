@@ -19,7 +19,7 @@ Systematic refactoring execution: plan → inventory → batch → execute → v
 - `campaign continue <campaign-name> in <repo-name>` — execute the next batch.
 - `campaign status <campaign-name> in <repo-name>` — read-only progress check.
 
-**Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/campaign/CLAUDE.md`.
+**Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/campaign/AGENTS.md`.
 
 That file drives the 6-phase `pipeline/` and tracks state in
 `$GREYBEARD_DATA/output/campaigns/{repo}/{campaign}/` (default

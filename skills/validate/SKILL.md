@@ -21,7 +21,7 @@ open-ended probing beyond what was specified.
 
 **Trigger:** `validate <Jira ticket URL | ticket ID | GitHub issue URL | freeform requirements>`, optionally `in <repo-name>`, optionally `--exploratory`.
 
-**Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/validate/CLAUDE.md`.
+**Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/validate/AGENTS.md`.
 
 That file holds the full pipeline: intake → scope check → launch →
 acceptance check (`pipeline/01-acceptance-check.md`) → if `--exploratory`,

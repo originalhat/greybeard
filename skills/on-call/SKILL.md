@@ -19,7 +19,7 @@ audit trail.
 / a pasted problem description, optionally `in <repo>`. The other verbs keep the
 `on-call` prefix: `on-call publish|capture|curate|sync`.
 
-**Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/on-call/CLAUDE.md`.
+**Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/on-call/AGENTS.md`.
 
 That file holds the 5-phase `pipeline/` (triage → publish → capture → curate →
 sync), the `context/` authoring standard and escalation map, and `templates/`.

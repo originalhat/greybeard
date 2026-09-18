@@ -6,7 +6,7 @@ A whole-repo design consistency assessment that inventories visual tokens, captu
 
 ```
 design-audit/
-├── CLAUDE.md           # You are here
+├── AGENTS.md           # You are here
 ├── pipeline/           # 4-phase audit process
 │   ├── 01-inventorier.md
 │   ├── 02-screenshotter.md

@@ -6,7 +6,7 @@ Turns a ticket or a set of requirements into working, tested, reviewed code on a
 
 ```
 implement/
-└── CLAUDE.md    # You are here — the whole pipeline lives in this one file
+└── AGENTS.md    # You are here — the whole pipeline lives in this one file
 ```
 
 No lenses or templates of its own. Step 5 reuses `review-fix` and `code-review` unmodified.
@@ -67,14 +67,14 @@ Test behavior, not implementation: assert on what the system does, not how it do
 
 ### 5. `review --fix`
 
-- Follow `${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/CLAUDE.md` exactly against this branch — the same pipeline plain `review --fix` runs, unmodified. This produces its own auto-fix commits and a final report of whatever's left.
+- Follow `${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/AGENTS.md` exactly against this branch — the same pipeline plain `review --fix` runs, unmodified. This produces its own auto-fix commits and a final report of whatever's left.
 - Progress messages: one line when `review --fix` starts and one when it finishes. Lens-by-lens and round-by-round status belongs in the fix-run record, not in chat. The same cap applies to the rest of this pipeline: no per-behavior or per-test narration; the closing summary is the report.
 
 ### 6. Correct what's left
 
 - From `review --fix`'s final report, apply any remaining finding that's unambiguously in scope and doesn't require a product or design judgment call, then commit that separately from step 4 and from `review-fix`'s own commits.
 - Leave anything that's a genuine judgment call — a naming preference, a scope question, "should this actually be here" — for the closing summary instead of guessing.
-- When the change is reachable through a UI, mention in the closing summary that `validate` (`${CLAUDE_PLUGIN_ROOT}/workflows/validate/CLAUDE.md`) is the next step — this pipeline doesn't run it itself.
+- When the change is reachable through a UI, mention in the closing summary that `validate` (`${CLAUDE_PLUGIN_ROOT}/workflows/validate/AGENTS.md`) is the next step — this pipeline doesn't run it itself.
 
 ### 7. Render check, unless `--skip-ui`
 

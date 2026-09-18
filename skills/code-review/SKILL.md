@@ -24,10 +24,10 @@ lenses and repo-specific context.
 **Trigger:** `review <github PR URL>` or `review <branch-name> in <repo-name>`.
 
 **Modes:**
-- `review --fix` — auto-fix loop. Run `${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/CLAUDE.md` instead of the plain pipeline below.
+- `review --fix` — auto-fix loop. Run `${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/AGENTS.md` instead of the plain pipeline below.
 - `review --interactive` — print the report, then walk failures 1-by-1 drafting PR comments in the user's voice, posting to GitHub only on approval. Same pipeline as plain `review`; the interactive loop runs after the report.
 
-**Run (plain review):** execute `${CLAUDE_PLUGIN_ROOT}/workflows/code-review/CLAUDE.md`.
+**Run (plain review):** execute `${CLAUDE_PLUGIN_ROOT}/workflows/code-review/AGENTS.md`.
 
 That file holds the full pipeline: resolve the input, diff against `origin/main`,
 evaluate against `${CLAUDE_PLUGIN_ROOT}/workflows/code-review/lenses/` and

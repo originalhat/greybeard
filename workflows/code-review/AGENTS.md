@@ -6,7 +6,7 @@ A multi-stage, multi-modal code review pipeline that evaluates changes against t
 
 ```
 code-review/
-├── CLAUDE.md           # You are here
+├── AGENTS.md           # You are here
 ├── lenses/             # Generalized technical review criteria
 ├── context/            # Repo/team-specific review criteria
 └── templates/          # Canonical output format and the run record
@@ -33,7 +33,7 @@ Plain `review` runs steps 1–11 below: the report, then the run record. Two fla
 
 ### `--fix` (auto-fix)
 
-If the invocation includes `--fix` (or "fix this branch", "auto-fix mode", "review and fix"): do steps 1–4 exactly as written, then **stop** and switch to `${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/CLAUDE.md`. That pipeline takes the diff from steps 1–4, classifies findings, auto-applies the safe ones, commits them separately from the branch's existing commits, and re-reviews (by re-running this pipeline without `--fix`, fresh) in a bounded loop. It never pushes.
+If the invocation includes `--fix` (or "fix this branch", "auto-fix mode", "review and fix"): do steps 1–4 exactly as written, then **stop** and switch to `${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/AGENTS.md`. That pipeline takes the diff from steps 1–4, classifies findings, auto-applies the safe ones, commits them separately from the branch's existing commits, and re-reviews (by re-running this pipeline without `--fix`, fresh) in a bounded loop. It never pushes.
 
 `--fix` inherits plain `review`'s scope: the current branch only, never a PR URL for a branch you didn't check out yourself. `review-fix` commits to whatever branch it runs against, so to review someone else's work, leave `--fix` off.
 

@@ -16,7 +16,7 @@ Whole-repo design consistency assessment: inventory → screenshot → analyze �
 
 **Trigger:** `design audit <repo-name>` / `catch up design for <repo-name>`.
 
-**Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/design-audit/CLAUDE.md`.
+**Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/design-audit/AGENTS.md`.
 
 That file runs the 4-phase `pipeline/` against the design `lenses/`, writes
 `design-spec.md` to `$GREYBEARD_DATA/output/design-audit/{repo}/` (default

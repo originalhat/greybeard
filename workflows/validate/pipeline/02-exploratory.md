@@ -2,7 +2,7 @@
 
 Runs only when `validate` is invoked with `--exploratory`. Picks up where the acceptance check leaves off: instead of checking what was specified, it probes for what wasn't.
 
-**This file is the tuning surface for exploratory mode.** Expect to revise the round cap, the exploration categories, and the stop condition as real runs show this over- or under-exploring. Don't fold those adjustments back into `../CLAUDE.md` — keep them here so the rest of the pipeline stays stable while this part iterates.
+**This file is the tuning surface for exploratory mode.** Expect to revise the round cap, the exploration categories, and the stop condition as real runs show this over- or under-exploring. Don't fold those adjustments back into `../AGENTS.md` — keep them here so the rest of the pipeline stays stable while this part iterates.
 
 ## Why This Exists Separately From Acceptance Check
 

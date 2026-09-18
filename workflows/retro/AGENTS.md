@@ -6,7 +6,7 @@ A retrospective over recent bb threads. It reads what the agent did, measures wh
 
 ```
 retro/
-├── CLAUDE.md              # You are here
+├── AGENTS.md              # You are here
 ├── pipeline/
 │   ├── 01-gather.md       # Window, thread list, exclusions
 │   ├── 02-summarize.md    # Per-thread summaries with counts and timings

@@ -21,11 +21,11 @@ Ticket or requirements in; a test-first, reviewed branch out.
 
 **Trigger:** `implement <Jira ticket URL | ticket ID | GitHub issue URL | freeform requirements>`, optionally `in <repo-name>`, `--skip-ui`, `--pr`.
 
-**Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/implement/CLAUDE.md`.
+**Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/implement/AGENTS.md`.
 
 That file holds the full pipeline: intake → investigate → TDD (red, green,
 refactor, one behavior at a time) → commit → `review --fix` via
-`${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/CLAUDE.md` → correct what's left →
+`${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/AGENTS.md` → correct what's left →
 render check for UI changes (one screenshot per changed page; `--skip-ui` skips) →
 draft PR only with `--pr`.
 

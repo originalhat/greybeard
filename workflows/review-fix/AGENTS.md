@@ -6,7 +6,7 @@ A loop-based auto-fix pipeline built on top of `code-review`. Where `review` sto
 
 ```
 review-fix/
-├── CLAUDE.md              # You are here
+├── AGENTS.md              # You are here
 ├── pipeline/               # 3-phase loop body
 │   ├── 01-triage.md        # Classify findings by remedy scope
 │   ├── 02-fixer.md         # Apply auto-fix findings, commit
@@ -15,7 +15,7 @@ review-fix/
     └── FIX-RUN-RECORD.md   # Audit record format for one run
 ```
 
-Reuses, unmodified: `../code-review/lenses/`, `../code-review/context/`, `../code-review/templates/REPORT-FORMAT.md`, and the `review` pipeline itself (`../code-review/CLAUDE.md`, and the global `review` skill). `review-fix` never edits lens or context files, and never changes what plain `review` outputs when run on its own.
+Reuses, unmodified: `../code-review/lenses/`, `../code-review/context/`, `../code-review/templates/REPORT-FORMAT.md`, and the `review` pipeline itself (`../code-review/AGENTS.md`, and the global `review` skill). `review-fix` never edits lens or context files, and never changes what plain `review` outputs when run on its own.
 
 ## Inputs
 
@@ -44,7 +44,7 @@ Triggered by **`review --fix`** (current branch) or **`review --fix <branch> in 
 
 These steps are **strictly sequential** within a round; rounds run one after another, never in parallel.
 
-1. **Initial review**: Run the standard `review` pipeline (`../code-review/CLAUDE.md`, unmodified) against the current branch. This is exactly what plain `review` produces — same lenses, same context, same fact-check.
+1. **Initial review**: Run the standard `review` pipeline (`../code-review/AGENTS.md`, unmodified) against the current branch. This is exactly what plain `review` produces — same lenses, same context, same fact-check.
 2. **Triage** (`pipeline/01-triage.md`): Classify every finding from step 1 as `auto-fix`, `ask-user`, or `no-op`.
 3. **Fixer** (`pipeline/02-fixer.md`): If there are any `auto-fix` findings, apply them and commit. If there are none, skip straight to step 6.
 4. **Gate — re-review** (`pipeline/03-gate.md`): Re-run the standard `review` pipeline fresh against the updated branch — a new invocation, not a continuation of the fixer's session, so nothing re-certifies its own prescription.

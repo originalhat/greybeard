@@ -6,7 +6,7 @@ A whole-repo security assessment pipeline that segments codebases into paralleli
 
 ```
 security-testing/
-├── CLAUDE.md           # You are here
+├── AGENTS.md           # You are here
 ├── pipeline/           # 3-phase orchestration
 │   ├── 01-segmenter.md # Partition repo into scan units
 │   ├── 02-scanner.md   # Per-segment vulnerability scanning

@@ -6,7 +6,7 @@ A multi-agent pipeline for extracting business logic from code into a living kno
 
 ```
 knowledge-extraction/
-├── CLAUDE.md                  ← You are here
+├── AGENTS.md                  ← You are here
 ├── pipeline/
 │   ├── 01-crawler.md          ← Phase 1: Structural mapping
 │   ├── 02-extractor.md        ← Phase 2: Business logic extraction
@@ -91,7 +91,7 @@ Repos often interact with each other. During extraction:
 1. **Identify Integration Points**: Note where code calls or is called by other repos
 2. **Compare Terminology**: Flag terms that differ across repos (same word, different meaning)
 3. **Trace Data Flow**: Document how entities flow between repos
-4. **Check sources/CLAUDE.md**: Understand repo relationships before analyzing
+4. **Check sources/AGENTS.md**: Understand repo relationships before analyzing
 
 Cross-repo insights should be noted in:
 - Domain records under "Boundaries" section
@@ -160,5 +160,5 @@ git diff <last_sha>..origin/main --stat
 
 ## Related
 
-- **sources/CLAUDE.md**: Describes repo relationships and cross-repo considerations
+- **sources/AGENTS.md**: Describes repo relationships and cross-repo considerations
 - **${CLAUDE_PLUGIN_ROOT}/workflows/code-review/**: Uses extracted knowledge for contextual code review

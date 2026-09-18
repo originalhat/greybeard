@@ -100,4 +100,4 @@ When a runbook touches money or coverage, make the invariant check explicit — 
 
 ## PHI / PII
 
-No member/dependent PHI or PII. Generalize examples; use the `nil # fill in` convention. Internal Sana staff names are fine. See the workflow `CLAUDE.md` PHI policy.
+No member/dependent PHI or PII. Generalize examples; use the `nil # fill in` convention. Internal Sana staff names are fine. See the workflow `AGENTS.md` PHI policy.

@@ -25,7 +25,7 @@ report. `retro walkthrough` resumes a parked walkthrough in any thread. `retro
 apply S-… [S-…]` and `retro reject S-… [reason]` act on ids directly. `retro
 status` prints open suggestions and acceptance counts.
 
-**Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/retro/CLAUDE.md`.
+**Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/retro/AGENTS.md`.
 
 That file holds the five-phase `pipeline/` (gather → summarize → synthesize →
 report → apply) and `templates/`. State, reports, design notes, and the

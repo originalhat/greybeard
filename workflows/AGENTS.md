@@ -23,16 +23,16 @@ Each workflow directory should contain:
 
 ```
 {workflow-name}/
-├── CLAUDE.md           # Workflow instructions and execution steps
+├── AGENTS.md           # Workflow instructions and execution steps
 ├── {components}/       # Workflow-specific modules, phases, or lenses (if applicable)
 └── templates/          # Output format templates (if applicable)
 ```
 
 Both are optional — a workflow simple enough to run from a single file (e.g. `implement/`) can skip them.
 
-### CLAUDE.md Requirements
+### AGENTS.md Requirements
 
-Every workflow CLAUDE.md should include:
+Every workflow AGENTS.md should include:
 1. **Purpose**: What problem does this workflow solve?
 2. **Inputs**: What does the workflow need to run?
 3. **Outputs**: What artifacts does it produce?
@@ -42,9 +42,9 @@ Every workflow CLAUDE.md should include:
 ## Adding a New Workflow
 
 1. Create a new directory under `${CLAUDE_PLUGIN_ROOT}/workflows/`
-2. Add a `CLAUDE.md` with the sections above
+2. Add an `AGENTS.md` with the sections above
 3. Organize components into logical subdirectories
-4. Add a matching `skills/<workflow-name>/SKILL.md` entry point (YAML frontmatter `name` + a `description` carrying the trigger words; body points at the workflow `CLAUDE.md`)
+4. Add a matching `skills/<workflow-name>/SKILL.md` entry point (YAML frontmatter `name` + a `description` carrying the trigger words; body points at the workflow `AGENTS.md`)
 5. Update the root `CLAUDE.md` routing table to list the new workflow
 
 ## Shared Resources

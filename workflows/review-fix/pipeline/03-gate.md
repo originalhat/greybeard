@@ -17,7 +17,7 @@ Decide whether another round is worth running, stop the loop when it isn't, and 
 
 ### Step 1: Re-Review Fresh
 
-If Phase 2 committed anything, re-invoke the standard `review` pipeline (`../../code-review/CLAUDE.md`) against the branch as a **new invocation** — not a continuation of the fixer's session or context. It evaluates the full diff, including this round's commit, exactly as it would for any branch. Do not tell it which lines the fixer just wrote; a blind re-review is the point.
+If Phase 2 committed anything, re-invoke the standard `review` pipeline (`../../code-review/AGENTS.md`) against the branch as a **new invocation** — not a continuation of the fixer's session or context. It evaluates the full diff, including this round's commit, exactly as it would for any branch. Do not tell it which lines the fixer just wrote; a blind re-review is the point.
 
 If Phase 2 found no `auto-fix` findings to apply (nothing to fix this round), skip re-review — there's nothing new to check — and go straight to Step 4.
 
