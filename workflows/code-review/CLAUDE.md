@@ -39,7 +39,7 @@ If the invocation includes `--fix` (or "fix this branch", "auto-fix mode", "revi
 
 ### `--interactive` (draft-and-post)
 
-If the invocation includes `--interactive` (or "interactive review", "walk through findings", "draft comments one by one"): run steps 1–11 exactly as written, print the full report, then **stop and switch into a 1-by-1 draft-and-post loop** for each numbered failure. If no PR exists for the branch, say so before starting — there is nowhere to post.
+If the invocation includes `--interactive` (or `—interactive` with an em dash, which macOS produces from a double hyphen; or "interactive review", "walk through findings", "draft comments one by one"): run steps 1–11 exactly as written, print the full report, then **stop and switch into a 1-by-1 draft-and-post loop** for each numbered failure. If no PR exists for the branch, say so before starting — there is nowhere to post.
 
 For each failure, in order:
 
@@ -48,7 +48,8 @@ For each failure, in order:
 3. **Revise on feedback.** If the user rewrites or asks for tone changes, re-draft and re-present. If they push back on whether the finding is real or in scope ("was this pre-existing?"), verify against `origin/main` and drop or reclassify rather than defending it.
 4. **Post on approval** as an inline PR review comment via `gh api repos/{owner}/{repo}/pulls/{n}/comments`, anchored at the `file:line` held from step 8, with the PR's head SHA as `commit_id`. Print the returned `html_url`.
 5. **Move to the next** finding without waiting for a nudge.
-6. **When the author replies, test the reply before answering it.** Fetch the thread with `gh api repos/{owner}/{repo}/pulls/{n}/comments` and read the `in_reply_to_id` chain. Author pushback comes in three shapes, and each has its own test:
+6. **When every failure has been posted or skipped, offer one line:** `Say approve to submit an Approve review with a 👍 body, or done to stop.` On approve, submit the review via `gh pr review {n} --approve --body "👍"` (or the GitHub MCP review tool) and print the URL. Nothing else in the body.
+7. **When the author replies, test the reply before answering it.** Fetch the thread with `gh api repos/{owner}/{repo}/pulls/{n}/comments` and read the `in_reply_to_id` chain. Author pushback comes in three shapes, and each has its own test:
    - *"That is pre-existing"* or *"that is out of scope."* Go find the recovery path or the prior behavior in the repo. If it is there, concede in one line and stop. Do not restate the conceded point in softer words.
    - *"The other thing is wrong, not this."* Work out which rule is authoritative, the same way step 8b does. If the author is right, the finding inverts rather than disappears: the inconsistency is real, it points at the code they named, and it becomes a follow-up instead of a change to this PR.
    - *"That is intentional."* Look for the comment, the doc, or the test that says so. Design intent that lives only in a PR reply is worth one question about where it is written down.
@@ -66,7 +67,9 @@ Every post, user drop, reclassification, and concession in this loop is appended
 - **Do not talk about the fix.** No "consider adding X", no code snippets, no "we should refactor Y". Raise the question; let the author decide.
 - Same simplified language as the report — no idioms, no "silently", no metaphors — with a looser sentence cap because it's a conversation.
 
-**Skip pre-existing findings entirely** — they aren't this PR's to fix. **Skip nits by default**; at the end, offer a one-line take on which nits (if any) are worth surfacing and draft only the ones the user names.
+- Nit drafts start with the literal prefix `nit: `.
+
+**Skip pre-existing findings entirely** — they aren't this PR's to fix. **Nits come last, prefixed, and already drafted:** after the failures, name the one to three nits worth surfacing and present their drafts immediately, each starting with `nit: `, rather than waiting to be asked to show them. Post only the ones the user approves.
 
 ## Execution
 
