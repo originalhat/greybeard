@@ -4,7 +4,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "mkdir -p \"${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources\" \"${GREYBEARD_DATA:-$HOME/.greybeard-data}/output\"/{knowledge-extraction,security-testing,design-audit,campaigns,code-review,on-call}",
+          "command": "mkdir -p \"${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources\" \"${GREYBEARD_DATA:-$HOME/.greybeard-data}/output\"/{knowledge-extraction,security-testing,design-audit,campaigns,code-review,on-call,validate}",
           "timeout": 5
         }
       ]

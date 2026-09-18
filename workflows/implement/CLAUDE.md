@@ -1,6 +1,6 @@
 # Implement Workflow
 
-Turns a ticket or a set of requirements into working, tested, reviewed code on a branch — test-first, then reviewed and auto-fixed via `review-fix`, then, when applicable, checked in a real browser.
+Turns a ticket or a set of requirements into working, tested, reviewed code on a branch — test-first, then reviewed and auto-fixed via `review-fix`.
 
 ## Directory Structure
 
@@ -25,7 +25,7 @@ Triggered by **`/implement <ticket-or-requirements>`**, optionally **`in <repo>`
   - One implementation commit covering the tests and the code together (or a small number, if the requirements naturally split into independent pieces).
   - `review-fix`'s own auto-fix commits, unmodified from how that pipeline already commits.
   - One correction commit, if step 6 finds anything to fix.
-- A closing summary: what was implemented, what `review --fix` found and fixed, what's still open and needs a human, and the browser-validation result (or why it was skipped).
+- A closing summary: what was implemented, what `review --fix` found and fixed, and what's still open and needs a human.
 - Never a push, never a PR. The branch stays local until the human decides it's ready.
 
 ## Execution
@@ -72,19 +72,11 @@ Test behavior, not implementation: assert on what the system does, not how it do
 
 - From `review --fix`'s final report, apply any remaining finding that's unambiguously in scope and doesn't require a product or design judgment call, then commit that separately from step 4 and from `review-fix`'s own commits.
 - Leave anything that's a genuine judgment call — a naming preference, a scope question, "should this actually be here" — for the closing summary instead of guessing.
-
-### 7. Browser-validate, when possible
-
-- Applicable when the implementation is reachable through a UI. Skip it outright for backend-only changes — a cron job, a data migration, an internal API with no consumer yet — and say so in the summary.
-- When applicable, spawn a subagent (model: `sonnet`) to:
-  - Launch the app — check for a project-specific launch skill first (e.g. `run`), otherwise start it per the target repo's own conventions.
-  - Drive it via the `playwright` MCP tools, walking through the ticket's or requirements' acceptance criteria as concrete user actions.
-  - Report pass/fail per criterion, with what it actually saw, not a guess at whether the code should work.
-- Fold that subagent's report into the closing summary.
+- When the change is reachable through a UI, mention in the closing summary that `validate` (`${CLAUDE_PLUGIN_ROOT}/workflows/validate/CLAUDE.md`) is the next step — this pipeline doesn't run it itself.
 
 ## Notes
 
 - Never pushes and never opens a PR — same convention as `review --fix`. The human decides when the branch is ready.
 - Never runs against a branch the user doesn't own — this pipeline commits as it goes, so it only ever runs on a branch you can write to, same reasoning as `review --fix`.
-- If step 1 or step 2 turns up real ambiguity, stop and ask. Steps 3–7 assume the scope is already settled.
+- If step 1 or step 2 turns up real ambiguity, stop and ask. Steps 3–6 assume the scope is already settled.
 - Resuming: if the branch from a prior `/implement` run already exists with partial work, step 1 picks it up rather than starting over.

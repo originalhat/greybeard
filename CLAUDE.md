@@ -17,12 +17,13 @@ $GREYBEARD_DATA/
     ├── campaigns/{repo}/{campaign}/  # Campaign strategy, inventory, plan, batch reviews
     ├── code-review/{repo}/fix-runs/  # review-fix audit records (one per run)
     ├── code-review/{repo}/runs/      # plain review run records (one per review)
-    └── on-call/                      # Runbooks (per repo, by domain) and PHI-free audit logs
+    ├── on-call/                      # Runbooks (per repo, by domain) and PHI-free audit logs
+    └── validate/{repo}/              # Validation reports (one per run)
 ```
 
 Set up the data directory (one-time):
 ```bash
-mkdir -p "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources" "${GREYBEARD_DATA:-$HOME/.greybeard-data}/output"/{knowledge-extraction,security-testing,design-audit,campaigns,code-review,on-call}
+mkdir -p "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources" "${GREYBEARD_DATA:-$HOME/.greybeard-data}/output"/{knowledge-extraction,security-testing,design-audit,campaigns,code-review,on-call,validate}
 ```
 
 This runs automatically on the first session after install (a `SessionStart` hook creates the dirs idempotently), so the manual `mkdir` is only needed if you want to populate `sources/` before launching Claude.
@@ -50,7 +51,10 @@ greybeard/
 │   ├── review-fix/              # Loop-based auto-fix on top of code review
 │   │   ├── pipeline/            # 3-phase triage → fix → gate loop
 │   │   └── templates/           # Fix-run audit record format
-│   ├── implement/               # Ticket/requirements → TDD → review --fix → browser validation
+│   ├── implement/               # Ticket/requirements → TDD → review --fix
+│   ├── validate/                # Browser-driven acceptance check + optional exploratory testing
+│   │   ├── pipeline/            # Acceptance check → optional bounded exploratory loop
+│   │   └── templates/           # Validation report format
 │   ├── knowledge-extraction/    # Business logic documentation pipeline
 │   │   ├── pipeline/            # 5-phase extraction process
 │   │   └── templates/           # Output templates
@@ -85,6 +89,8 @@ The leading word routes the request to a workflow. Match on it directly.
 | `review --fix` | Code Review — Auto-Fix | `code-review` (`--fix`) | `review --fix` (current branch) |
 | `review --interactive` | Code Review — Interactive | `code-review` (`--interactive`) | `review --interactive` |
 | `implement` | Implement | `implement` | `implement https://sanabenefits.atlassian.net/browse/ER-1477` |
+| `validate` | Validate | `validate` | `validate ER-1477` |
+| `validate --exploratory` | Validate — Exploratory | `validate` (`--exploratory`) | `validate ER-1477 --exploratory` |
 | `triage` | On-Call | `on-call` | `triage https://sanabenefits.atlassian.net/browse/ER-1477` |
 | `extract knowledge from` | Knowledge Extraction | `knowledge-extraction` | `extract knowledge from care_platform` |
 | `pen test` | Security Testing | `security-testing` | `pen test origami_claims` |
@@ -103,7 +109,10 @@ Runs the same lenses and context as `review`, but instead of stopping at a repor
 Runs the review, prints the report, then walks failures one by one — drafting a PR review comment in the user's voice (concise, question-framed, user-impact focused), revising on feedback, and posting inline to GitHub only after approval. Skips pre-existing findings; nits skipped by default. `review --interactive`. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/code-review/CLAUDE.md`.
 
 ### Implement
-Takes a ticket or a set of requirements and turns it into working, tested, reviewed code on a branch — test-first (red then green, testing behavior not implementation), then reviewed and auto-fixed via `review --fix`, then, when the change is reachable through a UI, checked by a subagent driving a real browser. `implement <Jira ticket URL | ticket ID | GitHub issue URL | freeform requirements>`, optionally `in <repo>`. Never pushes, never opens a PR. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/implement/CLAUDE.md`.
+Takes a ticket or a set of requirements and turns it into working, tested, reviewed code on a branch — test-first (red then green, testing behavior not implementation), then reviewed and auto-fixed via `review --fix`. `implement <Jira ticket URL | ticket ID | GitHub issue URL | freeform requirements>`, optionally `in <repo>`. Never pushes, never opens a PR. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/implement/CLAUDE.md`.
+
+### Validate
+Drives a real browser against a running app to check a change against acceptance criteria — the browser-validation step that used to live inside `implement`, now standalone so it can run against any branch and be re-run after a fix. `validate <Jira ticket URL | ticket ID | GitHub issue URL | freeform requirements>`, optionally `in <repo>`. Add `--exploratory` for a bounded, loop-based round of open-ended testing beyond the stated criteria (adjacent flows, boundary inputs, navigation/reload state), producing a separate findings list ranked by severity. Read-only — never modifies code, never commits. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/validate/CLAUDE.md`.
 
 ### Knowledge Extraction
 Extracts business logic from code into structured documentation. `extract knowledge from <repo>` / `catch up knowledge for <repo>`. 5-phase pipeline → domain records, ubiquitous language, open questions. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/knowledge-extraction/CLAUDE.md`.

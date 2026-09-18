@@ -8,7 +8,8 @@ This directory contains AI agent workflows. Each workflow is a structured pipeli
 |-----------|---------|
 | `code-review/` | Technical code review against generalized lenses and repo-specific context |
 | `review-fix/` | Loop-based auto-fix on top of code review — classifies findings, applies safe fixes, re-reviews until clean or parked for a human |
-| `implement/` | Ticket/requirements → test-first implementation → `review --fix` → correction → optional browser validation |
+| `implement/` | Ticket/requirements → test-first implementation → `review --fix` → correction |
+| `validate/` | Browser-driven acceptance check against a ticket's criteria, plus optional bounded exploratory testing |
 | `knowledge-extraction/` | Multi-phase pipeline to extract business logic into documentation |
 | `security-testing/` | Whole-repo security vulnerability assessment with 17 lenses and 3-phase pipeline |
 | `design-audit/` | Frontend design consistency assessment with living design specification |
