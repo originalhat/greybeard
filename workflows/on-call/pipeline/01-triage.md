@@ -110,4 +110,9 @@ Keep this depth **ready on request** (only applicable ones — don't pad with "N
 
 ## Next
 
-Hand the analysis to the engineer for review. After they've acted, run `capture` to record it. If they want it on the ticket, run `publish` first.
+Hand the analysis to the engineer for review. Then close with two things, in this order:
+
+1. **A paste-ready reply draft.** Two to four sentences in Devin's voice for the channel the ticket came from (Slack thread or Jira comment): impact first, framed as a question where the finding admits one, nothing about the fix mechanism, no programming plumbing, no em dashes. Put it in its own code block with no preamble so it can be copied as-is. Devin edits and sends it himself; do not post it.
+2. **One line:** `Say "capture" and I will write the runbook entry.`
+
+Do not offer `publish` here. Mention it only when Devin asks to put the analysis on the ticket.
