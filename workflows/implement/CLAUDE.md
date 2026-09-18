@@ -36,7 +36,7 @@ These steps are **strictly sequential** — later steps depend on earlier ones a
 
 - Resolve the input:
   - JIRA ticket → `mcp__atlassian__getJiraIssue` (same pattern as `triage`) for title, description, acceptance criteria, linked issues.
-  - GitHub issue → `gh issue view {url} --json title,body`.
+  - GitHub issue → the GitHub MCP issue tool (fallback: `gh issue view {url} --json title,body`).
   - Freeform text → use as-is; if there's no clear, checkable behavior in it, ask before proceeding rather than inventing scope.
 - Resolve the target repo and check it out under `$GREYBEARD_DATA/sources/{repo}/` (same convention as `review`).
 - Check the current branch. If it's `main`/`master`, create a new branch named from the ticket ID or a short slug of the requirement (`er-1477`, `dark-mode-toggle`). If already on a feature branch, continue on it — this supports resuming a half-finished implementation rather than starting over.
@@ -91,11 +91,12 @@ A smoke check, not validation. `validate` walks the acceptance criteria; this st
 ### 8. Draft PR, only with `--pr`
 
 - Without `--pr`: end the closing summary with one line, `Say pr to push and open a draft PR.` Do nothing else.
-- With `--pr` (or when the human says `pr` afterwards): push the branch to `origin` and open a **draft** PR against `main` with `gh pr create --draft` (or the GitHub MCP), title from the ticket, body = the closing summary with the **Not built** section included. Print the URL. Never mark it ready for review; that is the human's call.
+- With `--pr` (or when the human says `pr` afterwards): push the branch to `origin` and open a **draft** PR against `main` with the GitHub MCP create-PR tool, `draft: true` (fallback: `gh pr create --draft`), title from the ticket, body = the closing summary with the **Not built** section included. Print the URL. Never mark it ready for review; that is the human's call.
 - This is the only place in the greybeard workflows that pushes, and only on request.
 
 ## Notes
 
+- **GitHub access: MCP first, `gh` as fallback.** Use the GitHub MCP tools (`mcp__GitHub__*`) for reading PRs, issues, files, reviews, and comments and for posting comments and reviews. They run inside Claude's process, so the Bash sandbox, its TLS proxy, and the keychain never get in the way. Fall back to the `gh` command only when the MCP is not connected yet (it starts through npx and can lag at session start); `gh` is excluded from the sandbox, so it works without a retry. Pushing local commits is always plain `git`; the MCP cannot push a branch.
 - Never pushes and never opens a PR unless asked with `--pr` or a `pr` reply, and then only a draft — otherwise the same convention as `review --fix`. The human decides when the branch is ready for review.
 - Never runs against a branch the user doesn't own — this pipeline commits as it goes, so it only ever runs on a branch you can write to, same reasoning as `review --fix`.
 - If step 1 or step 2 turns up real ambiguity, stop and ask. Steps 3–8 assume the scope is already settled.

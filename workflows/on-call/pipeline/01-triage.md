@@ -39,7 +39,7 @@ Then check the runbook INDEX for a matching scenario. **If there is an exact mat
 - **Search the codebase** in `$GREYBEARD_DATA/sources/{repo}/` — find related models, controllers, services, jobs. If the affected area is inside `domains/`, read that domain's `CLAUDE.md`. Cross-reference the knowledge-extraction domain record at `$GREYBEARD_DATA/output/knowledge-extraction/{repo}/domains/{domain}.md` for business-logic context.
 - **Check recent changes** for the affected paths:
   - `git -C "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/{repo}" log --oneline --since="2 weeks ago" -- <paths>`
-  - `gh pr list --state merged --search "<keywords>" --limit 5` (run from the repo clone)
+  - Merged PRs for the keywords: the GitHub MCP PR-list or issue-search tool (fallback: `gh pr list --state merged --search "<keywords>" --limit 5` from the repo clone)
   - If relevant, read the diff; note whether the fix is deployed or only on `main`.
 - **Search similar past tickets** with `mcp__atlassian__searchJiraIssuesUsingJql` (`cloudId: "sanabenefits.atlassian.net"`). Build JQL from summary terms, e.g. `project = ER AND status = Done AND summary ~ "extend plan" ORDER BY created DESC`. Read the resolution (usually in the comments) of the top 2–3. If a match carries an `ER-*.md` attachment, download and read it.
 - **Identify escalation contacts:**
@@ -99,6 +99,7 @@ Keep this depth **ready on request** (only applicable ones — don't pad with "N
 
 ## Guidelines
 
+- **GitHub access: MCP first, `gh` as fallback.** Use the GitHub MCP tools (`mcp__GitHub__*`) for reading PRs, issues, files, reviews, and comments and for posting comments and reviews. They run inside Claude's process, so the Bash sandbox, its TLS proxy, and the keychain never get in the way. Fall back to the `gh` command only when the MCP is not connected yet (it starts through npx and can lag at session start); `gh` is excluded from the sandbox, so it works without a retry. Pushing local commits is always plain `git`; the MCP cannot push a branch.
 - **Lead concise and impact-first; go deep on demand.** Open with plain-language impact/UX and a recommendation an on-call engineer can act on in seconds. Keep root cause, code paths, scripts, and prior art ready but offer them rather than dumping them. Technical depth is available, not absent.
 - **Confirm the hypothesis with read-only snippets before recommending any data change (Phase 1d) — this is non-negotiable.** Assume the engineer runs every snippet and reports back; you never run them yourself. Share read-only checks, wait for the output, then propose.
 - Be specific — exact files, line numbers, methods.
