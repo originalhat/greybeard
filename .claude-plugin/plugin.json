@@ -1,13 +1,13 @@
 {
   "name": "greybeard",
   "version": "0.1.1",
-  "description": "AI-powered code workflows: code review, implementation, knowledge extraction, security testing, design audit, refactoring campaigns, and on-call triage. Install once, run from any project.",
+  "description": "AI-powered code workflows: code review, implementation, knowledge extraction, security testing, design audit, refactoring campaigns, and on-call triage, and retrospectives on how the agent worked. Install once, run from any project.",
   "author": {
     "name": "Jason Moore",
     "email": "casconed@gmail.com"
   },
   "license": "MIT",
-  "keywords": ["code-review", "security", "knowledge-extraction", "design-audit", "refactoring", "on-call", "triage"],
+  "keywords": ["code-review", "security", "knowledge-extraction", "design-audit", "refactoring", "on-call", "triage", "retro", "retrospective"],
   "homepage": "https://github.com/casconed/greybeard",
   "repository": "https://github.com/casconed/greybeard",
   "hooks": "./hooks/hooks.json"

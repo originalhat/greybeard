@@ -13,6 +13,7 @@ Greybeard is a collection of structured AI agent workflows that help you:
 5. **Audit design** consistency across frontend codebases
 6. **Run campaigns** — systematic large-scale refactoring across many files over multiple sessions
 7. **Triage on-call tickets** — investigate incidents, propose fixes, and turn each resolution into durable runbooks
+8. **Run retrospectives** — read recent agent threads, quantify recurring friction, and approve the most deterministic fix for each pattern
 
 Each workflow is a set of prompts and templates that guide AI agents through multi-stage analysis.
 
@@ -66,6 +67,7 @@ Then ask Claude to run a workflow (the leading word routes it):
 - `"Design audit my-repo"`
 - `"Campaign plan 'convert all JS to TypeScript' in my-repo"`
 - `"Triage <Jira ticket URL>"`
+- `"retro"` (or `"retro --days 7"`)
 
 ## Layout
 
@@ -100,10 +102,13 @@ greybeard/
 │   ├── campaign/                # Large-scale refactoring campaign execution
 │   │   ├── context/             # Archetype-specific gotchas
 │   │   └── pipeline/            # 6-phase plan → execute → review cycle
-│   └── on-call/                 # On-call ticket triage + self-improving runbooks
-│       ├── pipeline/            # 5-phase triage → publish → capture → curate → sync
-│       ├── context/             # Authoring standard + escalation map
-│       └── templates/           # Runbook, audit, and index templates
+│   ├── on-call/                 # On-call ticket triage + self-improving runbooks
+│   │   ├── pipeline/            # 5-phase triage → publish → capture → curate → sync
+│   │   ├── context/             # Authoring standard + escalation map
+│   │   └── templates/           # Runbook, audit, and index templates
+│   └── retro/                   # Retrospective over recent threads → quantified, ranked improvements
+│       ├── pipeline/            # 5-phase gather → summarize → synthesize → report → apply
+│       └── templates/           # Report, thread summary, state schema
 ├── sources/                     # Repo relationship docs
 └── sketches/                    # Drafts and ideas
 ```
@@ -121,7 +126,8 @@ $GREYBEARD_DATA/                       # default ~/.greybeard-data/
     ├── campaigns/{repo}/{campaign}/
     ├── code-review/{repo}/fix-runs/    # review-fix audit records (one per run)
     ├── code-review/{repo}/runs/        # plain review run records (one per review)
-    └── on-call/                       # Runbooks (by repo/domain) + PHI-free audit logs
+    ├── on-call/                       # Runbooks (by repo/domain) + PHI-free audit logs
+    └── retro/                         # Retro state, reports, changelog (or $RETRO_HOME → a private repo)
 ```
 
 ## Workflows
