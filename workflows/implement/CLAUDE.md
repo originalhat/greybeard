@@ -13,7 +13,7 @@ No lenses or templates of its own. Step 5 reuses `review-fix` and `code-review` 
 
 ## Inputs
 
-Triggered by **`/implement <ticket-or-requirements>`**, optionally **`in <repo>`**.
+Triggered by **`/implement <ticket-or-requirements>`**, optionally **`in <repo>`** and/or **`--skip-ui`** (skip the render check in step 7).
 
 - A JIRA ticket URL (`https://sanabenefits.atlassian.net/browse/ER-1477`) or bare ticket ID, a GitHub issue URL, or pasted freeform requirements.
 - The target repo: explicit `in <repo>`, else inferred from the ticket, else the current working directory's repo.
@@ -25,7 +25,7 @@ Triggered by **`/implement <ticket-or-requirements>`**, optionally **`in <repo>`
   - One implementation commit covering the tests and the code together (or a small number, if the requirements naturally split into independent pieces).
   - `review-fix`'s own auto-fix commits, unmodified from how that pipeline already commits.
   - One correction commit, if step 6 finds anything to fix.
-- A closing summary: what was implemented, what `review --fix` found and fixed, and what's still open and needs a human.
+- A closing summary: what was implemented, what `review --fix` found and fixed, what's still open and needs a human, and the render-check result from step 7 (screenshot paths, or why it was skipped).
 - Never a push, never a PR. The branch stays local until the human decides it's ready.
 
 ## Execution
@@ -74,9 +74,21 @@ Test behavior, not implementation: assert on what the system does, not how it do
 - Leave anything that's a genuine judgment call — a naming preference, a scope question, "should this actually be here" — for the closing summary instead of guessing.
 - When the change is reachable through a UI, mention in the closing summary that `validate` (`${CLAUDE_PLUGIN_ROOT}/workflows/validate/CLAUDE.md`) is the next step — this pipeline doesn't run it itself.
 
+### 7. Render check, unless `--skip-ui`
+
+A smoke check, not validation. `validate` walks the acceptance criteria; this step only confirms the pages this branch touched render and look like their neighbours.
+
+- Applies when the diff touches a view, template, component, or stylesheet. Skip it outright for backend-only changes and say so in the summary. Skip it when the invocation carries `--skip-ui` (or "skip the UI check", "no browser").
+- When it applies, spawn a subagent (model: `sonnet`) to:
+  - Launch the app — check for a project-specific launch skill first (e.g. `run`), otherwise start it per the target repo's conventions.
+  - Load each changed page once via the `playwright` MCP tools and take one screenshot per page. No clicking through flows, no criteria walkthrough.
+  - Look at the screenshot next to the nearest existing page of the same kind (a list next to the queue list, a form next to an existing form) and report anything visibly off: spacing, row styling, icons, alignment, a component that did not render.
+- If a page fails to render or is visibly inconsistent with its neighbours, fix that before the closing summary and re-check once. Anything that needs a design decision goes in the summary instead.
+- Put the screenshot paths in the closing summary.
+
 ## Notes
 
 - Never pushes and never opens a PR — same convention as `review --fix`. The human decides when the branch is ready.
 - Never runs against a branch the user doesn't own — this pipeline commits as it goes, so it only ever runs on a branch you can write to, same reasoning as `review --fix`.
-- If step 1 or step 2 turns up real ambiguity, stop and ask. Steps 3–6 assume the scope is already settled.
+- If step 1 or step 2 turns up real ambiguity, stop and ask. Steps 3–7 assume the scope is already settled.
 - Resuming: if the branch from a prior `/implement` run already exists with partial work, step 1 picks it up rather than starting over.
