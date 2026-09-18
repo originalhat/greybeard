@@ -16,6 +16,7 @@ $GREYBEARD_DATA/
     ├── design-audit/{repo}/          # Inventory, findings, design specs
     ├── campaigns/{repo}/{campaign}/  # Campaign strategy, inventory, plan, batch reviews
     ├── code-review/{repo}/fix-runs/  # review-fix audit records (one per run)
+    ├── code-review/{repo}/runs/      # plain review run records (one per review)
     └── on-call/                      # Runbooks (per repo, by domain) and PHI-free audit logs
 ```
 

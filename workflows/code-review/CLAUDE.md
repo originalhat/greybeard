@@ -9,7 +9,7 @@ code-review/
 ├── CLAUDE.md           # You are here
 ├── lenses/             # Generalized technical review criteria
 ├── context/            # Repo/team-specific review criteria
-└── templates/          # Canonical output format
+└── templates/          # Canonical output format and the run record
 ```
 
 ## Inputs
@@ -25,9 +25,11 @@ A single impact-first report: a pass/fail/nit tally, then numbered failures, the
 
 **The format is defined in `templates/REPORT-FORMAT.md` and is not optional.** Read it before writing the report.
 
+A run record at `$GREYBEARD_DATA/output/code-review/{repo}/runs/{date}-{pr{n} | branch}.md` per `templates/REVIEW-RUN-RECORD.md`: every finding the lenses raised, what steps 8 and 8b did with each one and why, the falsifiers, and the final tally. The report is for the author; the record is for whoever later asks why a finding was kept, demoted, or dropped.
+
 ## Modes
 
-Plain `review` runs steps 1–10 below and stops at the report. Two flags change what happens after step 4 or after step 10; neither changes the evaluation itself.
+Plain `review` runs steps 1–11 below: the report, then the run record. Two flags change what happens after step 4 or after step 11; neither changes the evaluation itself.
 
 ### `--fix` (auto-fix)
 
@@ -37,7 +39,7 @@ If the invocation includes `--fix` (or "fix this branch", "auto-fix mode", "revi
 
 ### `--interactive` (draft-and-post)
 
-If the invocation includes `--interactive` (or "interactive review", "walk through findings", "draft comments one by one"): run steps 1–10 exactly as written, print the full report, then **stop and switch into a 1-by-1 draft-and-post loop** for each numbered failure. If no PR exists for the branch, say so before starting — there is nowhere to post.
+If the invocation includes `--interactive` (or "interactive review", "walk through findings", "draft comments one by one"): run steps 1–11 exactly as written, print the full report, then **stop and switch into a 1-by-1 draft-and-post loop** for each numbered failure. If no PR exists for the branch, say so before starting — there is nowhere to post.
 
 For each failure, in order:
 
@@ -52,6 +54,8 @@ For each failure, in order:
    - *"That is intentional."* Look for the comment, the doc, or the test that says so. Design intent that lives only in a PR reply is worth one question about where it is written down.
 
    After conceding anything, re-read the findings still open. A conceded premise usually promotes one of them — if the author is right that the gate is wrong, then every path that skips that gate matters more than it did, not less.
+
+Every post, user drop, reclassification, and concession in this loop is appended to the run record from step 11 under `## Interactive`, one line each with the finding number and the reason or `html_url`.
 
 **Voice rules for interactive drafts** (do not restyle):
 
@@ -93,6 +97,7 @@ These steps are **strictly sequential** — do not start a step until all prior 
 
 9. **Cross-Repo Analysis** (frontier model): If needed, check related repos in `$GREYBEARD_DATA/sources/` for breaking changes (see below)
 10. **Final Summary**: Write the report per `templates/REPORT-FORMAT.md`. Pre-existing findings go in their own section, ranked last, never counted as a failure or nit. Retain each finding's `file:line`, call path, and suggested fix in context to answer follow-ups — none of it goes in the report.
+11. **Run Record**: Write `$GREYBEARD_DATA/output/code-review/{repo}/runs/{YYYY-MM-DD}-{pr{n} | branch}.md` per `templates/REVIEW-RUN-RECORD.md`. List every finding steps 5–6 raised, not only the survivors, each with its step 8 or 8b outcome (`kept`, `demoted to nit`, `promoted`, `dropped (8)`, `dropped (8b)`, `pre-existing`) and a one-line reason; the falsifier named for each surviving finding and whether it could be tested; any re-ranking from 8b; the cross-repo result; and the tally. PHI-free, one line per item. Create the `runs/` directory if it does not exist. This is the only durable record of the review; the report lives in the thread.
 
 ### Cross-Repo Analysis
 
@@ -126,6 +131,7 @@ Repo and team-specific criteria:
 ## Notes
 
 - **Output format is fixed**: `templates/REPORT-FORMAT.md`. Impact in the heading, context then consequence in the body, one-sentence Fix, lens name in the footer. Number the failures, tally the passes, then list the nits one line each, then any pre-existing findings one line each. Never enumerate all lenses.
+- **The run record is the audit trail.** A retro on a missed or wrongly dropped finding reads `$GREYBEARD_DATA/output/code-review/{repo}/runs/`, not the thread transcript. If a lens never raised the finding, that is a lens gap; if it was raised and dropped, the record's `Why` column says what step 8 or 8b believed. Write the record even when the tally is all passes.
 - **Fact-check confirms; step 8b tries to falsify.** These are different jobs and the second one is the one that gets skipped. Confirming a mechanism is easy and feels like verification. The finding still dies if some other path recovers the user, or if the behavior it calls a divergence is the correct one. Name the falsifier, go look for it, and drop what fails.
 - **Pre-existing findings are determined in fact-check, not per-lens**: a finding is pre-existing if its file:line isn't part of this branch's diff and the branch didn't newly expose or make it reachable. It's real, but it isn't this PR's to fix, so it ranks last and is never counted as a failure or nit.
 - **No metaphors in findings.** No "blast radius", "retry storm", "footgun". Say what happens. Short active sentences, one term per concept.

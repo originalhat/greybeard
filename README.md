@@ -120,6 +120,7 @@ $GREYBEARD_DATA/                       # default ~/.greybeard-data/
     ├── design-audit/{repo}/
     ├── campaigns/{repo}/{campaign}/
     ├── code-review/{repo}/fix-runs/    # review-fix audit records (one per run)
+    ├── code-review/{repo}/runs/        # plain review run records (one per review)
     └── on-call/                       # Runbooks (by repo/domain) + PHI-free audit logs
 ```
 
