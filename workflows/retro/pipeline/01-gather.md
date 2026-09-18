@@ -21,7 +21,7 @@ bb project list --include-personal --json
 Keep a thread when `updatedAt` is inside the window. Exclude:
 
 - the current thread (`$BB_THREAD_ID`)
-- any thread whose `title` or `titleFallback` contains `[retro]`
+- any thread whose `title` or `titleFallback` contains `[retro]` (or the legacy marker `[claude-improvement-review]` from the automation this workflow replaced)
 - threads already in `reviewedThreadIds` **unless** their `updatedAt` is after `lastRunAt` (they had new activity; re-read them, and in the summary say what is new)
 - `--project <name>` when given: keep only that project's threads
 
