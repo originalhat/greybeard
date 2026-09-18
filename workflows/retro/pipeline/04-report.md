@@ -6,6 +6,8 @@ Write the report and the state, keep the repo honest, end the turn once.
 
 Write `$RETRO_HOME/reports/YYYY-MM-DD.md` per `templates/RETRO-REPORT.md`, dated in the user's timezone. If the file exists, append a `## Run N` section instead of overwriting.
 
+Write it in a few small commands, not one compound command that also updates state and commits: a single very large heredoc can be refused by the permission classifier as a transient error and you lose the whole step. Report file first, then state, then the commit.
+
 ## State
 
 Update `$RETRO_HOME/state.json` per `templates/STATE.md`:
