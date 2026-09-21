@@ -32,6 +32,10 @@ Each lens:
 | `PUSHBACK-HANDLING` | When the user disagreed: verified and conceded, verified and held, folded, or defended |
 | `CLARIFYING-QUESTIONS` | Questions that were derivable, and guesses that needed a question |
 | `CHAT-NOISE` | Assistant messages carrying nothing actionable |
+| `REPEATED-ROUTINE` | Routine done by hand that a skill or script should do; skills and scripts that existed but did not run |
+| `SCOPE-DRIFT` | Work outside the ask, kept or reverted |
+| `HANDOFF` | Threads that ended without a state a later session could resume from |
+| `COMMS-REWRITES` | Drafts for other people the user rewrote before sending, by kind of rewrite |
 
 ## Adding a lens
 

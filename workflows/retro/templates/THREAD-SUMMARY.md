@@ -25,6 +25,10 @@ The block is a fixed header followed by **one line per lens**, in the order the 
 - **Pushback ({N}):** "{challenge}" → {verified, conceded | verified, held | folded | defended} → {right | wrong | unknown}; …
 - **Clarifying questions:** asked {N} ({n} derivable); missed {N} → {guess} cost {…}
 - **Chat noise:** {N} of {M} assistant messages carried nothing actionable; longest run {N}
+- **Repeated routine:** gap: {sequence} (also in {ids}); miss: {thing} existed, {instead}; … | none
+- **Scope drift ({N}):** {tangent} ({size}) → {kept | reverted | split out}; …
+- **Handoff:** {clean | missing: {what}} · {N} min re-derived in {later thread} | n/a
+- **Comms rewrites:** {N} of {M} drafts rewritten ({kinds}); …
 ```
 
 Rules the subagent follows: `bb thread log <id> --format minimal --all` for content, `--format json --all` for timestamps; a user line followed by `steer` is mid-turn guidance; a sandbox failure that worked when retried outside is sandbox friction, not a broken tool; a lens with nothing to report still gets its line with `none` or `0`; no member names, identifiers, credentials, or test-data values anywhere in the block.
