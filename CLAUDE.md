@@ -40,6 +40,7 @@ git clone <repo-url> "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources/<repo-nam
 greybeard/
 ├── .claude-plugin/plugin.json   # Plugin manifest
 ├── hooks/hooks.json             # SessionStart hook: creates $GREYBEARD_DATA dirs
+├── hooks/sync-skills-if-changed.sh  # Stop hook (user settings): re-runs skills/sync-local.sh when a SKILL.md changed
 ├── agents/                      # Custom subagents (canonical Claude Code frontmatter)
 │   └── sync-local.sh            # Generates ~/.claude/agents + ~/.pi/agent/agents copies
 ├── skills/                      # One skill per workflow — auto-activates on its trigger words
