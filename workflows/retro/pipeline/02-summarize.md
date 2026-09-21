@@ -15,9 +15,11 @@ A private lens with the same filename as a general one replaces it. Read each le
 
 ## How to run it
 
-- Batch threads five to eight per subagent. Launch every batch in **one message** with `run_in_background: false`, so they run in parallel and the turn does not end until all are back. Background subagents make the thread go idle between hand-backs, which pings the user with half-finished status lines and breaks `bb thread wait`.
+- **One subagent per thread.** Every subagent must read its thread's log in full anyway, and the lenses all work from that one read, so the thread is the unit of fan-out. Batching threads only makes each subagent slower and its context fuller.
+- Use the `retro-summarizer` agent (`${CLAUDE_PLUGIN_ROOT}/agents/retro-summarizer.md`, synced to `~/.claude/agents/`): Sonnet at high effort, read-only tools, with the reading rules and header fields baked in. If that agent type is not installed, fall back to `general-purpose` with `model: sonnet` and paste the reading rules below into the prompt.
+- Launch all of them in **one message** with `run_in_background: false`, so they run in parallel and the turn does not end until all are back. Background subagents make the thread go idle between hand-backs, which pings the user with half-finished status lines and breaks `bb thread wait`. If there are more than about twelve threads, launch in waves of twelve, each wave one message.
 - Never read a full log into your own context. The subagent reads; you receive the summary.
-- Give each subagent the summary template verbatim, the full text of every lens, the PHI rule, and the reading rules below. The lens files carry the counting rules and false positives; the subagent follows them, not its own sense of what matters.
+- Each subagent's prompt contains: the thread id, title, project, and repo path; whether it was previously reviewed and the `lastRunAt` timestamp if so; the summary template verbatim; and the full text of every lens in the order listed above. The lens files carry the counting rules and false positives; the subagent follows them, not its own sense of what matters.
 
 ## Reading rules for the subagent
 

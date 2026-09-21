@@ -62,7 +62,7 @@ Phases are sequential. Read each pipeline file when you reach it.
 
 ### Model tiers
 
-- Summaries (phase 2): a fast mid-tier model, one subagent per batch of threads, run in the foreground.
+- Summaries (phase 2): the `retro-summarizer` agent (`agents/retro-summarizer.md`), Sonnet at high effort with read-only tools, one subagent per thread, all launched in one message in the foreground.
 - Synthesis, evidence verification, and apply (phases 3 and 5): the most capable model available. These need judgment.
 
 ## Principles
