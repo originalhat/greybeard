@@ -28,7 +28,9 @@ status` prints open suggestions and acceptance counts.
 **Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/retro/AGENTS.md`.
 
 That file holds the five-phase `pipeline/` (gather → summarize → synthesize →
-report → apply) and `templates/`. State, reports, design notes, and the
+report → apply), the `lenses/` that define what is measured (one file per kind
+of friction; add a file to extend, or drop private ones in `$RETRO_HOME/lenses/`),
+and `templates/`. State, reports, design notes, and the
 changelog live in `$RETRO_HOME` (default
 `$GREYBEARD_DATA/output/retro/`). If that directory is inside a git repo, every
 run and every applied suggestion is committed there. Point `RETRO_HOME` at a

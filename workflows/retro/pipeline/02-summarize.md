@@ -1,12 +1,23 @@
 # Phase 2: Summarize
 
-One structured summary per thread, produced by subagents, in the shape of `templates/THREAD-SUMMARY.md`.
+One structured summary per thread, produced by subagents, in the shape of `templates/THREAD-SUMMARY.md`: a fixed header (ask, outcome, new-since-last-review) plus **one line per lens**.
+
+## Lenses
+
+Before launching subagents, list the lenses:
+
+```bash
+ls ${CLAUDE_PLUGIN_ROOT}/workflows/retro/lenses/*.md | grep -v AGENTS.md
+ls "$RETRO_HOME"/lenses/*.md 2>/dev/null
+```
+
+A private lens with the same filename as a general one replaces it. Read each lens file once yourself so you know what phase 3 will receive; pass the full text of every lens to each subagent. Each lens's **Summary line** is the line the subagent writes for it, in the order the lenses are listed. A lens with nothing to report still gets its line, with `none` or `0`.
 
 ## How to run it
 
 - Batch threads five to eight per subagent. Launch every batch in **one message** with `run_in_background: false`, so they run in parallel and the turn does not end until all are back. Background subagents make the thread go idle between hand-backs, which pings the user with half-finished status lines and breaks `bb thread wait`.
 - Never read a full log into your own context. The subagent reads; you receive the summary.
-- Give each subagent the summary template verbatim, the PHI rule, and the reading rules below.
+- Give each subagent the summary template verbatim, the full text of every lens, the PHI rule, and the reading rules below. The lens files carry the counting rules and false positives; the subagent follows them, not its own sense of what matters.
 
 ## Reading rules for the subagent
 

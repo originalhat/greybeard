@@ -7,9 +7,12 @@ A retrospective over recent bb threads. It reads what the agent did, measures wh
 ```
 retro/
 ├── AGENTS.md              # You are here
+├── lenses/                # One file per thing phase 2 looks for; add a file to extend
+│   ├── AGENTS.md          # Lens shape and the table of general lenses
+│   └── {NAME}.md          # CORRECTIONS, STEERS, TOOL-FAILURES, WAITING, …
 ├── pipeline/
 │   ├── 01-gather.md       # Window, thread list, exclusions
-│   ├── 02-summarize.md    # Per-thread summaries with counts and timings
+│   ├── 02-summarize.md    # Per-thread summaries: header fields + one line per lens
 │   ├── 03-synthesize.md   # Patterns → suggestions, ranked by the fix ladder
 │   ├── 04-report.md       # Report, state, commit
 │   └── 05-apply.md        # Walkthrough, apply, reject, changelog, commits
@@ -27,6 +30,7 @@ Agents repeat mistakes across threads because nothing reads across threads. This
 
 - The bb CLI (`bb thread list`, `bb thread log`, `bb project list`). Threads across all projects unless `--project <name>` narrows it.
 - `$RETRO_HOME`: where state, reports, designs, and the changelog live. Default `${GREYBEARD_DATA:-$HOME/.greybeard-data}/output/retro/`. Set it to a directory inside a **private** git repo to get history and revert for free. Never point it at a public repo: reports describe internal threads, tickets, and vendors.
+- Optional `$RETRO_HOME/lenses/*.md`: private lenses, same shape as `lenses/*.md`, for one team's recurring pains or metrics. Read alongside the general lenses; a private lens with the same filename replaces the general one.
 - Optional `$RETRO_HOME/links`: one line per tracked config file, `<live path><TAB><path relative to RETRO_HOME>`, for config files that are symlinked into the repo. Each run verifies and repairs them (see `04-report.md`).
 - Optional MCPs: Linear or Jira for turning large suggestions into tickets, GitHub for reading PRs cited as evidence.
 
@@ -51,7 +55,7 @@ Agents repeat mistakes across threads because nothing reads across threads. This
 Phases are sequential. Read each pipeline file when you reach it.
 
 1. **Gather** (`pipeline/01-gather.md`): compute the window, list qualifying threads, exclude the workflow's own threads.
-2. **Summarize** (`pipeline/02-summarize.md`): one structured summary per thread, with counts and durations, via foreground subagents.
+2. **Summarize** (`pipeline/02-summarize.md`): one structured summary per thread — fixed header fields plus one line per lens in `lenses/` and `$RETRO_HOME/lenses/` — via foreground subagents.
 3. **Synthesize** (`pipeline/03-synthesize.md`): cluster summaries into patterns, quantify each, check what guidance already exists, choose the lowest rung on the fix ladder that removes the cause, write suggestions.
 4. **Report** (`pipeline/04-report.md`): write the report and state, verify links, commit, end the turn with the summary and the one-line walkthrough offer.
 5. **Apply** (`pipeline/05-apply.md`): present one suggestion at a time; apply each only on the user's approval, exactly as approved; record; commit; present the next.
@@ -69,6 +73,20 @@ Phases are sequential. Read each pipeline file when you reach it.
 - **Propose, then wait.** The scheduled run never applies anything. Rejected suggestions are never re-proposed. Deferred ones wait for new evidence.
 - **PHI-free.** Summaries, reports, and state describe situations generically. No member names, identifiers, dates of birth, credentials, or test-data values, even from staging.
 - **Finish the turn.** Subagents run in the foreground. The run ends once, on the report. No status lines between batches.
+
+## Components
+
+### Lenses (`lenses/`)
+
+What the retrospective measures. Each lens is one countable kind of friction with its signal in the log, its unit, the exact summary line it produces, its typical rung on the fix ladder, and its false positives. Ten ship with the workflow (`lenses/AGENTS.md` lists them). Extending the retrospective means adding a lens file, in this repo for general ones or in `$RETRO_HOME/lenses/` for private ones; nothing else changes.
+
+### Pipeline (`pipeline/`)
+
+The five phases above, one file each.
+
+### Templates (`templates/`)
+
+`RETRO-REPORT.md` (report shape), `THREAD-SUMMARY.md` (what a summarizing subagent returns: header fields plus the lens lines), `STATE.md` (`state.json` schema and status vocabulary).
 
 ## Notes
 

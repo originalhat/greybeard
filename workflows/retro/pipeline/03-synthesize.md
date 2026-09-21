@@ -4,6 +4,8 @@ Turn the summaries into a small number of quantified, evidenced suggestions, eac
 
 ## 1. Cluster
 
+Work lens by lens first: for each lens, line up its summary lines across all threads and look for the same cause. Then look across lenses, because one cause often shows up in several (a sandbox failure under `TOOL-FAILURES`, the retry under `MANUAL-STEPS`, the minutes under `WAITING`). A pattern is named by its cause, not by the lens that caught it.
+
 Group summary items into patterns. A pattern needs the same underlying cause in **two or more threads**, or one thread where it cost more than fifteen minutes or three corrections. One-off mistakes go in the report's observations section, not in a suggestion.
 
 Signals worth clustering on:
@@ -56,7 +58,7 @@ Before proposing, read the guidance that already applies, so the suggestion is n
 
 ## 5. Choose the rung on the fix ladder
 
-For each pattern, walk the ladder top to bottom and stop at the first rung that removes the cause. Say which rung you chose and why the rungs above it do not apply.
+For each pattern, walk the ladder top to bottom and stop at the first rung that removes the cause. Say which rung you chose and why the rungs above it do not apply. The lens that caught the pattern names its **typical fix rung**; start there, but the cause decides, not the lens.
 
 1. **Configuration or tooling.** Sandbox allow-lists and excluded commands, MCP endpoints and auth, permission rules, environment variables, git or editor config. Deterministic: the failure cannot recur. Example: excluding `gh` from the sandbox instead of a rule about retrying unsandboxed.
 2. **Structure.** Worktrees instead of a shared checkout, a script that does the manual steps, an automation, a template, a hook. The agent does not have to remember because the environment does it.

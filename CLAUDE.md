@@ -76,6 +76,7 @@ greybeard/
 │   │   ├── context/             # Authoring standard + escalation map
 │   │   └── templates/           # Runbook, audit entry, and index templates
 │   └── retro/                   # Retrospective over recent threads → quantified, ranked improvements
+│       ├── lenses/              # What is measured: one file per kind of friction (extend by adding a file)
 │       ├── pipeline/            # 5-phase gather → summarize → synthesize → report → apply
 │       └── templates/           # Report, thread summary, state schema
 ├── sources/AGENTS.md            # Repo-relationship docs (edit in place)
