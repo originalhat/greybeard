@@ -21,8 +21,8 @@ bb project list --include-personal --json
 Keep a thread when `updatedAt` is inside the window. Exclude:
 
 - the current thread (`$BB_THREAD_ID`)
-- any thread whose `title` or `titleFallback` contains `[retro]` (or the legacy marker `[claude-improvement-review]` from the automation this workflow replaced)
-- threads already in `reviewedThreadIds` **unless** their `updatedAt` is after `lastRunAt` (they had new activity; re-read them, and in the summary say what is new)
+- any thread whose `title` or `titleFallback` contains `[retro]` (or the legacy marker `[claude-improvement-review]` from the automation this workflow replaced). Scheduled threads get a generated title without the marker, so also check the first user message: `bb thread log <id> --format minimal --all | head -3`
+- threads already in `reviewedThreadIds` **unless** they have log events after `lastRunAt`. `updatedAt` alone is not enough: archiving, pinning, or reading a thread bumps it without new activity. Confirm with the json log (`bb thread log <id> --format json --all`, last `createdAt` > `lastRunAt`) before re-reading, and in the summary say what is new
 - `--project <name>` when given: keep only that project's threads
 
 Map `projectId` to project names. Keep `environmentPath`, `providerId`, `status`, `createdAt`, `updatedAt` per thread; the summaries and the report use them.
