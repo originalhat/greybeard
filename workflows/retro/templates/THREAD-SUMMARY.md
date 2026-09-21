@@ -20,6 +20,11 @@ The block is a fixed header followed by **one line per lens**, in the order the 
 - **Design overreach:** {built} instead of {asked}; cost {…} | none
 - **Residue:** {item} in {where}; … | none
 - **System notices:** {notice} → {acted | worked around | ignored}; … | none
+- **Unverified claims ({N}):** "{claim}" → {caught by user | uncaught} → {true | false | unknown}; …
+- **Sunk-cost streaks ({N}):** {approach} × {attempts} over {N} min → {ending}; …
+- **Pushback ({N}):** "{challenge}" → {verified, conceded | verified, held | folded | defended} → {right | wrong | unknown}; …
+- **Clarifying questions:** asked {N} ({n} derivable); missed {N} → {guess} cost {…}
+- **Chat noise:** {N} of {M} assistant messages carried nothing actionable; longest run {N}
 ```
 
 Rules the subagent follows: `bb thread log <id> --format minimal --all` for content, `--format json --all` for timestamps; a user line followed by `steer` is mid-turn guidance; a sandbox failure that worked when retried outside is sandbox friction, not a broken tool; a lens with nothing to report still gets its line with `none` or `0`; no member names, identifiers, credentials, or test-data values anywhere in the block.

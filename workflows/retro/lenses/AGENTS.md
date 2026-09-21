@@ -27,6 +27,11 @@ Each lens:
 | `DESIGN-OVERREACH` | Built more, or bigger, than the ask |
 | `RESIDUE` | Records, files, packages, worktrees left behind |
 | `SYSTEM-NOTICES` | Deprecations, auth failures, sandbox denials the agent was told about |
+| `UNVERIFIED-CLAIMS` | Results asserted without the command or check that would produce them |
+| `SUNK-COST` | Streaks of the same failing approach instead of stepping back |
+| `PUSHBACK-HANDLING` | When the user disagreed: verified and conceded, verified and held, folded, or defended |
+| `CLARIFYING-QUESTIONS` | Questions that were derivable, and guesses that needed a question |
+| `CHAT-NOISE` | Assistant messages carrying nothing actionable |
 
 ## Adding a lens
 
