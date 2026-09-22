@@ -15,10 +15,12 @@ Security of the integration is `EMBEDDED-INTEGRATION-SECURITY`. Repeated calls p
 - Dropped connection, timeout, 502/503/504: retried, or failed on the first attempt?
 - **Retry only what is safe to repeat.** A read can be retried. A write (POST, PATCH, PUT that is not idempotent by contract) may already have gone through; a retry can create a duplicate.
 - **Retry count and where it is set.** Retries belong on the client, set at construction, not sprinkled at call sites. A client with hidden retries doubles every caller's worst case.
+- **Always state the read retry posture**, in one line, even when nothing else is wrong: does the client retry any read, where is the count set, which callers opt out. A client that retries no read at all, called from a webhook or background job for a fetch that a second attempt would usually answer, is a LOW finding; name it rather than leaving it implicit. Do not let a job-level retry with backoff stand in for it without saying that is the trade.
 - **Retries inside a latency budget.** If the call runs on a request path with a deadline (a launch, a page load), a retry doubles the worst case for one call while the budget check happens elsewhere. Either the budget knows about the retry, or that path builds its client with none, and the code says which.
 
 ### Timeouts and budgets
 - Connect and read timeouts are set, and set once: on the client or its construction, not as constants copied into every service that calls it. Two services with different copies of "the" timeout is a finding (see `OBJECT-DESIGN`).
+  **How to check:** grep the app for every timeout constant or keyword the diff's calls use (`grep -rn 'connect_timeout\|CONNECT_TIMEOUT' app/`) and list each file that defines its own value. Report the count.
 - A synchronous path that makes K calls with timeout T has a worst case of K×T. Say the number. If a human is waiting, compare it to what they would tolerate.
 
 ### Partial success

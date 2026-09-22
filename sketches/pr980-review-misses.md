@@ -4,6 +4,8 @@ PR: https://github.com/origami-medical/care_platform/pull/980 (PROD-2137, merged
 
 **Status (2026-09-22):** all ten ideas below were applied the same day. The ledger entry is at `$GREYBEARD_DATA/output/code-review/care_platform/calibration.md`.
 
+Re-running the three changed or new lenses against the PR as the humans saw it: 7 of the 9 never-raised or misjudged concerns now hit, one is a passing nit, one nit (pass ids, not the hash) still does not. Two of the hits needed the lenses to carry a concrete grep step rather than a stated rule. Details in the ledger entry's Verification section.
+
 Two human reviewers left 15 review threads. This compares each against what the pipeline
 raised, using the run records in `$GREYBEARD_DATA/output/code-review/care_platform/` and the
 implement thread `thr_xjn9c9vypu`.

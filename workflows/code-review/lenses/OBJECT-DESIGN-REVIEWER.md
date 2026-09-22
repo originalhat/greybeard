@@ -9,10 +9,12 @@ Detect objects whose boundaries are in the wrong place: signatures that leak how
 ### Signatures that leak implementation
 - Credentials, tokens, timeouts, retry counts, or a collaborator (`client:`) passed on every call. The caller now knows how the object talks to its dependency. These belong in the constructor, set once, so the scoped calls take only what they are about.
 - A whole payload or params hash passed where the method uses two fields from it. The method's real inputs are hidden; every caller must know the payload shape.
+  **How to check:** for each new or changed method that takes a hash, payload, or params argument, count the keys it reads. Two or fewer is a nit: name the keys and suggest passing them.
 - Optional keyword arguments that only tests use.
 
 ### Knowledge in more places than one
 - The same constant (a timeout, a limit, a header name, a metric prefix) defined in more than one file. Count the files and name them. Two copies drift; six copies are a config the adapter should own.
+  **How to check:** for every constant the diff defines or redefines, grep the app for its name (`grep -rn 'RESPONSE_TIMEOUT' app/`) and report the file count with the list. Three or more files is HIGH whether the diff added the first copy or the sixth. Do this before deciding there is no duplication; reading the diff alone cannot see the other copies.
 - The same mapping (model → payload, payload → attributes) written in two services.
 - A rule about one model (how to resolve it from an external id, what makes two rows the same person) implemented outside that model.
 
