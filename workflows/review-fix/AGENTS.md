@@ -29,6 +29,7 @@ Triggered by **`review --fix`** (current branch) or **`review --fix <branch> in 
 - Local commits on the branch — one per fix round, kept separate from the author's original commits.
 - A final report in `REPORT-FORMAT.md`'s shape, covering whatever `ask-user` findings are still open after the loop stops, prefixed with a short "Auto-fixed" table of what was resolved automatically.
 - A run record at `$GREYBEARD_DATA/output/code-review/{repo}/fix-runs/{branch}-{timestamp}.md` per `templates/FIX-RUN-RECORD.md` — rounds run, per-round counts, commits created, final status. One-shot audit trail, not resumable state; there is no catch-up mode for this workflow.
+- A plain review run record in `$GREYBEARD_DATA/output/code-review/{repo}/runs/` for **every round**, written by the `review` pipeline's step 11 exactly as a standalone `review` writes it. The fix-run record names each one. A fix-run record with no `runs/` files behind it means the rounds did not run the pipeline.
 - Never a push. The branch stays local until the human pushes it.
 
 ## Execution
@@ -44,10 +45,10 @@ Triggered by **`review --fix`** (current branch) or **`review --fix <branch> in 
 
 These steps are **strictly sequential** within a round; rounds run one after another, never in parallel.
 
-1. **Initial review**: Run the standard `review` pipeline (`../code-review/AGENTS.md`, unmodified) against the current branch. This is exactly what plain `review` produces — same lenses, same context, same fact-check.
+1. **Initial review**: Run the standard `review` pipeline (`../code-review/AGENTS.md`, unmodified) against the current branch. This is exactly what plain `review` produces — same lenses, same context, same fact-check, same run record in `runs/`.
 2. **Triage** (`pipeline/01-triage.md`): Classify every finding from step 1 as `auto-fix`, `ask-user`, or `no-op`.
 3. **Fixer** (`pipeline/02-fixer.md`): If there are any `auto-fix` findings, apply them and commit. If there are none, skip straight to step 6.
-4. **Gate — re-review** (`pipeline/03-gate.md`): Re-run the standard `review` pipeline fresh against the updated branch — a new invocation, not a continuation of the fixer's session, so nothing re-certifies its own prescription.
+4. **Gate — re-review** (`pipeline/03-gate.md`): Re-run the standard `review` pipeline fresh against the updated branch — a new invocation, not a continuation of the fixer's session, so nothing re-certifies its own prescription. A spec run, a full-suite run, or a read of the fixer's diff is not a re-review and does not replace one.
 5. **Gate — loop or stop**: If the re-review has zero `auto-fix` findings, stop. If it has new ones and the round cap (3, see `pipeline/03-gate.md`) isn't reached, go back to step 2 with the new findings. If the cap is reached, stop and surface everything open.
 6. **Final report**: Assemble the report — auto-fixed summary, then remaining findings in `REPORT-FORMAT.md`'s shape — and write the run record.
 
@@ -68,4 +69,5 @@ These steps are **strictly sequential** within a round; rounds run one after ano
 - **Never touches `code-review/`.** All classification and fix logic lives here, not in the lenses or the report format. Plain `review` behaves identically before and after `review-fix` exists.
 - **Never runs against someone else's branch.** If asked to fix a PR you don't own, say so and point at plain `review` instead.
 - **Never pushes.** Commits are local; the human decides when the branch is ready.
+- **Every round leaves a `runs/` record.** The per-lens findings and what steps 8 and 8b did with them live there; the fix-run record is the loop's log and points at them. When a later calibration asks whether a lens ever raised something, this is where the answer is.
 - **Bounded by default.** Three rounds. A branch that isn't converging after three rounds has a problem worth a human's attention, not more automated rounds.

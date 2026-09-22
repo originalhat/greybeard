@@ -19,6 +19,8 @@ Decide whether another round is worth running, stop the loop when it isn't, and 
 
 If Phase 2 committed anything, re-invoke the standard `review` pipeline (`../../code-review/AGENTS.md`) against the branch as a **new invocation** — not a continuation of the fixer's session or context. It evaluates the full diff, including this round's commit, exactly as it would for any branch. Do not tell it which lines the fixer just wrote; a blind re-review is the point.
 
+A targeted spec run, a full-suite run, or reading the fixer's diff is not a re-review and does not replace one. The re-review may skip lenses whose subject the branch cannot touch at all (React lenses on a backend-only branch), never the lenses that could see this round's fix, and it lists what it skipped in its run record.
+
 If Phase 2 found no `auto-fix` findings to apply (nothing to fix this round), skip re-review — there's nothing new to check — and go straight to Step 4.
 
 ### Step 2: Check for Convergence
@@ -58,7 +60,7 @@ If nothing was auto-fixed across any round, state that in one line instead of an
 
 ### Step 6: Write the Run Record
 
-Write `$GREYBEARD_DATA/output/code-review/{repo}/fix-runs/{branch}-{timestamp}.md` per `${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/templates/FIX-RUN-RECORD.md` — every round's counts, commits created, and the final status (`clean`, `capped`, or `parked`).
+Write `$GREYBEARD_DATA/output/code-review/{repo}/fix-runs/{branch}-{timestamp}.md` per `${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/templates/FIX-RUN-RECORD.md` — every round's counts, commits created, the final status (`clean`, `capped`, or `parked`), and, per round, the path of the `runs/` record that round's review wrote. A round with no `runs/` record did not run the pipeline; say so rather than leaving the line out.
 
 ---
 

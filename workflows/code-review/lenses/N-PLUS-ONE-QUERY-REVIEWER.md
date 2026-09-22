@@ -1,6 +1,6 @@
 # N+1 Query Reviewer
 
-Detect N+1 query patterns that cause excessive database queries and performance degradation.
+Detect N+1 patterns: one fetch per item where one fetch per set would do. Database queries are the classic case. HTTP calls to another system inside a loop are the expensive one, and a chain of service objects that each re-fetch is the one that hides.
 
 ## What is N+1?
 
@@ -26,6 +26,17 @@ An N+1 query occurs when code:
 - Eager loading removed during refactoring
 - Optimized query replaced with naive version
 
+### Remote Calls Per Item
+- A client call (HTTP, gRPC, SDK) inside `.each`, `.map`, `.find`, `.filter_map`: N round trips, each with its own connect and read timeout. On a synchronous path the worst case is N × timeout.
+- A per-item read of something a list endpoint already returned, or would return in one call.
+- A budget or deadline loop that spends its budget re-confirming items already on file locally, so the tail of the list is never reached.
+
+### Chained Service Objects
+- `Foo.call` loops over items and calls `Bar.call` per item; `Bar` calls `Baz.fetch`; `Baz` lists a collection and reads members until one matches. Nothing is shared between iterations, so the list is fetched N times and the members up to N² times. Read the whole chain, not the one file in the diff; the loop is usually two files away from the fetch. The fix is one object holding the shared view (see `OBJECT-DESIGN`), not a cache parameter threaded through each service.
+
+### Say the Cost as a Formula
+Every finding states calls as a function of a named N (`1 + N list calls + up to N² reads, N = family size`). If it is worse than linear in something a user controls, it is not a nit. A phrase like "one extra call per child" is not a finding; it is what hid a quadratic fan-out on care_platform #980.
+
 ### No-op and Invalid Eager Loads
 - **Unassigned/unchained `.preload` / `.includes` / `.eager_load`** — these return a new relation; if the result isn't assigned back or chained into the query that's actually iterated, the call is a **silent no-op** and associations still lazy-load N+1 style. `tasks = rel; tasks.preload(:foo)` loads nothing — it must be `tasks = rel.preload(:foo)`.
 - **Assigning back a previously-discarded eager-load list is not a mechanical cleanup.** The moment a dormant no-op list starts executing, *every* clause in it runs for the first time. Re-verify each named association actually exists and is preloadable — a clause that was invalid all along (see below) will only raise *now*. Treat this like adding new code, not tidying a variable. (See `OPPORTUNISTIC-REFACTOR`.)
@@ -42,14 +53,13 @@ users.each { |u| puts u.posts.count }
 User.includes(:posts).each { |u| puts u.posts.count }
 ```
 
-```python
-# BAD: N+1 queries
-for user in users:
-    print(user.profile.bio)
+```ruby
+# BAD: per child, list the family again and read every sibling again (N list + N² reads)
+children.each { |c| Provision.call(c) }            # Provision → Lookup.fetch → client.patients + client.patient(id) per member
 
-# GOOD: Select related
-for user in User.objects.select_related('profile'):
-    print(user.profile.bio)
+# GOOD: one family view per launch, shared by every child (1 list + N reads)
+family = Family.new(client)                       # memoises the list and each member read
+children.each { |c| Provision.call(c, family: family) }
 ```
 
 ```ruby
@@ -66,9 +76,9 @@ tasks = record.tasks.order(:created_at).preload(Presenters::Task.preload)
 
 ## Severity
 
-- **CRITICAL**: Endpoint will timeout with production data
-- **HIGH**: Slow but works, affects paginated results
-- **MEDIUM**: Slow only with large datasets
+- **CRITICAL**: Endpoint will timeout with production data; a remote fan-out on a synchronous path whose worst case exceeds the path's deadline
+- **HIGH**: Slow but works, affects paginated results; any remote fan-out worse than linear in a user-controlled N
+- **MEDIUM**: Slow only with large datasets; linear remote fan-out where a list call exists
 
 ## Related
 
@@ -80,3 +90,4 @@ When a PR *fixes* an N+1 by replacing a per-record loop with set-based writes (`
 - Loops that don't access the database
 - Already-optimized queries with proper eager loading
 - Accessing attributes already loaded (not associations)
+- One remote call per item when the vendor has no list endpoint, and the code or a comment says so

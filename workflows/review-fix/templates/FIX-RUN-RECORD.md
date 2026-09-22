@@ -18,6 +18,7 @@ Unlike `.scan-state.json` or `.campaign-state.json`, this is not read back in on
 ## Rounds
 
 ### Round 1
+- Review record: runs/{YYYY-MM-DD}-{branch}.md
 - Findings from review: {N}
 - Classified: {N} auto-fix, {N} ask-user, {N} no-op
 - Fixed: {N}
@@ -44,4 +45,5 @@ Unlike `.scan-state.json` or `.campaign-state.json`, this is not read back in on
 
 - **One file per run, never appended to.** A second `review-fix` run on the same branch writes a new timestamped file, not a rewrite of the last one — the git history between runs is itself part of the record.
 - **Status vocabulary is fixed**: `clean` (loop converged, nothing `auto-fix` left), `capped` (hit the 3-round limit with findings still open), `parked` (stopped early because every remaining finding was `ask-user` from round 1, nothing to loop on).
+- **Each round names its `runs/` record.** The per-lens findings, their outcomes, and the falsifiers live there. This file is the loop's log: what was classified, fixed, and committed. A round line with no `Review record:` is a round that skipped the pipeline.
 - **Commits, not diffs, are the record of what changed.** This file states *that* a fix happened and which commit it's in — the commit itself is the detail, same as `REPORT-FORMAT.md`'s rule that depth lives in the fix, not in what's printed.

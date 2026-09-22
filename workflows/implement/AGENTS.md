@@ -75,6 +75,7 @@ Test behavior, not implementation: assert on what the system does, not how it do
 - From `review --fix`'s final report, apply any remaining finding that's unambiguously in scope and doesn't require a product or design judgment call, then commit that separately from step 4 and from `review-fix`'s own commits.
 - Leave anything that's a genuine judgment call — a naming preference, a scope question, "should this actually be here" — for the closing summary instead of guessing.
 - When the change is reachable through a UI, mention in the closing summary that `validate` (`${CLAUDE_PLUGIN_ROOT}/workflows/validate/AGENTS.md`) is the next step — this pipeline doesn't run it itself.
+- Any commit made after step 5's last round (a correction here, a fix from acceptance testing, a steer that reshapes the model) leaves the branch unreviewed again. Step 8 checks for that before anything is pushed.
 
 ### 7. Render check, unless `--skip-ui`
 
@@ -91,12 +92,13 @@ A smoke check, not validation. `validate` walks the acceptance criteria; this st
 ### 8. Draft PR, only with `--pr`
 
 - Without `--pr`: end the closing summary with one line, `Say pr to push and open a draft PR.` Do nothing else.
-- With `--pr` (or when the human says `pr` afterwards): push the branch to `origin` and open a **draft** PR against `main` with the GitHub MCP create-PR tool, `draft: true` (fallback: `gh pr create --draft`), title from the ticket, body = the closing summary with the **Not built** section included. Print the URL. Never mark it ready for review; that is the human's call.
+- With `--pr` (or when the human says `pr` afterwards): **first check that HEAD is a reviewed SHA.** Run `${CLAUDE_PLUGIN_ROOT}/workflows/code-review/scripts/last-reviewed-sha.sh {repo} {branch}` from the checkout. Exit 0: HEAD is the SHA the newest run record reviewed; push. Exit 1 or 2: commits landed since the last review, or no review was recorded; run step 5 again, then re-check, then push. Say in one line which SHA was reviewed. The same check runs before **every** later push from this thread (`push it`, a rebase, fixes after review comments): a push is never the first thing that happens to a commit. Then push the branch to `origin` and open a **draft** PR against `main` with the GitHub MCP create-PR tool, `draft: true` (fallback: `gh pr create --draft`), title from the ticket, body = the closing summary with the **Not built** section included. Print the URL. Never mark it ready for review; that is the human's call.
 - This is the only place in the greybeard workflows that pushes, and only on request.
 
 ## Notes
 
 - **GitHub access: MCP first, `gh` as fallback.** Use the GitHub MCP tools (`mcp__GitHub__*`) for reading PRs, issues, files, reviews, and comments and for posting comments and reviews. They run inside Claude's process, so the Bash sandbox, its TLS proxy, and the keychain never get in the way. Fall back to the `gh` command only when the MCP is not connected yet (it starts through npx and can lag at session start); `gh` is excluded from the sandbox, so it works without a retry. Pushing local commits is always plain `git`; the MCP cannot push a branch.
+- **Push only from a reviewed SHA.** `scripts/last-reviewed-sha.sh` in the code-review workflow is the check; it reads the newest `HEAD SHA:` / `Final SHA:` from the branch's run records. On care_platform #980 one 193-line commit from acceptance testing and one 1000-line remodel each went out unreviewed, and every finding the human reviewers blocked on was in those commits.
 - Never pushes and never opens a PR unless asked with `--pr` or a `pr` reply, and then only a draft — otherwise the same convention as `review --fix`. The human decides when the branch is ready for review.
 - Never runs against a branch the user doesn't own — this pipeline commits as it goes, so it only ever runs on a branch you can write to, same reasoning as `review --fix`.
 - If step 1 or step 2 turns up real ambiguity, stop and ask. Steps 3–8 assume the scope is already settled.

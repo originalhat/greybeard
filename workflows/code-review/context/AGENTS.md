@@ -8,6 +8,7 @@ Review criteria that are **specific** to the team, company, or repositories. Unl
 |------|---------|
 | `GOTCHYAS.md` | Known pitfalls and traps in the codebase |
 | `NITS.md` | Style preferences and minor conventions |
+| `REVIEWER-PRIORS.md` | What each repo's human reviewers reliably ask for, cited to the PR; grown by `review --calibrate` |
 
 ## Adding Context
 

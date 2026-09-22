@@ -16,7 +16,8 @@ $GREYBEARD_DATA/
     ├── design-audit/{repo}/          # Inventory, findings, design specs
     ├── campaigns/{repo}/{campaign}/  # Campaign strategy, inventory, plan, batch reviews
     ├── code-review/{repo}/fix-runs/  # review-fix audit records (one per run)
-    ├── code-review/{repo}/runs/      # plain review run records (one per review)
+    ├── code-review/{repo}/runs/      # plain review run records (one per review, including review-fix rounds)
+    ├── code-review/{repo}/calibration.md  # human review threads vs. run records, one entry per merged PR
     ├── on-call/                      # Runbooks (per repo, by domain) and PHI-free audit logs
     ├── validate/{repo}/              # Validation reports (one per run)
     └── retro/                        # Retro state, reports, designs, changelog (default; override with $RETRO_HOME → a private repo)
@@ -48,8 +49,9 @@ greybeard/
 ├── workflows/                   # Shared instruction tree (lenses, pipelines, templates, context)
 │   ├── code-review/             # Technical code review pipeline
 │   │   ├── lenses/              # General technical criteria
-│   │   ├── context/             # Team/repo-specific criteria
-│   │   └── templates/           # Canonical report format
+│   │   ├── context/             # Team/repo-specific criteria (gotchas, nits, reviewer priors)
+│   │   ├── scripts/             # last-reviewed-sha.sh: pre-push check implement runs
+│   │   └── templates/           # Report format, run record, calibration ledger
 │   ├── review-fix/              # Loop-based auto-fix on top of code review
 │   │   ├── pipeline/            # 3-phase triage → fix → gate loop
 │   │   └── templates/           # Fix-run audit record format
@@ -94,6 +96,7 @@ The leading word routes the request to a workflow. Match on it directly.
 | `review` | Code Review | `code-review` | `review https://github.com/sana/origami_claims/pull/8842` |
 | `review --fix` | Code Review — Auto-Fix | `code-review` (`--fix`) | `review --fix` (current branch) |
 | `review --interactive` | Code Review — Interactive | `code-review` (`--interactive`) | `review --interactive` |
+| `review --calibrate` | Code Review — Calibrate | `code-review` (`--calibrate`) | `review --calibrate https://github.com/origami-medical/care_platform/pull/980` |
 | `implement` | Implement | `implement` | `implement https://sanabenefits.atlassian.net/browse/ER-1477` |
 | `validate` | Validate | `validate` | `validate ER-1477` |
 | `validate --exploratory` | Validate — Exploratory | `validate` (`--exploratory`) | `validate ER-1477 --exploratory` |
@@ -114,6 +117,9 @@ Runs the same lenses and context as `review`, but instead of stopping at a repor
 
 ### Code Review — Interactive Mode
 Runs the review, prints the report, then walks failures one by one — drafting a PR review comment in the user's voice (concise, question-framed, user-impact focused), revising on feedback, and posting inline to GitHub only after approval. Skips pre-existing findings; nits skipped by default. `review --interactive`. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/code-review/AGENTS.md`.
+
+### Code Review — Calibrate
+After a PR with human review merges, compares every human review thread against the branch's run records and buckets it: caught, found late, misjudged, never raised, not a miss. Flags pushes that had no review between the last record and the push. Appends to `$GREYBEARD_DATA/output/code-review/{repo}/calibration.md` and prints proposals (a lens rule, a `REVIEWER-PRIORS` entry) when the ledger shows the same gap on two or more PRs. Never edits lenses itself. `review --calibrate <PR URL>`. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/code-review/AGENTS.md`.
 
 ### Implement
 Takes a ticket or a set of requirements and turns it into working, tested, reviewed code on a branch — test-first (red then green, testing behavior not implementation), then reviewed and auto-fixed via `review --fix`. `implement <Jira ticket URL | ticket ID | GitHub issue URL | freeform requirements>`, optionally `in <repo>`, `--skip-ui`, `--pr`. Picks the smallest design that meets the criteria and reports the alternative as not built; render-checks UI changes with one screenshot per page. Never pushes or opens a PR unless `--pr` is passed, which opens a draft. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/implement/AGENTS.md`.

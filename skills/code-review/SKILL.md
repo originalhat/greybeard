@@ -14,6 +14,11 @@ description: >-
   Pass `--interactive` (or "interactive review", "walk through findings",
   "draft comments one by one") to print the report then walk failures 1-by-1,
   drafting a PR comment in the user's voice and posting to GitHub on approval.
+  Pass `--calibrate <PR URL>` (or "calibrate the review", "what did the review
+  miss on this PR", "compare the review to the human comments") after a PR
+  with human review has merged to bucket every human review thread as caught,
+  found late, misjudged, or never raised against the run records and append
+  to the repo's calibration ledger.
 ---
 
 # Code Review
@@ -26,6 +31,7 @@ lenses and repo-specific context.
 **Modes:**
 - `review --fix` — auto-fix loop. Run `${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/AGENTS.md` instead of the plain pipeline below.
 - `review --interactive` — print the report, then walk failures 1-by-1 drafting PR comments in the user's voice, posting to GitHub only on approval. Same pipeline as plain `review`; the interactive loop runs after the report.
+- `review --calibrate <PR URL>` — no evaluation. Fetch the human review threads and the branch's run records, bucket each thread (caught / found late / misjudged / never raised / not a miss), flag unreviewed pushes, append to `$GREYBEARD_DATA/output/code-review/{repo}/calibration.md`, and print proposals for lenses or context when the ledger shows a repeat. Section `--calibrate` in the workflow AGENTS.md.
 
 **Run (plain review):** execute `${CLAUDE_PLUGIN_ROOT}/workflows/code-review/AGENTS.md`.
 
