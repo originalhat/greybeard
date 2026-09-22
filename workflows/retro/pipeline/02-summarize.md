@@ -19,7 +19,7 @@ A private lens with the same filename as a general one replaces it. Read each le
 - Use the `retro-summarizer` agent (`${CLAUDE_PLUGIN_ROOT}/agents/retro-summarizer.md`, synced to `~/.claude/agents/`): Sonnet at high effort, read-only tools, with the reading rules and header fields baked in. If that agent type is not installed, fall back to `general-purpose` with `model: sonnet` and paste the reading rules below into the prompt.
 - Launch all of them in **one message** with `run_in_background: false`, so they run in parallel and the turn does not end until all are back. Background subagents make the thread go idle between hand-backs, which pings the user with half-finished status lines and breaks `bb thread wait`. If there are more than about twelve threads, launch in waves of twelve, each wave one message.
 - Never read a full log into your own context. The subagent reads; you receive the summary.
-- Each subagent's prompt contains: the thread id, title, project, and repo path; whether it was previously reviewed and the `lastRunAt` timestamp if so; the summary template verbatim; and the full text of every lens in the order listed above. The lens files carry the counting rules and false positives; the subagent follows them, not its own sense of what matters.
+- Each subagent's prompt contains: the thread id, title, project, and repo path; whether it was previously reviewed and the `lastRunAt` timestamp if so; the summary template verbatim; and the full text of every lens in the order listed above. The lens files carry the counting rules and false positives; the subagent follows them, not its own sense of what matters. The template and lenses may be concatenated once into `$TMPDIR/retro-lenses.md` and every prompt told to read that file first; the prompt then carries only the per-thread fields.
 
 ## Reading rules for the subagent
 
@@ -30,7 +30,7 @@ bb thread log <id> --format minimal --all      # the conversation, readable
 bb thread log <id> --format json --all         # timestamps and event types
 ```
 
-`--limit` is never acceptable here; it drops the start of long threads.
+`--limit` is never acceptable here; it drops the start of long threads. Save the logs under `$TMPDIR/retro_<thread id>.minimal.txt` and `$TMPDIR/retro_<thread id>.json`, never a shared name; summarizers run concurrently. JSON `agentMessage` items with a `parentToolCallId` are subagent output the user never saw; message counts come from the `── Assistant` blocks in the minimal log.
 
 **Turns and steers.** In the minimal format a user message followed on the next line by `steer` was sent while the agent was still working. It is guidance, not a restart. A short assistant message right before a steer is a progress note, not an early end of turn. Only call something a stall if the turn visibly ended (a `Worked for` block closes, no tool activity follows, and the next user message is not a steer).
 

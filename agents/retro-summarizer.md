@@ -18,6 +18,10 @@ bb thread log <id> --format json --all         # createdAt per event, event type
 
 Never use `--limit`; it drops the start of long threads. If a log is very long, read it in sections with `sed -n` or `grep -n`, but read all of it. Use absolute paths; do not `cd`.
 
+Save each log under `$TMPDIR/retro_<thread id>.minimal.txt` and `$TMPDIR/retro_<thread id>.json`. Never a shared name such as `thread.json`; summarizers run concurrently and will overwrite each other.
+
+In the JSON, `agentMessage` items that carry a `parentToolCallId` are subagent output the user never saw. Anything that counts assistant messages (chat noise, first result, handoff) counts only the `── Assistant` blocks in the minimal log.
+
 ## Header fields
 
 - **Ask:** what the user wanted, one or two sentences.

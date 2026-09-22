@@ -18,3 +18,4 @@ Rung 3: a progress cap in the skill (one line at start, one at finish; detail go
 - A single one-line progress note per long phase; the cap allows that.
 - Messages that ask a real question or hand over a draft, however short.
 - Steers: a short assistant message before a `steer` is not noise, it was interrupted.
+- JSON `agentMessage` items that carry a `parentToolCallId` are subagent output the user never saw ("Report delivered to the caller"). Count only the `── Assistant` blocks in the minimal log.
