@@ -105,7 +105,7 @@ The leading word routes the request to a workflow. Match on it directly.
 | `pen test` | Security Testing | `security-testing` | `pen test origami_claims` |
 | `design audit` | Design Audit | `design-audit` | `design audit care_platform` |
 | `campaign` | Campaign | `campaign` | `campaign plan "…" in origami_claims` |
-| `retro` | Retro | `retro` | `retro`, `retro --days 7`, `retro walkthrough` |
+| `retro` | Retro | `retro` | `retro`, `retro --days 7`, `retro walkthrough`, `retro rollback S-…` |
 
 `review` and `triage` are the two single-word entry points: **`review` always means code review** (of a GitHub PR or branch), and **`triage` always means on-call** (of a JIRA ticket). On-call's other phases keep the `on-call` prefix (`on-call publish/capture/curate/sync`); bare `triage` is the shorthand for starting one. `review --fix` and `review --interactive` stay under the `review` verb because they're the same evaluation with a loop bolted on, not a different concern.
 
@@ -143,7 +143,7 @@ Executes large-scale, systematic refactoring campaigns across many files over mu
 Triages engineering on-call (ER) tickets and turns every resolution into durable knowledge — runbooks plus a PHI-free audit trail. Spans `origami_claims` (primary), `care_platform`, and `sana_mobile`. `triage <Jira ticket URL>` / `triage ER-1477`. Five verbs: `triage`, `on-call publish`, `on-call capture`, `on-call curate`, `on-call sync`. Runbooks/audit logs are the source of truth in `$GREYBEARD_DATA/output/on-call/` (PHI/PII-free). Needs the `atlassian` (JIRA) MCP — declared in the plugin's `.mcp.json`. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/on-call/AGENTS.md`.
 
 ### Retro
-A retrospective over recent bb threads: quantifies recurring friction (corrections, steers, failed commands, minutes lost) and proposes the most deterministic fix for each pattern, ranked on a fix ladder — config and tooling first, structure, skill mechanics, memory, prose rules last. Walks the suggestions one at a time for approval and applies, records, and commits what is approved. `retro` (since last run), `retro --days 7`, `retro --report-only`, `retro walkthrough`, `retro apply S-…`, `retro reject S-…`, `retro status`. State, reports, designs, and changelog live in `$RETRO_HOME` (default `$GREYBEARD_DATA/output/retro/`; point it at a private repo). Its own threads carry `[retro]`. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/retro/AGENTS.md`.
+A retrospective over recent bb threads: quantifies recurring friction (corrections, steers, failed commands, minutes lost) and proposes the most deterministic fix for each pattern — config and tooling first, structure, skill mechanics, memory, prose rules last — with its before and after impact, placed on a value by confidence 2x2. High-confidence fixes that are local and reversible are applied during the run and reported with a rollback; the rest are walked one at a time for approval. `retro` (since last run), `retro --days 7`, `retro --report-only`, `retro walkthrough`, `retro apply S-…`, `retro reject S-…`, `retro rollback S-…`, `retro status`. State, reports, designs, and changelog live in `$RETRO_HOME` (default `$GREYBEARD_DATA/output/retro/`; point it at a private repo). Its own threads carry `[retro]`. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/retro/AGENTS.md`.
 
 ## Sources
 

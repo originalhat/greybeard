@@ -25,6 +25,7 @@
       "rollback": "git -C ~/workspace/agent-ops revert 378561a",
       "evidenceThreadIds": ["thr_…"],
       "status": "accepted",
+      "autoApplied": false,
       "proposedAt": 1789747213000,
       "reportDate": "2026-09-18",
       "lastEvidenceAt": 1789750000000,
@@ -42,9 +43,11 @@
 ## Status vocabulary
 
 - `proposed`: in a report, waiting for the user. Fresh evidence attaches here.
-- `accepted`: applied, or tracked by a ticket for large work. `reason` says what was actually done and how it differed from the proposal.
+- `accepted`: applied (by auto-apply when `autoApplied` is true, otherwise on approval), or tracked by a ticket for large work. `reason` says what was actually done and how it differed from the proposal.
 - `rejected`: the user said no. Keep their reason. **Never re-propose**; if the same pattern recurs, it goes in observations with a pointer to the rejected id.
 - `deferred`: the user was not sure. Re-present only when `lastEvidenceAt` moves.
+- `handed-off`: approved or auto-eligible, but the sandbox or classifier refused the write; the user has the commands. Phase 1 of each run runs `impact.verify` and flips it to `accepted` once it passes.
+- `rolled-back`: applied, then undone with `retro rollback`. Treated like `rejected` for auto-apply; re-proposed only with new evidence that addresses the rollback reason.
 
 ## Rules
 

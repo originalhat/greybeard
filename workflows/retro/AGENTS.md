@@ -1,6 +1,6 @@
 # Retro Workflow
 
-A retrospective over recent bb threads. It reads what the agent did, measures where the user had to correct, steer, retry, or wait, and proposes the most deterministic fix for each recurring pattern. The user approves; the workflow applies, records, and commits. It is the feedback loop for every other workflow in this repo.
+A retrospective over recent bb threads. It reads what the agent did, measures where the user had to correct, steer, retry, or wait, and proposes the most deterministic fix for each recurring pattern. The user approves; the workflow applies, records, and commits. High-confidence fixes are applied during the run and reported with a rollback; the user approves the rest. It is the feedback loop for every other workflow in this repo.
 
 ## Directory Structure
 
@@ -15,7 +15,7 @@ retro/
 │   ├── 02-summarize.md    # Per-thread summaries: header fields + one line per lens
 │   ├── 03-synthesize.md   # Patterns → suggestions, ranked by the fix ladder
 │   ├── 04-report.md       # Report, state, commit
-│   └── 05-apply.md        # Walkthrough, apply, reject, changelog, commits
+│   └── 05-apply.md        # Auto-apply, walkthrough, apply, reject, rollback, changelog, commits
 └── templates/
     ├── RETRO-REPORT.md    # Report shape
     ├── SUGGESTION.md      # One suggestion: 2x2 placement, magnitude, before/after impact, rollback
@@ -45,21 +45,23 @@ Agents repeat mistakes across threads because nothing reads across threads. This
 
 ## Modes
 
-- **`retro`** (default, typed or scheduled): phases 1–4, then straight into phase 5's walkthrough. The run ends by presenting the first open suggestion and waiting for approve / skip / change. A scheduled run therefore parks on suggestion 1 until the user opens the thread; that is intended. Nothing is applied until the user answers.
-- **`retro --report-only`**: phases 1–4 only. Ends on the report and the open list. For when the user wants to read first and decide later.
+- **`retro`** (default, typed or scheduled): phases 1–3, then auto-apply (phase 5) for the high-confidence quadrants, then the report (phase 4), then the walkthrough over what is left. The run ends by presenting the first remaining suggestion and waiting for approve / skip / change, so a scheduled run parks there until the user opens the thread. Everything auto-applied is listed in the report with its rollback.
+- **`retro --report-only`**: phases 1–4 only, with no auto-apply. Ends on the report and the open list. For when the user wants to read first and decide later.
 - **`retro walkthrough`**: phase 5 alone, over every `proposed` suggestion, in any thread. Use it to resume a parked run or to work through suggestions from several runs.
 - **`retro apply <ids>` / `retro reject <ids> [reason]`**: phase 5 for the named ids, no presentation.
-- **`retro status`**: read `state.json`, print open suggestions with effort, confidence, and ladder rung, plus accepted/rejected/deferred counts. No changes.
+- **`retro rollback <ids> [reason]`**: undo applied suggestions with their recorded rollback step (`05-apply.md` § Rollback).
+- **`retro status`**: read `state.json`, print open and handed-off suggestions with quadrant, effort, and ladder rung, plus accepted (auto and approved), rejected, deferred, and rolled-back counts. No changes.
 
 ## Execution
 
 Phases are sequential. Read each pipeline file when you reach it.
 
-1. **Gather** (`pipeline/01-gather.md`): compute the window, list qualifying threads, exclude the workflow's own threads.
+1. **Gather** (`pipeline/01-gather.md`): title the thread with the run date, check handed-off suggestions, compute the window, list qualifying threads, exclude the workflow's own threads.
 2. **Summarize** (`pipeline/02-summarize.md`): one structured summary per thread — fixed header fields plus one line per lens in `lenses/` and `$RETRO_HOME/lenses/` — via foreground subagents.
-3. **Synthesize** (`pipeline/03-synthesize.md`): cluster summaries into patterns, quantify each, check what guidance already exists, choose the lowest rung on the fix ladder that removes the cause, write suggestions.
-4. **Report** (`pipeline/04-report.md`): write the report and state, verify links, commit, end the turn with the summary and the one-line walkthrough offer.
-5. **Apply** (`pipeline/05-apply.md`): present one suggestion at a time; apply each only on the user's approval, exactly as approved; record; commit; present the next.
+3. **Synthesize** (`pipeline/03-synthesize.md`): cluster summaries into patterns, quantify each, check what guidance already exists, choose the lowest rung on the fix ladder that removes the cause, place each on the value by confidence 2x2, write suggestions with their before and after.
+3b. **Auto-apply** (`pipeline/05-apply.md` § Auto-apply): apply the high-confidence suggestions that are local, checkable, and reversible; verify, commit, record the rollback. Skipped with `--report-only`.
+4. **Report** (`pipeline/04-report.md`): write the report and state, verify links, commit, list what was applied and what needs the user's hands.
+5. **Walkthrough** (`pipeline/05-apply.md`): present the remaining suggestions one at a time; apply each only on the user's approval, exactly as approved; record; commit; present the next.
 
 ### Model tiers
 
@@ -73,7 +75,7 @@ Phases are sequential. Read each pipeline file when you reach it.
 - **Rank on a 2x2.** Value (time lost, reach, corrections, recurrence) by confidence (cause established, fix checkable now). The quadrant orders the report and the walkthrough; the fix ladder still chooses the fix.
 - **Fix ladder.** Prefer the change that makes the mistake impossible over the one that asks the agent to remember. Prose in CLAUDE.md or AGENTS.md is the last rung, not the first. Details in `03-synthesize.md`.
 - **Evidence is read, not inferred.** Before a suggestion goes in the report, the top evidence threads are checked against the actual log turns. A bb `steer` is guidance sent mid-turn, not a stall. A tool that fails inside the sandbox may work outside it. A count the user could challenge with "did this really happen seven times?" must survive that question.
-- **Propose, then wait.** The scheduled run never applies anything. Rejected suggestions are never re-proposed. Deferred ones wait for new evidence.
+- **High confidence ships, low confidence waits.** High-confidence suggestions that are local, checkable, and reversible in one step are applied during the run and reported with their rollback; the user reviews and rolls back. Everything else waits for approval. Nothing outward-facing is ever automatic. Rejected and rolled-back suggestions are never re-applied automatically. Deferred ones wait for new evidence.
 - **PHI-free.** Summaries, reports, and state describe situations generically. No member names, identifiers, dates of birth, credentials, or test-data values, even from staging.
 - **Finish the turn.** Subagents run in the foreground. The run ends once, on the report. No status lines between batches.
 
@@ -96,4 +98,4 @@ The five phases above, one file each.
 - The workflow's own threads carry `[retro]` in their first message. Exclude them from the window; include everything else, including the thread that created the automation.
 - `bb thread log --format minimal --limit N` silently drops the oldest turns of a long thread. Always use `--all`. For timings use `--format json --all`, which carries `createdAt` per event.
 - Use absolute paths in Bash. `cd` inside a compound command can trip shell hooks in some environments.
-- Editing the user's Claude settings file may be refused by the auto-mode permission classifier as self-modification. When that happens, print the exact change for the user to paste and record the suggestion as `accepted` with that note once they confirm.
+- Editing the user's Claude settings, hooks, or skills directories may be refused by the auto-mode permission classifier as self-modification. When that happens, print the exact change for the user to paste and record the suggestion as `handed-off`; the next run's phase 1 verifies it and marks it `accepted`.

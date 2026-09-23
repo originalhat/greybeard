@@ -15,7 +15,7 @@ This directory contains AI agent workflows. Each workflow is a structured pipeli
 | `design-audit/` | Frontend design consistency assessment with living design specification |
 | `campaign/` | Large-scale refactoring campaign execution — migrations, architectural transitions, coverage sweeps |
 | `on-call/` | Triage on-call tickets and build a self-improving hierarchy of runbooks plus a PHI-free audit trail |
-| `retro/` | Retrospective over recent bb threads: quantified friction → suggestions ranked by how deterministic the fix is → one-at-a-time approval → applied and committed |
+| `retro/` | Retrospective over recent bb threads: quantified friction → suggestions on a value by confidence 2x2 with before/after impact → high confidence auto-applied with rollback, the rest approved one at a time → committed |
 
 ## Workflow Conventions
 

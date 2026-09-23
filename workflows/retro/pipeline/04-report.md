@@ -13,7 +13,7 @@ Write it in a few small commands, not one compound command that also updates sta
 Update `$RETRO_HOME/state.json` per `templates/STATE.md`:
 
 - `lastRunAt` = window end
-- append new suggestions with `status: "proposed"`, `proposedAt`, `reportDate`
+- append new suggestions with `proposedAt`, `reportDate`, and the status auto-apply left them in (`accepted` with `autoApplied: true`, `handed-off`, or `proposed`)
 - add reviewed thread ids to `reviewedThreadIds` (a set)
 - for existing `proposed` or `deferred` ids that gained evidence, append to their `evidenceThreadIds` and bump `lastEvidenceAt`
 
@@ -40,10 +40,11 @@ The user reads this and nothing else. In order:
 
 1. A markdown link to the report file.
 2. Two or three sentences: threads reviewed by project, and the themes, **each with its magnitude line**.
-3. The 2x2 grid (value by confidence, ids in each cell), then the suggestion table in quadrant order: id, one-line description, quadrant, ladder rung, effort, magnitude line ending in time lost.
-4. Overlaps, in one line each.
-5. Then, unless `--report-only`, continue directly into `05-apply.md` and present suggestion 1 of N in the same message. The turn ends on its `Approve, skip, or tell me what to change.` line.
+3. **Applied automatically**: one line per auto-applied suggestion, with its before and after in a sentence and its rollback command. Then **Needs your hands**: every `handed-off` suggestion, new or older, with the exact commands in a code block. Omit either list when empty.
+4. The 2x2 grid (value by confidence, ids in each cell), then the suggestion table in quadrant order: id, one-line description, quadrant, ladder rung, effort, magnitude line ending in time lost.
+5. Overlaps, in one line each.
+6. Then, unless `--report-only`, continue directly into `05-apply.md`'s walkthrough and present the first remaining suggestion in the same message. When nothing remains, end on the applied list and `Say "retro rollback <id>" to undo any of these.` The turn ends on its `Approve, skip, or tell me what to change.` line.
 
 With `--report-only`, end instead with: `Say "retro walkthrough" to go through these one at a time.`
 
-Nothing is applied in this phase.
+Nothing new is applied in this phase; auto-apply ran before it.

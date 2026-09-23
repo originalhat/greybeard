@@ -13,7 +13,7 @@ Greybeard is a collection of structured AI agent workflows that help you:
 5. **Audit design** consistency across frontend codebases
 6. **Run campaigns** — systematic large-scale refactoring across many files over multiple sessions
 7. **Triage on-call tickets** — investigate incidents, propose fixes, and turn each resolution into durable runbooks
-8. **Run retrospectives** — read recent agent threads, quantify recurring friction, and approve the most deterministic fix for each pattern
+8. **Run retrospectives** — read recent agent threads, quantify recurring friction, apply the high-confidence fixes with a rollback, and approve the rest
 
 Each workflow is a set of prompts and templates that guide AI agents through multi-stage analysis.
 

@@ -6,24 +6,29 @@ description: >-
   tool failures, time lost), and proposes improvements with their before and
   after impact, ranked on a value by confidence 2x2, each fixed at the most
   deterministic rung: config and tooling first, skill mechanics next, prose
-  rules in CLAUDE.md or AGENTS.md last. Nothing is applied without
+  rules in CLAUDE.md or AGENTS.md last. High-confidence suggestions are applied
+  automatically, each with a one-step rollback, and reported; the rest wait for
   approval. Use when the user says "retro", "/retro", "retrospective", "what
   should we improve", "review recent threads", or when a scheduled automation
   runs it. Verbs: retro (run), retro walkthrough (approve one at a time), retro
-  apply <ids>, retro reject <ids>, retro status. Needs the bb CLI.
+  apply <ids>, retro reject <ids>, retro rollback <ids>, retro status. Needs
+  the bb CLI.
 ---
 
 # Retro
 
 A retrospective over recent agent threads that turns recurring friction into
-approved, versioned improvements.
+versioned improvements: high-confidence ones applied and reported, the rest
+approved one at a time.
 
 **Trigger:** `retro` runs a retrospective over everything since the last run
 (first run: 24 hours; `--days N` or `--since YYYY-MM-DD` to widen, capped at
-14 days), then walks the suggestions one at a time for approve / skip / change.
-That interactive walkthrough is the default; `--report-only` stops at the
+14 days), applies the high-confidence suggestions itself (local, checkable,
+one-step rollback), reports them, then walks the rest one at a time for
+approve / skip / change. `--report-only` applies nothing and stops at the
 report. `retro walkthrough` resumes a parked walkthrough in any thread. `retro
-apply S-… [S-…]` and `retro reject S-… [reason]` act on ids directly. `retro
+apply S-… [S-…]` and `retro reject S-… [reason]` act on ids directly; `retro rollback S-…` undoes
+an applied one. `retro
 status` prints open suggestions and acceptance counts.
 
 **Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/retro/AGENTS.md`.
@@ -39,5 +44,6 @@ run and every applied suggestion is committed there. Point `RETRO_HOME` at a
 
 **Scheduled use:** a bb automation whose prompt is
 `[retro] /retro` runs the retrospective daily; the `[retro]` marker keeps its
-own threads out of the next window. The spawned thread parks on suggestion 1;
-the user approves by replying there, or runs `retro walkthrough` anywhere.
+own threads out of the next window. The spawned thread is titled `Retro · YYYY-MM-DD`,
+lists what it applied, and parks on the first remaining suggestion; the user
+approves by replying there, or runs `retro walkthrough` anywhere.

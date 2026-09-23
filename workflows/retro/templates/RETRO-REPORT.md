@@ -17,6 +17,15 @@ Magnitude: {affected}/{N} threads · {nonzero counts, in words} · about {N} min
 {Two to four sentences. What kept happening, what it cost, quoting the user once where a correction is the evidence.}
 → {suggestion ids}, or "observation only"
 
+## Applied automatically
+
+| id | what changed for you | commit or backup | rollback |
+|----|----------------------|------------------|----------|
+| {id} | {before → after, one sentence} | {repo sha | backup path} | `{command}` |
+
+## Needs your hands
+- **{id}**: {why it could not be applied}. Run: `{command}`
+
 ## Suggestions
 
 |                | High confidence | Low confidence |
@@ -25,7 +34,7 @@ Magnitude: {affected}/{N} threads · {nonzero counts, in words} · about {N} min
 | **Low value**  | {ids}           | {ids}          |
 
 ### High value · high confidence
-{each suggestion in the shape of templates/SUGGESTION.md}
+{each suggestion in the shape of templates/SUGGESTION.md, headed `(applied)`, `(handed off)`, or `(walkthrough: {rule})`}
 
 ### High value · low confidence
 {…}

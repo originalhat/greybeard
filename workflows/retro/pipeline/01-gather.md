@@ -20,6 +20,10 @@ Read `$RETRO_HOME/state.json` (create it from `templates/STATE.md` if missing).
 - `--days N` or `--since YYYY-MM-DD` overrides the start. Cap at 14 days: beyond that the summaries stop being comparable and the run gets slow.
 - End: now. Record both as epoch ms; the report prints them as dates in the user's timezone.
 
+## Handed-off suggestions
+
+For each suggestion in `state.json` with `status: handed-off`, run its `impact.verify` check. When it passes, set `status: accepted` with `reason` noting the date it was found in place. When it does not, keep it `handed-off`; the report lists it under Housekeeping and the final message repeats the commands the user still needs to run.
+
 ## Threads
 
 ```bash
