@@ -29,6 +29,5 @@ refactor, one behavior at a time) → commit → `review --fix` via
 render check for UI changes (one screenshot per changed page; `--skip-ui` skips) →
 draft PR only with `--pr`.
 
-Target repos live under `$GREYBEARD_DATA/sources/{repo}/` (default
-`~/.greybeard-data/`). Needs the `atlassian` MCP for JIRA tickets and `gh` for
+Needs the `atlassian` MCP for JIRA tickets and `gh` for
 GitHub issues; neither for freeform requirements.

@@ -38,7 +38,7 @@ These steps are **strictly sequential** — later steps depend on earlier ones a
   - JIRA ticket → `mcp__atlassian__getJiraIssue` (same pattern as `triage`) for title, description, acceptance criteria, linked issues.
   - GitHub issue → the GitHub MCP issue tool (fallback: `gh issue view {url} --json title,body`).
   - Freeform text → use as-is; if there's no clear, checkable behavior in it, ask before proceeding rather than inventing scope.
-- Resolve the target repo and check it out under `$GREYBEARD_DATA/sources/{repo}/` (same convention as `review`).
+- Resolve the target repo (see Inputs) and work in its existing checkout.
 - Check the current branch. If it's `main`/`master`, create a new branch named from the ticket ID or a short slug of the requirement (`er-1477`, `dark-mode-toggle`). If already on a feature branch, continue on it — this supports resuming a half-finished implementation rather than starting over.
 
 ### 2. Investigate
