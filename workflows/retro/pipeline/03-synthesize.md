@@ -60,6 +60,8 @@ Before proposing, read the guidance that already applies, so the suggestion is n
 
 For each pattern, walk the ladder top to bottom and stop at the first rung that removes the cause. Say which rung you chose and why the rungs above it do not apply. The lens that caught the pattern names its **typical fix rung**; start there, but the cause decides, not the lens.
 
+Before any rung, check whether an existing instruction causes the behavior: a skill step, a default, or a line in a doc the agent read. Removing or narrowing it beats adding a rule on any rung (S-20260923-3: `/implement` went to the review clone because step 1 told it to). And when the agent read the right instruction and did not follow it, another copy of that instruction is not a fix (S-20260923-4); go to a lower-numbered rung or record an observation.
+
 1. **Configuration or tooling.** Sandbox allow-lists and excluded commands, MCP endpoints and auth, permission rules, environment variables, git or editor config. Deterministic: the failure cannot recur. Example: excluding `gh` from the sandbox instead of a rule about retrying unsandboxed.
 2. **Structure.** Worktrees instead of a shared checkout, a script that does the manual steps, an automation, a template, a hook. The agent does not have to remember because the environment does it.
 3. **Skill mechanics.** A new step, flag, record, or check inside an existing workflow or skill. Still deterministic when the skill runs: a `--skip-ui` flag, a run record written at step 11, a nit prefix applied by the loop.
