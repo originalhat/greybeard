@@ -40,7 +40,7 @@ The user reads this and nothing else. In order:
 
 1. A markdown link to the report file.
 2. Two or three sentences: threads reviewed by project, and the themes, **each with its magnitude line**.
-3. The suggestion table: id, one-line description, ladder rung, effort, confidence, magnitude.
+3. The 2x2 grid (value by confidence, ids in each cell), then the suggestion table in quadrant order: id, one-line description, quadrant, ladder rung, effort, magnitude line ending in time lost.
 4. Overlaps, in one line each.
 5. Then, unless `--report-only`, continue directly into `05-apply.md` and present suggestion 1 of N in the same message. The turn ends on its `Approve, skip, or tell me what to change.` line.
 

@@ -20,20 +20,20 @@ Signals worth clustering on:
 
 ## 2. Quantify
 
-Every pattern carries a **magnitude line** before anything else is written about it:
+Every pattern carries a **magnitude line** before anything else is written about it, in the format of `templates/SUGGESTION.md`:
 
 ```
-Magnitude: {threads affected}/{threads reviewed} threads · {occurrences} occurrences · {corrections} corrections, {steers} steers · {retries} failed commands · ~{minutes} min lost
+Magnitude: {affected}/{reviewed} threads · {nonzero counts, in words} · about {N} minutes lost
 ```
+
+Example: `Magnitude: 1/15 threads · 7 failed commands · 1 streak of 3 failed fetches · about 14 minutes lost`.
 
 Rules:
 
 - Threads affected and reviewed are exact counts from phase 1 and 2.
-- Occurrences is the number of distinct events, not threads. Seven `gh` failures in one thread is seven occurrences in one thread.
-- Minutes lost is a sum of the durations phase 2 attributed to this pattern, rounded to five minutes, or `n/a`. Do not estimate what the logs do not show. Say `n/a` rather than guess.
+- Counts are distinct events, not threads. Seven `gh` failures in one thread is seven failed commands in one thread. Name each count in words (corrections, repeated steers, failed commands, streaks, noise messages, manual steps); leave out the ones that are zero.
+- Time lost always closes the line. It is a sum of the durations phase 2 attributed to this pattern, rounded to five minutes above ten. When the logs do not show it, write `time lost not measurable from the logs`. Do not estimate what the logs do not show.
 - When a number is small, say so plainly. "1/24 threads" is a valid magnitude line and usually means the pattern belongs in observations.
-
-The same numbers set confidence: `high` needs three or more threads, or two threads plus a correction quoted verbatim; `medium` needs two threads; anything else is `low` and rarely worth a suggestion.
 
 ## 3. Verify the evidence
 
@@ -68,9 +68,23 @@ For each pattern, walk the ladder top to bottom and stop at the first rung that 
 
 Structural fixes (rung 2) are often `large`. For those, propose a spike and offer to open a ticket (Linear or Jira MCP when available) plus a design note under `$RETRO_HOME/designs/`, rather than an edit.
 
-## 6. Write the suggestion
+## 6. Place it on the 2x2 and write it
 
-Each suggestion has: `id` (`S-YYYYMMDD-n`), `category` (`config`, `structure`, `skill-fix`, `memory`, `claude-md`, `other`), `ladder` (1–5), `target` (file, repo, setting, or skill), the magnitude line, the verified evidence list, the proposed change concrete enough to apply as written (exact text for prose and config; steps and placement for skills and scripts), `effort` (`small` under 30 minutes, `medium` under half a day, `large` beyond), `confidence`.
+Every suggestion gets a **value** and a **confidence**, each `high` or `low`. Together they are its quadrant, and the quadrant orders the report and the walkthrough: high value · high confidence, then high value · low confidence, then low value · high confidence, then low value · low confidence. The ladder rung still says *how* to fix; the quadrant says *how much it matters and how sure we are*.
+
+**Value is high** when any of these holds; otherwise it is low:
+
+- about 15 minutes or more lost in the window
+- three or more threads affected
+- at least one user correction, or the same steer in two or more threads
+- the pattern recurs across runs: it is fresh evidence against an earlier suggestion whose fix did not hold
+
+**Confidence is high** when both hold; otherwise it is low:
+
+- the cause is established: seen in three or more threads, or two threads plus a correction quoted verbatim, or reproduced or read directly in this run (the failing command re-run, the defect read in source or config)
+- the fix can be checked when it is applied, by a command, a test, or a parse, not only by waiting for future threads
+
+Write each suggestion in the shape of `templates/SUGGESTION.md`: `id` (`S-YYYYMMDD-n`), title, value, confidence, `ladder` (1–5), `category` (`config`, `structure`, `skill-fix`, `memory`, `claude-md`, `other`), `target`, `effort` (`small` under 30 minutes, `medium` under half a day, `large` beyond), the magnitude line, **Before**, **After**, **How we'll know**, the verified evidence list, the change concrete enough to apply as written, and the rollback. Before and after are the impact the user reads first; write them in terms of what the user experiences, and keep After within what the evidence supports.
 
 Mark overlaps explicitly: `supersedes`, `superseded-by`, `complements`. The report presents overlapping suggestions together so the user decides once.
 

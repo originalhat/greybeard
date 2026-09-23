@@ -18,6 +18,7 @@ retro/
 │   └── 05-apply.md        # Walkthrough, apply, reject, changelog, commits
 └── templates/
     ├── RETRO-REPORT.md    # Report shape
+    ├── SUGGESTION.md      # One suggestion: 2x2 placement, magnitude, before/after impact, rollback
     ├── THREAD-SUMMARY.md  # What a summarizing subagent returns
     └── STATE.md           # state.json schema and status vocabulary
 ```
@@ -67,7 +68,9 @@ Phases are sequential. Read each pipeline file when you reach it.
 
 ## Principles
 
-- **Quantify everything.** A theme without numbers is an anecdote. Every theme and every suggestion states: threads affected out of threads reviewed, occurrences, user corrections or steers it cost, retries or failed commands, and minutes lost where the log timestamps allow. See `03-synthesize.md` for what to count and how.
+- **Quantify everything.** A theme without numbers is an anecdote. Every theme and every suggestion opens with a magnitude line: threads affected out of threads reviewed, the nonzero counts in words, and time lost last, always. See `templates/SUGGESTION.md` for the line and `03-synthesize.md` for what to count.
+- **Impact before mechanism.** Every suggestion says what the user experiences today (Before), what changes (After), and how the next retro will know (`templates/SUGGESTION.md`).
+- **Rank on a 2x2.** Value (time lost, reach, corrections, recurrence) by confidence (cause established, fix checkable now). The quadrant orders the report and the walkthrough; the fix ladder still chooses the fix.
 - **Fix ladder.** Prefer the change that makes the mistake impossible over the one that asks the agent to remember. Prose in CLAUDE.md or AGENTS.md is the last rung, not the first. Details in `03-synthesize.md`.
 - **Evidence is read, not inferred.** Before a suggestion goes in the report, the top evidence threads are checked against the actual log turns. A bb `steer` is guidance sent mid-turn, not a stall. A tool that fails inside the sandbox may work outside it. A count the user could challenge with "did this really happen seven times?" must survive that question.
 - **Propose, then wait.** The scheduled run never applies anything. Rejected suggestions are never re-proposed. Deferred ones wait for new evidence.
@@ -86,7 +89,7 @@ The five phases above, one file each.
 
 ### Templates (`templates/`)
 
-`RETRO-REPORT.md` (report shape), `THREAD-SUMMARY.md` (what a summarizing subagent returns: header fields plus the lens lines), `STATE.md` (`state.json` schema and status vocabulary).
+`RETRO-REPORT.md` (report shape), `SUGGESTION.md` (one suggestion, used by the report and the walkthrough), `THREAD-SUMMARY.md` (what a summarizing subagent returns: header fields plus the lens lines), `STATE.md` (`state.json` schema and status vocabulary).
 
 ## Notes
 

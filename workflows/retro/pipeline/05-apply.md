@@ -4,14 +4,15 @@ Only on the user's word. Three entry points: `retro walkthrough`, `retro apply <
 
 ## Walkthrough
 
-Present open suggestions **one at a time**, in id order, overlapping ones together. For each:
+Present open suggestions **one at a time**, in quadrant order (high value · high confidence, high value · low confidence, low value · high confidence, low value · low confidence), then id order within a quadrant, overlapping ones together. Each one is presented in the shape of `templates/SUGGESTION.md`, the same shape the report used:
 
-1. Header: `Suggestion {n} of {open}: {id}, {short title}`.
-2. Target, ladder rung, effort, confidence.
-3. The magnitude line, then the verified evidence in two to four sentences with the user's own words quoted where they are the evidence.
-4. The exact proposed change: text in a code block for prose and config; steps and file placement for skills and scripts.
-5. Anything the user should know before deciding: overlaps, that a file is gitignored, that a repo has uncommitted work in the files you would touch, that a change alters a convention (first push in a workflow, for example).
-6. One line: `Approve, skip, or tell me what to change.`
+1. Header: `Suggestion {n} of {open}: {id}, {short title}`, then the line with value, confidence, rung, effort, target.
+2. The magnitude line, ending in time lost.
+3. **Before**, **After**, **How we'll know**. This is the impact; it comes before the evidence and the change, and it is never skipped.
+4. The verified evidence in two to four lines, the user's own words quoted where they are the evidence.
+5. The exact change: text in a code block for prose and config; steps and file placement for skills and scripts.
+6. **Rollback**, and **Before you decide**: overlaps, a gitignored file, uncommitted work in the files you would touch, a convention this changes.
+7. One line: `Approve, skip, or tell me what to change.`
 
 Then stop and wait. Accept partial approvals ("2 to 4 but not 1"), edits ("drop the last line", "production only"), and "not sure yet" (record `deferred`). Apply immediately on approval, record, commit, and present the next one in the same message.
 

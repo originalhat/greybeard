@@ -2,6 +2,16 @@
 
 Decide the window, collect the threads, exclude the noise.
 
+## Thread title
+
+For a `retro` run (typed or scheduled), first set this thread's title to the run date so runs are told apart in the sidebar:
+
+```bash
+bb thread update --self --title "Retro · YYYY-MM-DD"
+```
+
+Use the date in the user's timezone. A second run the same day is `Retro · YYYY-MM-DD (run 2)`. `retro walkthrough`, `apply`, `reject`, and `status` in another thread leave that thread's title alone.
+
 ## Window
 
 Read `$RETRO_HOME/state.json` (create it from `templates/STATE.md` if missing).

@@ -3,9 +3,10 @@ name: retro
 description: >-
   Retrospective on how the agent has been working. Reads the bb threads since
   the last run, quantifies recurring friction (corrections, steers, retries,
-  tool failures, time lost), and proposes improvements ranked by how
-  deterministic the fix is: config and tooling first, skill mechanics next,
-  prose rules in CLAUDE.md or AGENTS.md last. Nothing is applied without
+  tool failures, time lost), and proposes improvements with their before and
+  after impact, ranked on a value by confidence 2x2, each fixed at the most
+  deterministic rung: config and tooling first, skill mechanics next, prose
+  rules in CLAUDE.md or AGENTS.md last. Nothing is applied without
   approval. Use when the user says "retro", "/retro", "retrospective", "what
   should we improve", "review recent threads", or when a scheduled automation
   runs it. Verbs: retro (run), retro walkthrough (approve one at a time), retro
