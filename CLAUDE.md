@@ -42,6 +42,7 @@ greybeard/
 ├── .claude-plugin/plugin.json   # Plugin manifest
 ├── hooks/hooks.json             # SessionStart hook: creates $GREYBEARD_DATA dirs
 ├── hooks/sync-skills-if-changed.sh  # Stop hook (user settings): re-runs skills/sync-local.sh when a SKILL.md changed
+├── hooks/warn-unreviewed-push.sh    # PreToolUse hook (user settings): warns, never blocks, on a git push with no run record for HEAD
 ├── agents/                      # Custom subagents (canonical Claude Code frontmatter)
 │   └── sync-local.sh            # Generates ~/.claude/agents + ~/.pi/agent/agents copies
 ├── skills/                      # One skill per workflow — auto-activates on its trigger words

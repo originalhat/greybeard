@@ -33,6 +33,8 @@ If the original change added something on purpose, fix it forward — add valida
 
 If a finding says a value is stale on the record the code reads from, and a related record has the fresher value, the fix is to make the fresher value **flow into** the canonical record — add the field to the existing propagation (`update_individual!`-style sync, callback, denormalizer). Do not change the read to the other record, and do not add an `a || b` fallback chain between associations. Reading around the canonical record leaves every other reader stale and turns one source of truth into two. If you cannot find the propagation path, or adding the field to it would be new machinery, stop and report the finding as `ask-user` instead.
 
+Propagation covers future edits only. Before calling the finding fixed, check the canonical rows that already exist: if the field is blank or stale on any of them and the code writes it to another system, the fix is not complete. Leave the propagation in and report the rest as `ask-user`, naming the two options: backfill the canonical rows before the change ships, or leave the field out of the payload while the canonical value is blank. Never let a serializer default (`|| 'OTHER'`) stand in for a missing value on a last-write-wins write.
+
 ### Step 5: No Comments Explaining the Fix
 
 Match the repo's existing comment density. Don't narrate what you changed or why in the code itself — that belongs in the commit message.

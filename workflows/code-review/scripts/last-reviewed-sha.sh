@@ -4,7 +4,7 @@
 # Usage: last-reviewed-sha.sh <repo> <branch> [head-sha]
 #   Run from inside the target repo checkout when head-sha is omitted.
 #
-# Exit 0: HEAD is the last reviewed SHA.
+# Exit 0: HEAD is the last reviewed SHA, or has the same branch diff (a clean rebase).
 # Exit 1: HEAD is not the last reviewed SHA. Run `review --fix` before pushing.
 # Exit 2: no record for this branch in runs/ or fix-runs/.
 set -euo pipefail
@@ -40,5 +40,19 @@ echo "last reviewed: $newest_sha ($(basename "$newest"))"
 echo "head:          $head"
 case "$head" in "$newest_sha"*) echo "match"; exit 0 ;; esac
 case "$newest_sha" in "$head"*) echo "match"; exit 0 ;; esac
+
+branch_patch_id() {
+  local base
+  base="$(git merge-base origin/main "$1" 2>/dev/null)" || return 1
+  git diff "$base" "$1" | git patch-id --stable | awk '{print $1}'
+}
+if git cat-file -e "$newest_sha^{commit}" 2>/dev/null; then
+  reviewed_pid="$(branch_patch_id "$newest_sha" || true)"
+  head_pid="$(branch_patch_id "$head" || true)"
+  if [ -n "$reviewed_pid" ] && [ "$reviewed_pid" = "$head_pid" ]; then
+    echo "match (same branch diff as the reviewed SHA; rebased or amended message only)"
+    exit 0
+  fi
+fi
 echo "HEAD is not the last reviewed SHA; run review --fix before pushing"
 exit 1

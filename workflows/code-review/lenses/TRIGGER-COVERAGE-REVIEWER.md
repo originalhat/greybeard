@@ -16,7 +16,7 @@ Work this in order. Do not judge the trigger until step 3 is complete.
 2. **Classify the target's associations.** Read the model, not the PR description. Required `belongs_to` = identity. Optional `belongs_to` = role or snapshot: grep for every write to its FK. Set once at creation and never re-pointed = snapshot. Maintained in step with the identity = role. A `has_many` back from the identity to several role models is the tell that one person can wear several hats or none.
 3. **Enumerate the populations.** A population is any partition of the target's rows the trigger might treat differently: by **role** (who owns it), by **lifecycle stage** (registered or not, active or terminated), or by **field owner** (a synced field that lives on a different model than the one the trigger watches). Find every creation path for the target (`create!`, `create_through_api!`, factories, importers) and list who gets one. Look for literals that name a population the trigger doesn't (`'BROKER'`, `standalone`, `person: nil`, `member: nil`). Look for consent or flag columns on the identity that name a population (`*_consent_at`, `standalone?`). For each field the behavior syncs, find which model actually stores it.
 4. **Check the trigger against each population.** For each population from step 3: does the chosen event/callback fire when *their* data changes? A population with the identity but without the role the trigger watches is a finding.
-5. **Check the read source.** Where does the behavior get its values — the identity, or a role/snapshot? If from a snapshot, ask two things: is the FK ever re-pointed after creation (if not, a terminated or superseded row is still what gets read), and are all fields propagated into the identity? A missing propagation is fixed by propagating, not by reading around the identity. Also check the lookup that finds the target: a guard on an unrelated column (`user_id.present?`) excludes a lifecycle stage that still owns the target.
+5. **Check the read source.** Where does the behavior get its values — the identity, or a role/snapshot? If from a snapshot, ask two things: is the FK ever re-pointed after creation (if not, a terminated or superseded row is still what gets read), and are all fields propagated into the identity? A missing propagation is fixed by propagating, not by reading around the identity, and propagating covers future edits only: for each synced field, check how existing identity rows get a value (a backfill) and what the serializer sends while the value is blank. Also check the lookup that finds the target: a guard on an unrelated column (`user_id.present?`) excludes a lifecycle stage that still owns the target.
 
 6. **Enumerate the trigger's own population.** A model callback, or an event published from one, fires for every row of that model. Read the model the trigger hangs off. A polymorphic `belongs_to` (list the `inclusion` validation or `PolymorphicClasses` entries), an STI base class, or a type/kind enum each names a population. For each: does the handler handle it, filter it explicitly, or raise? Safe navigation (`&.`) guards nil, not a different type.
 
@@ -29,6 +29,7 @@ Emit the population table so nothing is dropped:
 | Broker | yes (`external_id: 'BROKER'`) | **no** — no Member row | n/a | n/a |
 | Standalone registrant | yes | **no** — no Member row | n/a | n/a |
 | Any, email field | yes | **no** — email lives on User, trigger watches Member | n/a | n/a |
+| Any, sex field, Individual.sex blank (never propagated before this PR) | yes | yes | **no** — blank sent as `OTHER` over the receiver's value; no backfill | yes |
 | Address owned by Provider, Company, ProviderLocation… (7 of 10 owner types) | no | **yes** — `after_save_commit` on every Address | n/a | **no** — `owner.individual` raises in the job |
 
 ## What to Flag
@@ -51,6 +52,9 @@ A synced field is stored on a model the trigger does not watch (email on User, w
 ### Propagation Gap Patched by Bypass
 A field is missing from the role → identity propagation, and the change reads the role directly to get a fresh value. The right fix adds the field to the propagation. Reading around the identity leaves every other reader of the identity stale and re-splits the source of truth.
 
+### Propagation Without Backfill
+Adding a field to the role → identity propagation fixes future edits only. Every identity row where that field is already blank or stale is read as it stands. When the behavior writes to another system, count the identity rows with the field blank today and require one of two things before the sync ships: a backfill of those rows from the role, or the field left out of the payload while the identity value is blank. A placeholder default in the serializer (`|| 'OTHER'`, `unknown`, `''`) on a last-write-wins write is an overwrite of the receiver's real value, not a no-op. The risk grows with the trigger: a trigger that fires on every update of the identity, with a full payload, re-sends the placeholder on every unrelated edit. On origami_claims #9049 this changed 506 Care Platform charts from female or male to other in ten days.
+
 ### PR Description as Evidence
 The PR asserts a population is handled ("brokers no-op naturally") without a test or code path showing it. Verify against the model and the creation paths, not the description.
 
@@ -66,6 +70,13 @@ payload = build(patient.member || patient.dependent || patient.individual)
 PubSub.subscribe(IndividualUpdatedEvent, PatientSyncListener, :sync)
 payload = build(patient.individual)
 # and in Person#update_individual!: changed_attrs[:sex] = sex if saved_change_to_attribute?(:sex)
+# and for the rows propagation never touched: backfill Individual.sex from the role before the sync ships
+
+# BAD: blank identity value becomes a placeholder that overwrites the receiver.
+sex: { 'male' => 'MALE', 'female' => 'FEMALE' }[individual.sex.to_s] || 'OTHER'
+
+# GOOD: a blank value is left out, so the receiver keeps what it has.
+payload[:sex] = SEX_CODES.fetch(individual.sex) if individual.sex.present?
 
 # BAD: AddressUpdatedEvent fires for all ten Address owner types; three define #individual.
 enqueue(address&.owner&.individual)
@@ -77,7 +88,7 @@ enqueue(owner.individual) if owner.respond_to?(:individual)
 
 ## Severity
 
-- **HIGH**: a population that owns the target never triggers the behavior; a snapshot or stale-row read that can overwrite current data; a handler that raises for a population the trigger fires for
+- **HIGH**: a population that owns the target never triggers the behavior; a snapshot or stale-row read that can overwrite current data; a handler that raises for a population the trigger fires for; a propagation fix with no backfill, or a placeholder default, feeding a last-write-wins write to another system
 - **MEDIUM**: propagation gap patched by reading around the identity; a synced field with no trigger path; a lookup guard that excludes a lifecycle stage; population claimed handled in the PR with no code or test backing it
 - **LOW**: population table incomplete but every found population is covered
 
