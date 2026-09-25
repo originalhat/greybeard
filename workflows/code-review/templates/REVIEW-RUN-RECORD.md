@@ -41,6 +41,7 @@ For each finding that survived step 8, the fact that would have made it false an
 
 - #1: {falsifier} — searched {where}, not found
 - #2: {falsifier} — could not test ({why: needs runtime, other repo not cloned, ...})
+- #3: {falsifier} — pending console check ({environment}); result: {counts} → {kept | dropped (8b)}
 
 ## Re-ranking
 

@@ -44,6 +44,8 @@ If the invocation includes `--fix` (or "fix this branch", "auto-fix mode", "revi
 
 If the invocation includes `--interactive` (or `—interactive` with an em dash, which macOS produces from a double hyphen; or "interactive review", "walk through findings", "draft comments one by one"): run steps 1–11 exactly as written, print the full report, then **stop and switch into a 1-by-1 draft-and-post loop** for each numbered failure. If no PR exists for the branch, say so before starting — there is nowhere to post.
 
+If the report has a `## Data check`, walk the findings that do not depend on it first. Before you draft one that does, ask for the snippet output, then drop or re-rank on it.
+
 For each failure, in order:
 
 1. **Draft** a PR review comment in the user's voice (voice rules below). Do not post yet.
@@ -52,10 +54,12 @@ For each failure, in order:
 4. **Post on approval** as an inline PR review comment, anchored at the `file:line` held from step 8, with the PR's head SHA as `commit_id`. Use the GitHub MCP review-comment tool and print the `html_url` from its response; when the response carries none, read it back with the MCP PR-comments tool (`pull_request_read`, review comments), not `gh`. `gh api repos/{owner}/{repo}/pulls/{n}/comments` is the fallback only when the MCP is not connected, and then as a standalone command: inside a `cd … &&`, a pipe, or `$(…)` it stays in the sandbox and fails.
 5. **Move to the next** finding without waiting for a nudge.
 6. **When every failure has been posted or skipped, offer one line:** `Say approve to submit an Approve review with a 👍 body, or done to stop.` On approve, submit an Approve review with body `👍` via the GitHub MCP review tool (fallback: `gh pr review {n} --approve --body "👍"`) and print the URL from its response, or read it back with the MCP reviews tool. Nothing else in the body unless the user gives their own text.
-7. **When the author replies, test the reply before answering it.** Fetch the thread with the GitHub MCP PR-comments tool (fallback: `gh api repos/{owner}/{repo}/pulls/{n}/comments`) and read the `in_reply_to_id` chain. Author pushback comes in three shapes, and each has its own test:
+7. **When the author replies, test the reply before answering it.** Fetch the thread with the GitHub MCP PR-comments tool (fallback: `gh api repos/{owner}/{repo}/pulls/{n}/comments`) and read the `in_reply_to_id` chain. Author replies come in four shapes, and each has its own test:
    - *"That is pre-existing"* or *"that is out of scope."* Go find the recovery path or the prior behavior in the repo. If it is there, concede in one line and stop. Do not restate the conceded point in softer words.
    - *"The other thing is wrong, not this."* Work out which rule is authoritative, the same way step 8b does. If the author is right, the finding inverts rather than disappears: the inconsistency is real, it points at the code they named, and it becomes a follow-up instead of a change to this PR.
    - *"That is intentional."* Look for the comment, the doc, or the test that says so. Design intent that lives only in a PR reply is worth one question about where it is written down.
+
+   - *"Good catch, will fix"* or a new commit that answers the thread. Review the fix before the thread counts as closed: diff only the commits pushed after the comment (`git diff {commented_sha}..{new_head}`, or the GitHub MCP `get_commit` when fetch fails), check them against the original finding and against the lenses the finding came from, and append the outcome to the record as `#N fixed in {sha}: holds` or `#N fixed in {sha}: {what is still wrong}`. A fix that lands after an approval is still unreviewed code; say so rather than letting the approval cover it.
 
    After conceding anything, re-read the findings still open. A conceded premise usually promotes one of them — if the author is right that the gate is wrong, then every path that skips that gate matters more than it did, not less.
 
@@ -118,6 +122,17 @@ These steps are **strictly sequential** — do not start a step until all prior 
 
    - **Escape hatch.** A finding that says a user is stuck, blocked, never prompted again, or has no way to recover is a claim about *every* path, not the one you read. Search for the recovery by the **state the user is in**, not by the field the finding named — a member with no patient record is found by `patient.nil?`, not by the consent timestamp. Cross the language boundary while you look: the backend sets a flag, and the React bundle that recovers from it often keys off something else entirely, in a different directory, with a different name. If any path lets the user out, the finding is a severity downgrade at most, and usually a drop.
    - **Assumed authority.** A finding of the form "this diverges from how X already works" is only as good as X. Confirm X is the rule that actually governs the capability, not the nearest predicate with a matching name. A dashboard flag and an eligibility service can disagree about who gets access, and when they do, the one the diff contradicts may be the wrong one. Read the comments around X before trusting it — a deliberate divergence is usually documented right there, in the file you are about to cite as the spec.
+   - **Dead path.** A finding that reaches its users only through a legacy or secondary entry point (an old pricer, a self-service flow, a rarely used worker) is only as real as that entry point's traffic. Count production spans for the entry point over the Datadog retention window (`search_datadog_spans`, `env:production resource_name:*{Entry}*`) before keeping it. A scheduled poller that runs with no user traffic behind it does not count. Zero traffic is a drop; write the query and the count in the record's `Why` column. When Datadog is not connected, say so in the falsifier line instead of assuming the path is live. Repo docs and extracted knowledge describe what the code can do, not what production runs: on origami_claims #9099 both described Claros self-service pricing as current, and it had seen no traffic for a year.
+   - **Data hunch.** Some falsifiers are facts about production data, not about code: how many rows are in the state the finding needs, whether any exist at all, which values a column actually holds. When neither the code nor Datadog can answer one, and the answer would drop the finding or change its rank, write a read-only Rails console snippet for the user to run. You run nothing.
+     - Write one snippet per review round, with every data question batched into it.
+     - Follow the snippet rules in `workflows/on-call/pipeline/01-triage.md` Phase 1d: strictly read-only, runnable as-is, and labeled `puts` output.
+     - Make the snippet print its own scope (the environment, the time window, the base counts it queried), so a wrong assumption shows up in the output.
+     - Return counts, booleans, and IDs only. Never names, DOBs, emails, or phone numbers.
+     - Say which environment it targets (CP staging, CP prod, OC prod) and whether it must run inside docker.
+     - The finding stays `kept`, with the falsifier line `pending console check`. The report prints the snippet under `## Data check`, and for each finding it decides, the result that keeps it and the result that drops it. When the output comes back, apply it the same as any other falsifier: drop, re-rank, and record the counts.
+     - Do not write a snippet for a question the code or Datadog already answers.
+
+     On origami_claims #9099, one snippet could have counted digital sales quote applications over the past year (that would have dropped the Claros margin finding) and counted the quotes whose actual enrollment is below the census (that would have sized the rate finding).
 
    A finding that fails falsification is dropped, not softened. Dropping one is not free: when a finding rested on a premise you just removed, re-rank everything that shared it before step 10. A finding ranked low because the main gate looked correct gets promoted the moment that gate turns out to be wrong.
 

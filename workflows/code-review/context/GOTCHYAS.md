@@ -111,3 +111,15 @@ When reviewing anything that subscribes to `AddressUpdatedEvent` / `PhoneUpdated
 3. A spec exercises a `Broker`-owned record and asserts it does enqueue.
 
 See the `TRIGGER-COVERAGE` lens for the general form and the `Individual` entry above for why brokers count.
+
+### origami_claims: Kobe Is the Only Live Pricer. Claros Is Deprecated.
+
+`Rm::Version*` (Kobe) prices every live quote. Claros (`Claros::QuotePricer::Pricer*`, `Claros::SubmitQuote`, `pricing_mode: :full` / `:relative`, `PricerInputs::CARRIER_TO_MARGIN_PERCENTAGE_MAP`, `PricerInputs#margin_percentage`) is still in the code and still reachable by reading it, but its servers have taken no traffic for over a year. Digital sales self-service (`DigitalSales::Services::InitiateQuoting`) submits to Claros and is dead with it: no production spans in the Datadog window checked on 2026-09-25. `Claros::PriorityWorker` still runs on a schedule and polls; that is not quote traffic.
+
+Surfaced on PR #9099 (MGU-446): a finding that Federal Life quotes would price with a 0% Claros margin was correct by the code and irrelevant in production. The author replied that Claros is deprecated and resolved the thread.
+
+When reviewing origami_claims pricing or carrier changes:
+
+1. A finding whose only path to users runs through Claros or digital sales is a dead-path drop (see step 8b), unless Datadog shows traffic on the entry point.
+2. A Kobe-side gap is never excused because the Claros side handles it.
+3. Do not ask the author to keep Claros constants in sync with a new carrier.

@@ -35,10 +35,16 @@ Review · {repo} {#pr or branch} · {N} lenses
 
 Cross-repo: {one line — clean, or the breakage folded in as a numbered failure above}
 
+## Data check
+
+Run in {CP staging | CP prod | OC prod}{, inside docker}. Read-only. Decides #{N}, #{M}.
+{one read-only console snippet in a ruby code block}
+#{N}: kept if {result}; dropped if {result}.
+
 Ask for any number for file:line, the call path, and a full fix.
 ```
 
-Print the `## ⚠️ Nits` heading only when there is at least one nit, and the `## Pre-Existing` heading only when at least one finding was pre-existing. If nothing failed, nothing was nitted, and nothing was pre-existing, the tally line plus `Cross-repo:` and the closing offer is the entire report. Do not pad it.
+Print the `## ⚠️ Nits` heading only when there is at least one nit, the `## Pre-Existing` heading only when at least one finding was pre-existing, and the `## Data check` heading only when a falsifier needs production data that the code and Datadog cannot supply (step 8b, **Data hunch**). The snippet is the only code block a report may hold. If nothing failed, nothing was nitted, and nothing was pre-existing, the tally line plus `Cross-repo:` and the closing offer is the entire report. Do not pad it.
 
 ## Worked example
 
