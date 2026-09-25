@@ -15,6 +15,20 @@ head="${3:-$(git rev-parse HEAD)}"
 data="${GREYBEARD_DATA:-$HOME/.greybeard-data}/output/code-review/$repo"
 slug="$(printf '%s' "$branch" | tr '/' '-')"
 
+record_sha() {
+  grep -h -o -E '^\*\*(HEAD SHA|Final SHA):\*\* *[0-9a-f]{7,40}' "$1" | tail -1 | grep -o -E '[0-9a-f]{7,40}$' || true
+}
+
+# A record that reviewed HEAD itself counts whatever branch it was filed under;
+# renaming the branch after the review must not make HEAD look unreviewed.
+for f in "$data"/runs/*.md "$data"/fix-runs/*.md; do
+  [ -f "$f" ] || continue
+  sha="$(record_sha "$f")"
+  [ -n "$sha" ] || continue
+  case "$head" in "$sha"*) echo "match (HEAD $head reviewed in $(basename "$f"))"; exit 0 ;; esac
+  case "$sha" in "$head"*) echo "match (HEAD $head reviewed in $(basename "$f"))"; exit 0 ;; esac
+done
+
 newest=""
 newest_sha=""
 for f in "$data"/runs/*.md "$data"/fix-runs/*.md; do
