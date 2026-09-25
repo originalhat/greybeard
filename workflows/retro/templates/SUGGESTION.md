@@ -5,16 +5,16 @@ One suggestion has two layers. The **card** is what the user reads in the final 
 ## Card
 
 ```markdown
-### {id} · {Issue in plain English} · quadrant {1–4}/4 · {about N min lost | time lost not measurable} · {applied | handed off | needs input | deferred}
+### {id} · {Issue in plain English} · {1–4}/4 · {about N min lost | n/a} · {✅ | 🖐️ | ❓ | ⏸️}
 {Two to four sentences. Problem: what kept happening, counts in words ("three threads, nine denials"). Impact: what it cost the user. Fix: what changes, in one sentence, naming a file or rung only when the user has to go there.}
 ```
 
 Rules for the card:
 
 - The header is an `###` heading that starts with the id, then the issue in plain English, not the target path. "Network git still fights the sandbox" beats "compound-git-approve.sh v4".
-- Quadrant numbers follow the order below; `1/4` is high value · high confidence.
-- Time lost is the magnitude line's closing figure and nothing else.
-- Status is one word or two: `applied` (auto or approved), `handed off` (the user has commands to run), `needs input` (walkthrough), `deferred`.
+- The quadrant is a bare `n/4` following the order below; `1/4` is high value · high confidence. No "quadrant" label.
+- Time lost is the magnitude line's closing figure, or `n/a` when the logs do not support a number.
+- Status is one emoji: ✅ applied (auto or approved), 🖐️ handed off (the user has commands to run), ❓ needs input (walkthrough), ⏸️ deferred.
 - No Evidence, Change, Rollback, or Before-you-decide in the card. A `handed off` card is followed by its command block, because the user has to run it; that is the only code allowed under a card.
 - Never more than four sentences. Leave things out rather than pack them in.
 
