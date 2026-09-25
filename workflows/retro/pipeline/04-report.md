@@ -36,15 +36,15 @@ Path-scoped, so nothing else in that tree is swept in. If push fails, leave the 
 
 ## Final message
 
-The user reads this and nothing else. In order:
+The user reads this and nothing else. It is short and scannable: cards, not tables or field lists. In order:
 
-1. A markdown link to the report file.
-2. Two or three sentences: threads reviewed by project, and the themes, **each with its magnitude line**.
-3. **Applied automatically**: one line per auto-applied suggestion, with its before and after in a sentence and its rollback command. Then **Needs your hands**: every `handed-off` suggestion, new or older, with the exact commands in a code block. Omit either list when empty.
-4. The 2x2 grid (value by confidence, ids in each cell), then the suggestion table in quadrant order: id, one-line description, quadrant, ladder rung, effort, magnitude line ending in time lost.
-5. Overlaps, in one line each.
-6. Then, unless `--report-only`, continue directly into `05-apply.md`'s walkthrough and present the first remaining suggestion in the same message. When nothing remains, end on the applied list and `Say "retro rollback <id>" to undo any of these.` The turn ends on its `Approve, skip, or tell me what to change.` line.
+1. A markdown link to the report file, then one sentence: threads reviewed by project and how they ended.
+2. One **card** per suggestion (`templates/SUGGESTION.md` § Card), in quadrant order, applied ones included; the status word in the header tells them apart. A `handed off` card is followed by its command block. No 2x2 grid, no suggestion table, no Evidence, Change, or Rollback; those are in the report. Overlaps are one clause inside the card paragraph ("replaces yesterday's S-…"), not a separate list.
+3. **Watching:** at most five observations, one line each, counts in words. Omit when empty.
+4. Then, unless `--report-only`, one closing line that opens the walkthrough on the first `needs input` card already shown: `First up: {id}. Approve, skip, change, or "details" for the evidence, exact change, and rollback.` Do not repeat the card. When nothing needs input, end instead with `Say "retro rollback <id>" to undo any of these.`
 
 With `--report-only`, end instead with: `Say "retro walkthrough" to go through these one at a time.`
+
+A reader who only sees this message should know what happened, what changed, and what is being asked of them, without opening the report.
 
 Nothing new is applied in this phase; auto-apply ran before it.

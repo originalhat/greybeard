@@ -34,7 +34,7 @@ Magnitude: {affected}/{N} threads · {nonzero counts, in words} · about {N} min
 | **Low value**  | {ids}           | {ids}          |
 
 ### High value · high confidence
-{each suggestion in the shape of templates/SUGGESTION.md, headed `(applied)`, `(handed off)`, or `(walkthrough: {rule})`}
+{each suggestion as its card (header line with status, then the short paragraph) followed by its Details block, per templates/SUGGESTION.md; a card sent to the walkthrough names the rule that sent it there in its paragraph}
 
 ### High value · low confidence
 {…}

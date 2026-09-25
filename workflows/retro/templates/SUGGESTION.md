@@ -1,9 +1,31 @@
 # Suggestion
 
-The shape of one suggestion. The report prints every suggestion this way, and the walkthrough presents each one this way, so the user reads the same fields in the same order every time.
+One suggestion has two layers. The **card** is what the user reads in the final message and the walkthrough: a one-line header and a short paragraph, nothing else. The **details** (magnitude, before/after, evidence, change, rollback) live in the report file and are shown in the thread only when the user asks for them.
+
+## Card
 
 ```markdown
-### {id}: {title in plain language}
+## {Issue in plain English} · quadrant {1–4}/4 · {about N min lost | time lost not measurable} · {applied | handed off | needs input | deferred} · {id}
+{Two to four sentences. Problem: what kept happening, counts in words ("three threads, nine denials"). Impact: what it cost the user. Fix: what changes, in one sentence, naming a file or rung only when the user has to go there.}
+```
+
+Rules for the card:
+
+- The header is plain English, not the target path. "Network git still fights the sandbox" beats "compound-git-approve.sh v4".
+- Quadrant numbers follow the order below; `1/4` is high value · high confidence.
+- Time lost is the magnitude line's closing figure and nothing else.
+- Status is one word or two: `applied` (auto or approved), `handed off` (the user has commands to run), `needs input` (walkthrough), `deferred`.
+- No Evidence, Change, Rollback, or Before-you-decide in the card. A `handed off` card is followed by its command block, because the user has to run it; that is the only code allowed under a card.
+- Never more than four sentences. Leave things out rather than pack them in.
+
+## Details
+
+The report prints the card header, the card paragraph, and then these fields. The walkthrough prints them only when the user says `details`.
+
+```markdown
+{card header}
+{card paragraph}
+
 {value} value · {confidence} confidence · rung {1–5} ({config | structure | skill mechanics | memory | prose}) · {effort} · {target}
 
 **Magnitude:** {affected}/{reviewed} threads · {nonzero counts, in words} · about {N} minutes lost

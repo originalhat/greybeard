@@ -29,17 +29,13 @@ When the sandbox or the permission classifier refuses a write, do not route arou
 
 ## Walkthrough
 
-The walkthrough covers what auto-apply did not: the low-confidence quadrants, high-confidence suggestions sent back by a rule above, and `handed-off` items still waiting on the user. Present open suggestions **one at a time**, in quadrant order (high value · high confidence, high value · low confidence, low value · high confidence, low value · low confidence), then id order within a quadrant, overlapping ones together. Each one is presented in the shape of `templates/SUGGESTION.md`, the same shape the report used:
+The walkthrough covers what auto-apply did not: the low-confidence quadrants, high-confidence suggestions sent back by a rule above, and `handed-off` items still waiting on the user. Present open suggestions **one at a time**, in quadrant order (high value · high confidence, high value · low confidence, low value · high confidence, low value · low confidence), then id order within a quadrant, overlapping ones together. Each one is its **card** from `templates/SUGGESTION.md`: the header line, the two-to-four-sentence paragraph, and then one line:
 
-1. Header: `Suggestion {n} of {open}: {id}, {short title}`, then the line with value, confidence, rung, effort, target.
-2. The magnitude line, ending in time lost.
-3. **Before**, **After**, **How we'll know**. This is the impact; it comes before the evidence and the change, and it is never skipped.
-4. The verified evidence in two to four lines, the user's own words quoted where they are the evidence.
-5. The exact change: text in a code block for prose and config; steps and file placement for skills and scripts.
-6. **Rollback**, and **Before you decide**: overlaps, a gitignored file, uncommitted work in the files you would touch, a convention this changes.
-7. One line: `Approve, skip, or tell me what to change.`
+`{n} of {open}. Approve, skip, change, or "details" for the evidence, exact change, and rollback.`
 
-Then stop and wait. Accept partial approvals ("2 to 4 but not 1"), edits ("drop the last line", "production only"), and "not sure yet" (record `deferred`). Apply immediately on approval, record, commit, and present the next one in the same message.
+Nothing else. When the user says `details`, print that suggestion's **Details** block from the report (magnitude, before/after, how we'll know, evidence, change, rollback, before you decide) and ask again. When the change needs the user's hands (a `handed off` item), the command block follows the card.
+
+Then stop and wait. Accept partial approvals ("2 to 4 but not 1"), edits ("drop the last line", "production only"), and "not sure yet" (record `deferred`). Apply immediately on approval, record, commit, and present the next card in the same message.
 
 ## Applying
 

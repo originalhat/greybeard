@@ -18,7 +18,7 @@ retro/
 │   └── 05-apply.md        # Auto-apply, walkthrough, apply, reject, rollback, changelog, commits
 └── templates/
     ├── RETRO-REPORT.md    # Report shape
-    ├── SUGGESTION.md      # One suggestion: 2x2 placement, magnitude, before/after impact, rollback
+    ├── SUGGESTION.md      # One suggestion: the card the user reads (header + short paragraph) and the details behind it
     ├── THREAD-SUMMARY.md  # What a summarizing subagent returns
     └── STATE.md           # state.json schema and status vocabulary
 ```
