@@ -62,7 +62,7 @@ Test behavior, not implementation: assert on what the system does, not how it do
 
 ### 4. Commit
 
-- Only once every behavior from step 2 is implemented. Run the target repo's **entire** existing test suite, not just the tests this step added — a change that passes its own new tests can still break something unrelated. Commit once all of it is green, not mid-loop.
+- Only once every behavior from step 2 is implemented. Run the tests for the files this change touched and the existing specs that cover them, not just the tests this step added. Leave the whole suite to the repo's CI when it has one (care_platform, origami_claims, and home all do); run it locally only when the repo has no CI, or when the change is cross-cutting (a shared model, a migration, a config file). Commit once those are green, not mid-loop.
 - One commit covering the tests and the implementation together. Message describes the requirement, not the mechanics — `Add dark mode toggle to settings`, not `Add useState and CSS class`.
 
 ### 5. `review --fix`
