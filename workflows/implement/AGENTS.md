@@ -6,18 +6,20 @@ Turns a ticket or a set of requirements into working, tested, reviewed code on a
 
 ```
 implement/
-└── AGENTS.md    # You are here — the whole pipeline lives in this one file
+├── AGENTS.md                  # You are here — the whole pipeline lives in this one file
+└── templates/
+    └── AGENT-SUMMARY.md       # Point-of-record summary attached to the Linear ticket (step 9)
 ```
 
-No lenses or templates of its own. Step 5 reuses `review-fix` and `code-review` unmodified.
+No lenses of its own. Step 5 reuses `review-fix` and `code-review` unmodified.
 
 ## Inputs
 
 Triggered by **`/implement <ticket-or-requirements>`**, optionally **`in <repo>`** and/or **`--skip-ui`** (skip the render check in step 7) and/or **`--pr`** (push and open a draft PR in step 8).
 
-- A JIRA ticket URL (`https://sanabenefits.atlassian.net/browse/ER-1477`) or bare ticket ID, a GitHub issue URL, or pasted freeform requirements.
+- A Linear issue URL or identifier (`PROD-1234`), a JIRA ticket URL (`https://sanabenefits.atlassian.net/browse/ER-1477`) or bare ticket ID, a GitHub issue URL, or pasted freeform requirements.
 - The target repo: explicit `in <repo>`, else inferred from the ticket, else the current working directory's repo.
-- The `atlassian` MCP for JIRA tickets, `gh` for GitHub issues. Neither is needed for freeform requirements.
+- The `Linear` MCP for Linear issues, the `atlassian` MCP for JIRA tickets, `gh` for GitHub issues. None is needed for freeform requirements.
 
 ## Outputs
 
@@ -26,7 +28,8 @@ Triggered by **`/implement <ticket-or-requirements>`**, optionally **`in <repo>`
   - `review-fix`'s own auto-fix commits, unmodified from how that pipeline already commits.
   - One correction commit, if step 6 finds anything to fix.
 - A closing summary: what was implemented, the design chosen and what was **not built** (step 2), what `review --fix` found and fixed, what's still open and needs a human, and the render-check result from step 7 (screenshot paths, or why it was skipped).
-- No push and no PR unless `--pr` was passed. With `--pr`, the branch is pushed and a draft PR is opened with the closing summary as its body. Otherwise the branch stays local until the human decides it's ready.
+- For a Linear issue, an `agent-summary.md` attached to the issue as the point of record (step 9).
+- No push and no PR unless `--pr` was passed. With `--pr`, the branch is pushed and a draft PR is opened with a short Description + Visuals body (step 8). Otherwise the branch stays local until the human decides it's ready.
 
 ## Execution
 
@@ -35,11 +38,12 @@ These steps are **strictly sequential** — later steps depend on earlier ones a
 ### 1. Intake
 
 - Resolve the input:
+  - Linear issue → `mcp__Linear__get_issue` for title, description, `gitBranchName`, and attachments. A bare `ABC-123` ID is Linear unless it is an `ER-` ticket or the Linear lookup misses, then try JIRA.
   - JIRA ticket → `mcp__atlassian__getJiraIssue` (same pattern as `triage`) for title, description, acceptance criteria, linked issues.
   - GitHub issue → the GitHub MCP issue tool (fallback: `gh issue view {url} --json title,body`).
   - Freeform text → use as-is; if there's no clear, checkable behavior in it, ask before proceeding rather than inventing scope.
 - Resolve the target repo (see Inputs) and work in its existing checkout.
-- Check the current branch. If it's `main`/`master`, create a new branch named from the ticket ID or a short slug of the requirement (`er-1477`, `dark-mode-toggle`). If already on a feature branch, continue on it — this supports resuming a half-finished implementation rather than starting over.
+- Check the current branch. If it's `main`/`master`, create a new branch: the Linear issue's `gitBranchName` as-is (Linear links the branch and its PR to the issue from that name), else the ticket ID or a short slug of the requirement (`er-1477`, `dark-mode-toggle`). If already on a feature branch, continue on it — this supports resuming a half-finished implementation rather than starting over.
 
 ### 2. Investigate
 
@@ -74,7 +78,7 @@ Test behavior, not implementation: assert on what the system does, not how it do
 
 - From `review --fix`'s final report, apply any remaining finding that's unambiguously in scope and doesn't require a product or design judgment call, then commit that separately from step 4 and from `review-fix`'s own commits.
 - Leave anything that's a genuine judgment call — a naming preference, a scope question, "should this actually be here" — for the closing summary instead of guessing.
-- When the change is reachable through a UI, mention in the closing summary that `validate` (`${CLAUDE_PLUGIN_ROOT}/workflows/validate/AGENTS.md`) is the next step — this pipeline doesn't run it itself.
+- Mention in the closing summary that `validate` (`${CLAUDE_PLUGIN_ROOT}/workflows/validate/AGENTS.md`) is the next step — this pipeline doesn't run it itself.
 - Any commit made after step 5's last round (a correction here, a fix from acceptance testing, a steer that reshapes the model) leaves the branch unreviewed again. Step 8 checks for that before anything is pushed.
 
 ### 7. Render check, unless `--skip-ui`
@@ -92,8 +96,19 @@ A smoke check, not validation. `validate` walks the acceptance criteria; this st
 ### 8. Draft PR, only with `--pr`
 
 - Without `--pr`: end the closing summary with one line, `Say pr to push and open a draft PR.` Do nothing else.
-- With `--pr` (or when the human says `pr` afterwards): **first check that HEAD is a reviewed SHA.** Run `${CLAUDE_PLUGIN_ROOT}/workflows/code-review/scripts/last-reviewed-sha.sh {repo} {branch}` from the checkout. Exit 0: HEAD is the SHA the newest run record reviewed; push. Exit 1 or 2: commits landed since the last review, or no review was recorded; run step 5 again, then re-check, then push. Say in one line which SHA was reviewed. The same check runs before **every** later push from this thread (`push it`, a rebase, fixes after review comments): a push is never the first thing that happens to a commit. Then push the branch to `origin` and open a **draft** PR against `main` with the GitHub MCP create-PR tool, `draft: true` (fallback: `gh pr create --draft`), title from the ticket, body = the closing summary with the **Not built** section included. Print the URL. Never mark it ready for review; that is the human's call.
+- With `--pr` (or when the human says `pr` afterwards): **first check that HEAD is a reviewed SHA.** Run `${CLAUDE_PLUGIN_ROOT}/workflows/code-review/scripts/last-reviewed-sha.sh {repo} {branch}` from the checkout. Exit 0: HEAD is the SHA the newest run record reviewed; push. Exit 1 or 2: commits landed since the last review, or no review was recorded; run step 5 again, then re-check, then push. Say in one line which SHA was reviewed. The same check runs before **every** later push from this thread (`push it`, a rebase, fixes after review comments): a push is never the first thing that happens to a commit. Then push the branch to `origin` and open a **draft** PR against `main` with the GitHub MCP create-PR tool, `draft: true` (fallback: `gh pr create --draft`), title from the ticket's title with no ticket ID or number in it (the branch name already links it), body in the global `Pull request descriptions` format: a `### Description` of 1-2 short paragraphs on the user need and experience, then `### Visuals` holding the step 7 screenshot of the core functionality if one was captured (else left empty). The closing summary's **Not built**, open items, and review results stay in chat, not the PR body. No Claude attribution line. Print the URL. Never mark it ready for review; that is the human's call.
 - This is the only place in the greybeard workflows that pushes, and only on request.
+
+### 9. Attach `agent-summary.md` to the Linear issue
+
+Only when the input was a Linear issue. Runs last, after step 8, without asking: the ticket is the durable record of how and why this change was made, for anyone investigating it later.
+
+- Fill `templates/AGENT-SUMMARY.md` from this run: the closing summary, the design choice and **Not built**, every steer or decision from the human in this thread and what prompted it, the tests, the review results, the commits. Write it to `$TMPDIR/agent-summary.md`.
+- **PHI-free.** Linear is not a BAA'd system. No member, dependent, or patient names, IDs, DOBs, or production URLs; describe data by shape. Check the file before uploading.
+- Upload with `mcp__Linear__prepare_attachment_upload` (`filename: agent-summary.md`, `contentType: text/markdown`, exact byte size), then `curl -X PUT --data-binary @"$TMPDIR/agent-summary.md"` to the signed URL with every returned header verbatim (list the URL's host in `allowed_domains`; the URL expires in 60 seconds), then `mcp__Linear__create_attachment_from_upload` with title `agent-summary.md`.
+- One summary per issue. If `get_issue`'s attachments already hold an `agent-summary.md` (a resumed run), upload the new one, then `mcp__Linear__delete_attachment` the old one.
+- If the thread adds commits later (a correction, fixes after review comments), replace the attachment the same way after the push, so it describes what shipped.
+- If the Linear MCP is not connected or the upload fails, say so in one line and leave the file path in the closing summary. Never block the rest of the pipeline on it.
 
 ## Notes
 
@@ -101,5 +116,5 @@ A smoke check, not validation. `validate` walks the acceptance criteria; this st
 - **Push only from a reviewed SHA.** `scripts/last-reviewed-sha.sh` in the code-review workflow is the check; it reads the newest `HEAD SHA:` / `Final SHA:` from the branch's run records. On care_platform #980 one 193-line commit from acceptance testing and one 1000-line remodel each went out unreviewed, and every finding the human reviewers blocked on was in those commits.
 - Never pushes and never opens a PR unless asked with `--pr` or a `pr` reply, and then only a draft — otherwise the same convention as `review --fix`. The human decides when the branch is ready for review.
 - Never runs against a branch the user doesn't own — this pipeline commits as it goes, so it only ever runs on a branch you can write to, same reasoning as `review --fix`.
-- If step 1 or step 2 turns up real ambiguity, stop and ask. Steps 3–8 assume the scope is already settled.
+- If step 1 or step 2 turns up real ambiguity, stop and ask. Steps 3–9 assume the scope is already settled.
 - Resuming: if the branch from a prior `/implement` run already exists with partial work, step 1 picks it up rather than starting over.

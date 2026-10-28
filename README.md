@@ -163,7 +163,7 @@ See [`workflows/code-review/`](workflows/code-review/) for details.
 Takes a ticket or a set of requirements and turns it into working, tested, reviewed code on a branch.
 
 ```
-implement <Jira ticket URL | ticket ID | GitHub issue URL | freeform requirements> [in <repo-name>]
+implement <Linear issue | Jira ticket URL | ticket ID | GitHub issue URL | freeform requirements> [in <repo-name>]
 ```
 
 **How it works:**
@@ -172,6 +172,7 @@ implement <Jira ticket URL | ticket ID | GitHub issue URL | freeform requirement
 3. Commit once the whole suite is green
 4. Run `review --fix` against the branch, then apply any remaining in-scope corrections in a separate commit
 5. When the change has a UI, drive it in a real browser against the acceptance criteria
+6. For a Linear issue, attach an `agent-summary.md` to it: what was built, why, and the decisions made along the way
 
 Never pushes, never opens a PR. See [`workflows/implement/`](workflows/implement/) for details.
 
