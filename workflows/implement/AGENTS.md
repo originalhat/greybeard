@@ -15,7 +15,7 @@ No lenses of its own. Step 5 reuses `review-fix` and `code-review` unmodified.
 
 ## Inputs
 
-Triggered by **`/implement <ticket-or-requirements>`**, optionally **`in <repo>`** and/or **`--skip-ui`** (skip the render check in step 7) and/or **`--pr`** (push and open a draft PR in step 8).
+Triggered by **`/implement <ticket-or-requirements>`**, optionally **`in <repo>`** and/or **`--worktree`** (work in a sibling git worktree with its own local stack, step 1) and/or **`--base <branch>`** (with `--worktree`, start the new branch from this branch instead of `main`, for stacked work) and/or **`--skip-ui`** (skip the render check in step 7) and/or **`--pr`** (push and open a draft PR in step 8).
 
 - A Linear issue URL or identifier (`PROD-1234`), a JIRA ticket URL (`https://sanabenefits.atlassian.net/browse/ER-1477`) or bare ticket ID, a GitHub issue URL, or pasted freeform requirements.
 - The target repo: explicit `in <repo>`, else inferred from the ticket, else the current working directory's repo.
@@ -30,6 +30,7 @@ Triggered by **`/implement <ticket-or-requirements>`**, optionally **`in <repo>`
 - A closing summary: what was implemented, the design chosen and what was **not built** (step 2), what `review --fix` found and fixed, what's still open and needs a human, and the render-check result from step 7 (screenshot paths, or why it was skipped).
 - For a Linear issue, an `agent-summary.md` attached to the issue as the point of record (step 9).
 - No push and no PR unless `--pr` was passed. With `--pr`, the branch is pushed and a draft PR is opened with a short Description + Visuals body (step 8). Otherwise the branch stays local until the human decides it's ready.
+- With `--worktree`: the worktree path, and when the repo provides a per-worktree stack, its app URL and the teardown command. The worktree and its stack are left running for the human.
 
 ## Execution
 
@@ -42,8 +43,19 @@ These steps are **strictly sequential** — later steps depend on earlier ones a
   - JIRA ticket → `mcp__atlassian__getJiraIssue` (same pattern as `triage`) for title, description, acceptance criteria, linked issues.
   - GitHub issue → the GitHub MCP issue tool (fallback: `gh issue view {url} --json title,body`).
   - Freeform text → use as-is; if there's no clear, checkable behavior in it, ask before proceeding rather than inventing scope.
-- Resolve the target repo (see Inputs) and work in its existing checkout.
+- Resolve the target repo (see Inputs). Without `--worktree`, work in its existing checkout. With `--worktree`, see the worktree section below and skip the next bullet.
 - Check the current branch. If it's `main`/`master`, create a new branch: the Linear issue's `gitBranchName` as-is (Linear links the branch and its PR to the issue from that name), else the ticket ID or a short slug of the requirement (`er-1477`, `dark-mode-toggle`). If already on a feature branch, continue on it — this supports resuming a half-finished implementation rather than starting over.
+
+#### With `--worktree`
+
+The main checkout is never switched, edited, or used to run this branch's tests; other work may be running from it.
+
+- Branch name as above (the Linear `gitBranchName`, else the ticket ID or a slug). Worktree path: a sibling of the main checkout named `<checkout-dir>-<suffix>`, where the suffix is the ticket number (`care_platform-2139`), else the branch name without its `d/` prefix. It must stay under `$HOME` so the Docker VM can mount it.
+- Base: `--base <branch>` if given, else `main`. If that path already exists on that branch, resume in it. Otherwise `git -C <main checkout> fetch origin <base>`, then `git -C <main checkout> worktree add --no-track -b <branch> <path> origin/<base>`, or `git -C <main checkout> worktree add <path> <branch>` when the branch already exists locally. `--no-track` keeps the new branch from treating the base as its upstream.
+- With `--base`, the branch is stacked: `review --fix` (step 5) and the reviewed-SHA check cover `origin/<base>..HEAD` only, not the parent's commits, and the draft PR (step 8) targets `<base>` instead of `main`. `git worktree` and `docker` commands need the Bash sandbox off; inside it, checkouts come out half-written.
+- Copy untracked agent instruction files that git leaves behind, `CLAUDE.local.md` today, from the main checkout into the worktree when the worktree lacks them, then read them as step 2 would.
+- If the repo has an executable `bin/worktree-setup`, run it from the worktree and keep the app URL it prints. Warnings in its output are fine; a non-zero exit stops the run with its output in the summary. If the script doesn't exist, carry on with a bare worktree and the repo's usual test conventions.
+- From here on, every step runs from the worktree path: edits, tests, commits, `review --fix`, the render check, and the push.
 
 ### 2. Investigate
 
@@ -67,11 +79,13 @@ Test behavior, not implementation: assert on what the system does, not how it do
 ### 4. Commit
 
 - Only once every behavior from step 2 is implemented. Run the tests for the files this change touched and the existing specs that cover them, not just the tests this step added. Leave the whole suite to the repo's CI when it has one (care_platform, origami_claims, and home all do); run it locally only when the repo has no CI, or when the change is cross-cutting (a shared model, a migration, a config file). Commit once those are green, not mid-loop.
+- With `--worktree` and a per-worktree stack, run tests in that stack from the worktree, never in the main checkout's containers. Always pass `-T` to `docker compose exec` (agent shells have no TTY). Scope frontend tests to the covering files, e.g. `docker compose exec -T care_assets yarn jest --maxWorkers=2 <files>`, rather than a full-suite command like `yarn precommit`; jest inside the asset watcher roughly doubles its memory.
 - One commit covering the tests and the implementation together. Message describes the requirement, not the mechanics — `Add dark mode toggle to settings`, not `Add useState and CSS class`.
 
 ### 5. `review --fix`
 
 - Follow `${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/AGENTS.md` exactly against this branch — the same pipeline plain `review --fix` runs, unmodified. This produces its own auto-fix commits and a final report of whatever's left.
+- With `--worktree`, the worktree is the checkout `review-fix` diffs and commits to; don't check the branch out under `$GREYBEARD_DATA/sources/`, and ignore those docs' `cd` into it. Give every lens, fixer and gate agent the worktree path and the exact diff command, `git diff origin/<base>...HEAD` (`<base>` is `main` without `--base`). Record `Base: origin/<base> @ <sha>` in run records. Fixers commit in the worktree. Keep rspec and docker out of lens agents.
 - Progress messages: one line when `review --fix` starts and one when it finishes. Lens-by-lens and round-by-round status belongs in the fix-run record, not in chat. The same cap applies to the rest of this pipeline: no per-behavior or per-test narration; the closing summary is the report.
 
 ### 6. Correct what's left
@@ -87,7 +101,10 @@ A smoke check, not validation. `validate` walks the acceptance criteria; this st
 
 - Applies when the diff touches a view, template, component, or stylesheet. Skip it outright for backend-only changes and say so in the summary. Skip it when the invocation carries `--skip-ui` (or "skip the UI check", "no browser").
 - When it applies, spawn a subagent (model: `sonnet`) to:
-  - Launch the app — check for a project-specific launch skill first (e.g. `run`), otherwise start it per the target repo's conventions.
+  - Launch the app — with `--worktree` and a per-worktree stack, use the app URL from step 1 (it's already running); otherwise check for a project-specific launch skill first (e.g. `run`), else start it per the target repo's conventions.
+  - With `--worktree`: if the branch changed the stack's build or env config (`client/start.mjs`, `.env`, `docker-compose.yml`), restart the worktree's asset watcher from the worktree (`docker compose restart care_assets`, or `docker compose up -d` for compose changes) and wait for the rebuilt bundle before loading pages, or the screenshot shows the old build.
+  - Sign in with the repo's local dev login (care_platform: `POST /api/sessions` with a seed user's `{email}`).
+  - Prefix screenshot filenames with the branch slug, copy them to thread storage, and delete the originals from the browser tool's own output folder (the Playwright MCP writes to `<main checkout>/.playwright-mcp/`).
   - Load each changed page once via the `playwright` MCP tools and take one screenshot per page. No clicking through flows, no criteria walkthrough.
   - Look at the screenshot next to the nearest existing page of the same kind (a list next to the queue list, a form next to an existing form) and report anything visibly off: spacing, row styling, icons, alignment, a component that did not render.
 - If a page fails to render or is visibly inconsistent with its neighbours, fix that before the closing summary and re-check once. Anything that needs a design decision goes in the summary instead.
@@ -95,8 +112,9 @@ A smoke check, not validation. `validate` walks the acceptance criteria; this st
 
 ### 8. Draft PR, only with `--pr`
 
+- With `--worktree`: the closing summary gives the worktree path, the app URL, and how to clean up (`bin/worktree-teardown` from the worktree, then `git worktree remove <path>`, plus `git branch -D <branch>` once the branch is merged or abandoned). Don't tear it down; the human uses it to try the change.
 - Without `--pr`: end the closing summary with one line, `Say pr to push and open a draft PR.` Do nothing else.
-- With `--pr` (or when the human says `pr` afterwards): **first check that HEAD is a reviewed SHA.** Run `${CLAUDE_PLUGIN_ROOT}/workflows/code-review/scripts/last-reviewed-sha.sh {repo} {branch}` from the checkout. Exit 0: HEAD is the SHA the newest run record reviewed; push. Exit 1 or 2: commits landed since the last review, or no review was recorded; run step 5 again, then re-check, then push. Say in one line which SHA was reviewed. The same check runs before **every** later push from this thread (`push it`, a rebase, fixes after review comments): a push is never the first thing that happens to a commit. Then push the branch to `origin` and open a **draft** PR against `main` with the GitHub MCP create-PR tool, `draft: true` (fallback: `gh pr create --draft`), title from the ticket's title with no ticket ID or number in it (the branch name already links it), body in the global `Pull request descriptions` format: a `### Description` of 1-2 short paragraphs on the user need and experience, then `### Visuals` holding the step 7 screenshot of the core functionality if one was captured (else left empty). The closing summary's **Not built**, open items, and review results stay in chat, not the PR body. No Claude attribution line. Print the URL. Never mark it ready for review; that is the human's call.
+- With `--pr` (or when the human says `pr` afterwards): **first check that HEAD is a reviewed SHA.** Run `${CLAUDE_PLUGIN_ROOT}/workflows/code-review/scripts/last-reviewed-sha.sh {repo} {branch}` from the checkout (with `--base`, prefix it with `REVIEW_BASE=origin/<base>`). Exit 0: HEAD is the SHA the newest run record reviewed; push. Exit 1 or 2: commits landed since the last review, or no review was recorded; run step 5 again, then re-check, then push. Say in one line which SHA was reviewed. The same check runs before **every** later push from this thread (`push it`, a rebase, fixes after review comments): a push is never the first thing that happens to a commit. Then push the branch to `origin` and open a **draft** PR against `main` with the GitHub MCP create-PR tool, `draft: true` (fallback: `gh pr create --draft`), title from the ticket's title with no ticket ID or number in it (the branch name already links it), body in the global `Pull request descriptions` format: a `### Description` of 1-2 short paragraphs on the user need and experience, then `### Visuals` holding the step 7 screenshot of the core functionality if one was captured (else left empty). The closing summary's **Not built**, open items, and review results stay in chat, not the PR body. No Claude attribution line. Print the URL. Never mark it ready for review; that is the human's call.
 - This is the only place in the greybeard workflows that pushes, and only on request.
 
 ### 9. Attach `agent-summary.md` to the Linear issue
@@ -117,4 +135,4 @@ Only when the input was a Linear issue. Runs last, after step 8, without asking:
 - Never pushes and never opens a PR unless asked with `--pr` or a `pr` reply, and then only a draft — otherwise the same convention as `review --fix`. The human decides when the branch is ready for review.
 - Never runs against a branch the user doesn't own — this pipeline commits as it goes, so it only ever runs on a branch you can write to, same reasoning as `review --fix`.
 - If step 1 or step 2 turns up real ambiguity, stop and ask. Steps 3–9 assume the scope is already settled.
-- Resuming: if the branch from a prior `/implement` run already exists with partial work, step 1 picks it up rather than starting over.
+- Resuming: if the branch from a prior `/implement` run already exists with partial work, step 1 picks it up rather than starting over. With `--worktree`, that includes an existing worktree for the branch; re-running `bin/worktree-setup` there is safe.

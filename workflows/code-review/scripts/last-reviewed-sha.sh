@@ -3,6 +3,7 @@
 #
 # Usage: last-reviewed-sha.sh <repo> <branch> [head-sha]
 #   Run from inside the target repo checkout when head-sha is omitted.
+#   For a stacked branch, set REVIEW_BASE=origin/<parent> (default origin/main).
 #
 # Exit 0: HEAD is the last reviewed SHA, or has the same branch diff (a clean rebase).
 # Exit 1: HEAD is not the last reviewed SHA. Run `review --fix` before pushing.
@@ -57,7 +58,7 @@ case "$newest_sha" in "$head"*) echo "match"; exit 0 ;; esac
 
 branch_patch_id() {
   local base
-  base="$(git merge-base origin/main "$1" 2>/dev/null)" || return 1
+  base="$(git merge-base "${REVIEW_BASE:-origin/main}" "$1" 2>/dev/null)" || return 1
   git diff "$base" "$1" | git patch-id --stable | awk '{print $1}'
 }
 if git cat-file -e "$newest_sha^{commit}" 2>/dev/null; then

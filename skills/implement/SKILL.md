@@ -5,7 +5,9 @@ description: >-
   a branch. Use when the user says "implement <ticket>", "implement this
   ticket", "build <feature>", "implement these requirements", or gives a Linear
   issue URL/ID, a JIRA ticket URL/ID, a GitHub issue URL, or pasted freeform
-  requirements to build, optionally `in <repo>`. Investigates the target codebase, implements
+  requirements to build, optionally `in <repo>`. Pass `--worktree` to work in
+  a sibling git worktree, with its own local stack via the repo's
+  `bin/worktree-setup` when present. Investigates the target codebase, implements
   test-first (red then green, testing behavior not implementation), commits
   once complete, runs `review --fix` against the branch, applies any
   remaining in-scope corrections in a separate commit, and, when the change
@@ -20,9 +22,13 @@ description: >-
 
 Ticket or requirements in; a test-first, reviewed branch out.
 
-**Trigger:** `implement <Linear issue | Jira ticket URL | ticket ID | GitHub issue URL | freeform requirements>`, optionally `in <repo-name>`, `--skip-ui`, `--pr`.
+**Trigger:** `implement <Linear issue | Jira ticket URL | ticket ID | GitHub issue URL | freeform requirements>`, optionally `in <repo-name>`, `--worktree` (with optional `--base <branch>` for stacked work), `--skip-ui`, `--pr`.
 
 **Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/implement/AGENTS.md`.
+
+`--worktree` leaves the main checkout alone: the branch lives in a sibling
+worktree (`<checkout>-<ticket>`), every step runs from there against that
+worktree's own stack, and the worktree and stack are left up for the human.
 
 That file holds the full pipeline: intake → investigate → TDD (red, green,
 refactor, one behavior at a time) → commit → `review --fix` via
