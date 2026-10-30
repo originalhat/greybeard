@@ -1,6 +1,6 @@
 # Implement Workflow
 
-Turns a ticket or a set of requirements into working, tested, reviewed, and validated code on a branch: test-first, then code review and QA side by side, one fix pass, a review of only the fixes, and one list of decisions for the human at the end.
+Turns a ticket or a set of requirements into working, tested, reviewed, and validated code on a branch: test-first, then code review and QA on the same commit, one fix pass, a review of only the fixes, and one list of decisions for the human at the end.
 
 ## Directory Structure
 
@@ -35,7 +35,7 @@ Triggered by **`/implement <ticket-or-requirements>`**, optionally **`in <repo>`
 
 ## Execution
 
-These steps are **strictly sequential** — later steps depend on earlier ones actually finishing, not just starting. Step 5's two tracks are the one place work runs side by side.
+These steps are **strictly sequential** — later steps depend on earlier ones actually finishing, not just starting.
 
 **Ask early or not at all.** The human almost always takes the agent's recommendation after review and QA. So the run stops mid-way only for a question that changes what gets built (steps 1 and 2). Everything else is decided in step 6 and listed in step 8. On care_platform 2423, 4 of 5 mid-run answers were review `ask-user` items. The commits they caused produced 2 of validate's 3 bugs and a 28-minute re-review.
 
@@ -85,22 +85,24 @@ Test behavior, not implementation: assert on what the system does, not how it do
 - With `--worktree` and a per-worktree stack, run tests in that stack from the worktree, never in the main checkout's containers. Always pass `-T` to `docker compose exec` (agent shells have no TTY). Scope frontend tests to the covering files, e.g. `docker compose exec -T care_assets yarn jest --maxWorkers=2 <files>`, rather than a full-suite command like `yarn precommit`; jest inside the asset watcher roughly doubles its memory.
 - One commit covering the tests and the implementation together. Message describes the requirement, not the mechanics — `Add dark mode toggle to settings`, not `Add useState and CSS class`.
 
-### 5. Evaluate: review and validate side by side
+### 5. Evaluate: review, then validate
 
-Both tracks look at the step 4 commit, the **evaluated SHA**, and neither one commits. On care_platform 2423, review, validate, the fixes, and a second full review ran one after another: 69 minutes of review and 38 of validate before the push.
+Both look at the step 4 commit, the **evaluated SHA**, and nothing commits between them. Fixes wait for step 6, so one fix pass and one scoped re-review cover everything both found. On care_platform 2423, fixes landed between review and validate, and a second full review ran over all of it: 69 minutes of review and 38 of validate before the push.
 
-- **Review track (no browser).** Run the `review` pipeline (`${CLAUDE_PLUGIN_ROOT}/workflows/code-review/AGENTS.md`) as a plain review that only reports, not `--fix`. Launch its lens and context agents (its steps 5–6) with `run_in_background: true`, so the browser track can run while they work. Do its steps 7–11 when they are back, between validate sessions. This is the one exception to that pipeline's foreground launch rule. Don't narrate the hand-backs.
-- **Browser track**, in the foreground, in this order. It uses one app and one browser:
-  1. **Render check**, unless `--skip-ui` or the diff touches no view, template, component, or stylesheet. A smoke check, not validation: one Sonnet subagent loads each changed page once and takes one screenshot per page.
-     - Launch the app. With `--worktree` and a per-worktree stack, use the app URL from step 1 (it's already running). Otherwise check for a project-specific launch skill first (e.g. `run`), else start it per the target repo's conventions.
-     - With `--worktree`: if the branch changed the stack's build or env config (`client/start.mjs`, `.env`, `docker-compose.yml`), restart the worktree's asset watcher from the worktree (`docker compose restart care_assets`, or `docker compose up -d` for compose changes) and wait for the rebuilt bundle before loading pages, or the screenshot shows the old build.
-     - Sign in with the repo's local dev login (care_platform: `POST /api/sessions` with a seed user's `{email}`).
-     - Prefix screenshot filenames with the branch slug, copy them to thread storage, and delete the originals from the browser tool's own output folder (the Playwright MCP writes to `<main checkout>/.playwright-mcp/`).
-     - No clicking through flows. Look at each screenshot next to the nearest existing page of the same kind (a list next to the queue list, a form next to an existing form) and report anything visibly off: spacing, row styling, icons, alignment, a component that did not render.
-  2. **Validate**, unless skipped (below). Run `${CLAUDE_PLUGIN_ROOT}/workflows/validate/AGENTS.md` against the branch with the ticket's criteria, using the app the render check launched. It writes its own report and run record. With `--skip-ui`, tell it not to drive a browser; it still uses HTTP and the local console.
+Run them one after the other, in this order:
+
+1. **Review.** Run the `review` pipeline (`${CLAUDE_PLUGIN_ROOT}/workflows/code-review/AGENTS.md`) as a plain review that only reports, not `--fix`. Its run record marks the evaluated SHA as reviewed.
+2. **Render check**, unless `--skip-ui` or the diff touches no view, template, component, or stylesheet. A smoke check, not validation: one Sonnet subagent loads each changed page once and takes one screenshot per page.
+   - Launch the app. With `--worktree` and a per-worktree stack, use the app URL from step 1 (it's already running). Otherwise check for a project-specific launch skill first (e.g. `run`), else start it per the target repo's conventions.
+   - With `--worktree`: if the branch changed the stack's build or env config (`client/start.mjs`, `.env`, `docker-compose.yml`), restart the worktree's asset watcher from the worktree (`docker compose restart care_assets`, or `docker compose up -d` for compose changes) and wait for the rebuilt bundle before loading pages, or the screenshot shows the old build.
+   - Sign in with the repo's local dev login (care_platform: `POST /api/sessions` with a seed user's `{email}`).
+   - Prefix screenshot filenames with the branch slug, copy them to thread storage, and delete the originals from the browser tool's own output folder (the Playwright MCP writes to `<main checkout>/.playwright-mcp/`).
+   - No clicking through flows. Look at each screenshot next to the nearest existing page of the same kind (a list next to the queue list, a form next to an existing form) and report anything visibly off: spacing, row styling, icons, alignment, a component that did not render.
+3. **Validate**, unless skipped (below). Run `${CLAUDE_PLUGIN_ROOT}/workflows/validate/AGENTS.md` against the branch with the ticket's criteria, using the app the render check launched. It writes its own report and run record. With `--skip-ui`, tell it not to drive a browser; it still uses HTTP and the local console.
+
 - **Validate is skipped** with `--no-validate`; for a stacked branch (`--base`), because the stack is validated once from its top branch (step 8 says how); and when validate's step 2 finds nothing in the change it can exercise locally. Say which in the summary.
-- With `--worktree`, both tracks run against the worktree. Don't check the branch out under `$GREYBEARD_DATA/sources/`, and ignore the review docs' `cd` into it. Give every lens, fixer, and gate agent the worktree path and the exact diff command, `git diff origin/<base>...HEAD` (`<base>` is `main` without `--base`). Record `Base: origin/<base> @ <sha>` in run records. Fixers commit in the worktree. Keep rspec and docker out of lens agents.
-- Progress: one line when the tracks start and one line per track when it finishes. No per-lens, per-round, per-behavior, or per-test narration anywhere in this pipeline; the closing summary is the report.
+- With `--worktree`, all three run against the worktree. Don't check the branch out under `$GREYBEARD_DATA/sources/`, and ignore the review docs' `cd` into it. Give every lens, fixer, and gate agent the worktree path and the exact diff command, `git diff origin/<base>...HEAD` (`<base>` is `main` without `--base`). Record `Base: origin/<base> @ <sha>` in run records. Fixers commit in the worktree. Keep rspec and docker out of lens agents.
+- Progress: one line as each of the three starts and one when it finishes. No per-lens, per-round, per-behavior, or per-test narration anywhere in this pipeline; the closing summary is the report.
 
 ### 6. One fix pass
 

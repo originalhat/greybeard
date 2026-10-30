@@ -9,7 +9,7 @@ description: >-
   a sibling git worktree, with its own local stack via the repo's
   `bin/worktree-setup` when present. Investigates the target codebase, implements
   test-first (red then green, testing behavior not implementation), commits,
-  then runs a code review and `validate` (exploratory QA) side by side on that
+  then runs a code review and then `validate` (exploratory QA) on that
   commit, with a one-screenshot render check for UI changes (`--skip-ui` skips
   the browser; `--no-validate` skips QA). One fix pass applies the safe review
   fixes, fixes validate's bugs test-first, and takes the agent's own
@@ -36,8 +36,8 @@ worktree (`<checkout>-<ticket>`), every step runs from there against that
 worktree's own stack, and the worktree and stack are left up for the human.
 
 That file holds the full pipeline: intake → investigate → TDD (red, green,
-refactor, one behavior at a time) → commit → review and validate side by side
-(`${CLAUDE_PLUGIN_ROOT}/workflows/code-review/AGENTS.md`, render check, then
+refactor, one behavior at a time) → commit → review, render check, then validate on the same commit
+(`${CLAUDE_PLUGIN_ROOT}/workflows/code-review/AGENTS.md`, then
 `${CLAUDE_PLUGIN_ROOT}/workflows/validate/AGENTS.md`) → one fix pass with
 optimistic decisions → scoped `review --fix` via
 `${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/AGENTS.md` and `validate

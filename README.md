@@ -178,7 +178,7 @@ implement <Linear issue | Jira ticket URL | ticket ID | GitHub issue URL | freef
 1. Intake the ticket and investigate the target repo's conventions and existing patterns; ask only what changes what gets built
 2. Implement test-first, one behavior at a time — red, green, refactor
 3. Commit once the changed files' tests are green
-4. Code review and `validate` run side by side on that commit
+4. Code review, then `validate`, on that commit, with no fixes in between
 5. One fix pass: safe review fixes, the bugs validate found (test-first), and the agent's own recommendation on every judgment call
 6. A review of only those fixes, and a quick re-check of the criteria and the fixed bugs
 7. One list: what changed, the decisions made on your behalf, what needs you, what wasn't built
