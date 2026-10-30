@@ -1,59 +1,71 @@
-# Exploratory Testing Loop
+# Explore
 
-Runs only when `validate` is invoked with `--exploratory`. Picks up where the acceptance check leaves off: instead of checking what was specified, it probes for what wasn't.
+The exploring half of testing: designing and running small experiments in quick succession, with each result steering the next. This file holds the charter step, the session and debrief loop, and confirmation. Skipped with `--check-only`.
 
-**This file is the tuning surface for exploratory mode.** Expect to revise the round cap, the exploration categories, and the stop condition as real runs show this over- or under-exploring. Don't fold those adjustments back into `../AGENTS.md` — keep them here so the rest of the pipeline stays stable while this part iterates.
+**This is the tuning surface.** Change the round cap, the session budget, and the stop conditions here as real runs show over- or under-exploring.
 
-## Why This Exists Separately From Acceptance Check
+## Charter (frontier model)
 
-Acceptance check answers "does it do what the ticket says." Exploratory testing answers "what does it do that nobody said anything about" — the adjacent flow that shares a component with the change, the input nobody thought to specify, the state left behind after the happy path. Bugs found here are usually cheaper to fix now than after a user finds them.
+A charter is a mission for one session:
 
-## Loop Structure
+> Explore **{target}** with **{resources}** to discover **{information}**.
 
-Bounded at **3 rounds** by default. One subagent per round, model `sonnet`, fresh context each round (not a continuation of the previous round's session) — a round that already believes an area is clean is a bad agent to send back into it.
+- **Target:** one surface, entity, state, or data path from the change map.
+- **Resources:** what the session brings: a lens, a persona, a data set, a role, a tool (throttling, a second tab, the console), or another feature to combine with the target.
+- **Information:** the risk being looked for, in user terms.
 
-### Round Input
+A good charter points without prescribing. "Explore the note form with pasted spreadsheet text to discover ways a coordinator's note is saved differently than typed" is a charter. "Paste 'a\tb' into the note field and click Save" is a test case. "Explore the app for bugs" is too broad to finish.
 
-Each round's agent receives:
-- The change's diff or description (what actually changed, so exploration stays near the change instead of wandering the whole app).
-- The acceptance criteria and their pass/fail results from step 4, so the agent doesn't waste a round re-finding what's already known.
-- Prior rounds' findings (round 2+), so rounds build on each other instead of repeating ground.
+Draw charters from these sources, in roughly this order:
 
-### Round Procedure
+1. **The check's failures and leads.** A failed criterion gets a charter that explores around it. One bug usually means more nearby.
+2. **The Never and Always list.** One charter per rule a user would be hurt by: "Explore … to discover any way a member can see another member's claim."
+3. **The nightmare headline.** Imagine the worst plausible headline about this change, like "Clinic double-billed for every visit after Tuesday's update". List what could cause it, and turn each cause into a charter.
+4. **The intent's claims and implicit expectations.** Each claim in the PR or ticket ("works the same as create") is worth testing. So are the expectations nobody writes down: the existing roles still apply, and it is not slower than before.
+5. **The lenses.** For each lens in `../lenses/`, run it only if the change shows one of its signals and the surface uses one of its interfaces.
+6. **History.** `git log --oneline -20 -- {touched files}`. Past fix commits mark areas that broke before.
 
-Each round picks 2-4 of the following categories to probe, biased toward whichever are most plausible for this specific change (a form change → boundary inputs and validation; a navigation change → adjacent flows and back/forward state; anything touching persistence → reload and multi-tab state):
+Rank by risk to the user. Aim for 4 to 8 charters. This list is the **backlog**.
 
-- **Adjacent flows** — other features that share a component, a data model, or a code path with the change. Does the change's side effect show up somewhere unexpected?
-- **Boundary and malformed inputs** — empty, very long, special characters, wrong type, duplicate submission (double-click, browser back-then-resubmit).
-- **State after navigation** — reload, browser back/forward, opening in a second tab, deep-linking directly to a URL the change introduced.
-- **Error and interruption paths** — what the UI shows if a network call the change depends on fails or is slow; what happens if the user abandons the flow partway and comes back.
-- **Permissions and roles**, if the app has them — does the change respect the same access rules as the rest of the surface it's on.
+## Session (Sonnet, one at a time)
 
-For each thing probed: state what was tried, what was expected in the absence of any specific expectation (i.e., "shouldn't crash, shouldn't lose data, shouldn't show something contradictory"), and what was actually observed. Only things that diverge from that baseline are findings — exploratory testing is not obligated to report "tried X, was fine."
+One fresh subagent per session, given `../PERSONA.md`, the change map, the top 1 to 3 charters, every lens file those charters name, the findings and leads so far, and the interfaces, URLs, and logins. An agent that already thinks an area is clean is the wrong agent to send back into it. Sessions share one app and one database, so they never run in parallel.
 
-### Stop Condition
+Budget: about 40 actions (browser actions, requests, or console calls).
 
-Stop before the 3-round cap if either:
-- A round produces zero new findings (nothing this round wasn't already known from a prior round or the acceptance check) — the search has saturated for the areas being probed.
-- A round surfaces a severe finding (data loss, security-relevant, crash) — stop and surface it immediately rather than continuing to explore around it.
+The session returns:
 
-Otherwise run all 3 rounds and stop.
+- **Findings:** something a user or caller would call wrong. Each one has numbered repro steps from a clean start, expected vs. observed, a screenshot or captured response, and the oracle it broke (see `../PERSONA.md`).
+- **Questions:** behavior that is not clearly wrong but that someone could stumble on.
+- **Leads:** odd things noticed and not yet followed, like a flicker, an off-by-one count, a console or log error, a slow response, or an unexplained extra write.
+- **New charters:** ideas the session had that would have taken it off its charter. It writes them down instead of chasing them.
+- **Coverage:** what it tried, one line per charter, including what worked as expected.
 
-### Synthesis
+## Debrief (frontier model)
 
-After the loop stops, one Opus pass over all rounds' raw findings:
-- Dedupe (the same underlying bug found two different ways is one finding, not two).
-- Rank by severity: **severe** (data loss, security, crash), **moderate** (wrong behavior, no data loss), **minor** (confusing but not incorrect — a UX nit).
-- For each surviving finding, note whether it looks pre-existing (unrelated to this change, would reproduce on `main` too) or introduced by this change. Don't guess — check against `main` if it's a quick check, otherwise say "unconfirmed, worth checking against main."
+Update the backlog the way a test lead would:
 
-## Output
+- **Follow the bugs.** Add a charter that digs into a finding's area with a different lens, persona, or variable.
+- **Turn leads and new charters into backlog items** when they touch the change map. Drop the rest, and say so in the record.
+- **Retire** charters the session covered. Never rerun a charter with the same resources. A second pass needs a different lens, persona, or data set.
+- **Reorder** by risk to the user.
 
-A list, one entry per finding surviving synthesis:
+Print one line per round: `Round {n}: {charters run} · {N} findings · {N} leads · {N} charters left`.
 
-```
-- **{severity}** {one-sentence description of the bug/issue}
-  Repro: {numbered steps}
-  Scope: introduced by this change | pre-existing | unconfirmed
-```
+## Stop
 
-Feeds into `templates/VALIDATION-REPORT.md`'s Exploratory Findings section. If synthesis produces zero findings, the section states that plainly (what was probed, nothing found) rather than being omitted — a clean exploratory pass is itself useful information.
+Stop when any of these is true:
+
+- The backlog is empty, with no open questions about the change.
+- A round produced no new findings and no new leads. Exploration has stopped teaching anything.
+- The round cap is reached (default 4). Remaining charters go under the report's **Not covered**, and they are the reason to raise the cap next time.
+- A finding makes the rest of the backlog meaningless (for example, the main screen crashes). Report it right away.
+
+## Confirm (Sonnet, fresh)
+
+A fresh subagent replays each finding's repro steps from a clean start.
+
+- If it reproduces, the finding is `confirmed`.
+- If it doesn't, assume a variable is not under control yet. Every bug reproduces once all its variables are controlled. From the session notes, list what might have mattered: timing, the previous state, the number of times an action had run, the role, the data, leftover records. Vary those for up to three more tries. If it still won't reproduce, mark it `couldn't reproduce` and report it in its own section, with what was seen and the variables tried. Don't drop it, and don't count it as a bug.
+
+Then decide scope for each confirmed finding from the diff, without switching branches. If the repro path runs through code or a screen the branch changed, it is `introduced`. If it plainly does not, it is `pre-existing`. Otherwise it is `unconfirmed`.

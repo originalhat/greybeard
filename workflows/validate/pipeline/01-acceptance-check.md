@@ -1,37 +1,38 @@
-# Acceptance Check
+# Check
 
-Drive the running app through the acceptance criteria resolved in `validate`'s intake step, one at a time, and report what actually happened.
+Walk each criterion from intake as real use, through the interface picked in step 2, and report what actually happened. This is the checking half of testing. Exploration comes after.
 
 ## Agent
 
-One subagent, model `sonnet`, with the `playwright` MCP tools. Given: the numbered criteria list, the app's base URL (from the launch step), and any login/setup context the criteria assume (a test account, seed data, a specific role).
+One subagent, model `sonnet`, with `../PERSONA.md`. Given: the numbered criteria, the change map, the interface and base URL for each surface, and the login and setup the criteria assume (a role, seed data).
 
 ## Per-Criterion Procedure
 
-For each criterion:
-
-1. **Translate to actions.** Restate the criterion as a sequence of concrete user actions (navigate, click, type, select) and an expected observable result (text on screen, an element's presence/absence, a URL change, a value). If the criterion is too vague to translate into a concrete action, mark it `couldn't verify` and say why — don't guess at what it probably meant.
-2. **Drive it.** Execute the actions via the `playwright` MCP tools. Use `browser_snapshot` to read state rather than assuming from the last action alone — a click can fail silently.
-3. **Judge the result.** Compare what's actually on screen (or in the network/console output, if the criterion is about an API response or an error state) against the expected result.
-4. **Record it** as one of:
-   - `pass` — observed result matches.
-   - `fail` — observed result contradicts, with what was expected and what was actually seen.
-   - `couldn't verify` — the criterion doesn't resolve to a checkable UI action (e.g. it's about a backend side effect with no visible surface), or the app couldn't reach a state where it could be tested (blocked by an earlier failure, a missing test fixture). State the blocker plainly.
+1. **State the goal.** In one sentence: who does this, and what done looks like for them.
+2. **Translate to actions.** Restate the criterion as concrete steps and an observable result. In a browser, that means navigate, click, type, and select. For an API, it means requests and responses. For a job, it means trigger it and look where the result lands. If the criterion is too vague to translate, mark it `couldn't verify` and say why. Don't guess what it meant.
+3. **Do it the way a user would.** Reach the feature from its normal entry point, not a typed URL, unless users really arrive by link. Use realistic data. Make it asymmetric, so swapped or misread fields show up: a day above 12 in dates, different first and last names, an amount with cents. Save the edge cases for exploration.
+4. **Ask the deeper question.** "It said success" is not the check. Look for the outcome where the user would look next: the list it should appear in, the detail page, the total that should change, the email in the mail preview, the other party's view. Then reload, or query again, and check it is still there. In a browser, read state with `browser_snapshot` rather than assuming from the last action. A click can fail without any sign.
+5. **Do it twice.** Repeat with slightly different data, or as an edit instead of a create. A flow that works once can still fail the second time.
+6. **Record** one of:
+   - `pass`: the observed result matches.
+   - `fail`: it contradicts the criterion, with what was expected and what was seen.
+   - `couldn't verify`: no observable result, or a blocker (an earlier failure, missing fixture data). State the blocker plainly.
 
 ## Discipline
 
-- Test the criterion as written, not the implementation. Don't open dev tools to check that the "right" function ran — check what the user would see.
-- One criterion's failure doesn't stop the run. Continue through the full list so the report is complete, unless the failure makes every subsequent criterion untestable (e.g. can't log in at all) — in that case, mark the rest `couldn't verify` with that reason and stop.
-- Screenshot or snapshot on every fail, so the report can describe what was actually seen, not a paraphrase from memory.
-- Reset to a clean state between independent criteria when the app supports it (reload, fresh navigation) — a criterion should not pass or fail because of leftover state from the previous one.
+- Test the criterion as written, against what a user or caller sees. Don't confirm that the "right" function ran.
+- One failure doesn't stop the run, unless it blocks everything after it (for example, you can't log in). Then mark the rest `couldn't verify` with that reason.
+- Screenshot or capture the response on every fail.
+- Reset between independent criteria (a fresh page load, a new record). No criterion should pass or fail because of leftover state.
+- Note anything odd you see along the way as a **lead** for exploration, even when the criterion passed.
 
 ## Output
 
-A list, one entry per criterion:
-
 ```
-{N}. {criterion, restated as the checked behavior} — pass | fail | couldn't verify
-   {if fail or couldn't verify: what was expected, what was actually seen, and the action sequence that produced it}
+{N}. {criterion, restated as the checked behavior}: pass | fail | couldn't verify
+   {if fail or couldn't verify: expected, observed, and the steps that produced it}
+
+Leads: {odd things noticed, one line each}
 ```
 
-Feeds directly into `templates/VALIDATION-REPORT.md`'s Acceptance Criteria section.
+The results feed the report's **Check** section. The leads feed the first charters.

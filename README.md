@@ -8,12 +8,13 @@ Greybeard is a collection of structured AI agent workflows that help you:
 
 1. **Review code** against technical best practices and team-specific context
 2. **Implement tickets** — requirements in, a test-first, reviewed, browser-checked branch out
-3. **Extract knowledge** from codebases into living documentation
-4. **Security test** repositories against 17 focused security lenses
-5. **Audit design** consistency across frontend codebases
-6. **Run campaigns** — systematic large-scale refactoring across many files over multiple sessions
-7. **Triage on-call tickets** — investigate incidents, propose fixes, and turn each resolution into durable runbooks
-8. **Run retrospectives** — read recent agent threads, quantify recurring friction, apply the high-confidence fixes with a rollback, and approve the rest
+3. **Validate a change** — QA it like a curious human tester: check it does what it claims, then try to break what is around it
+4. **Extract knowledge** from codebases into living documentation
+5. **Security test** repositories against 17 focused security lenses
+6. **Audit design** consistency across frontend codebases
+7. **Run campaigns** — systematic large-scale refactoring across many files over multiple sessions
+8. **Triage on-call tickets** — investigate incidents, propose fixes, and turn each resolution into durable runbooks
+9. **Run retrospectives** — read recent agent threads, quantify recurring friction, apply the high-confidence fixes with a rollback, and approve the rest
 
 Each workflow is a set of prompts and templates that guide AI agents through multi-stage analysis.
 
@@ -62,6 +63,7 @@ Add team-specific review criteria to `workflows/code-review/context/`:
 
 Then ask Claude to run a workflow (the leading word routes it):
 - `"Review <github PR URL>"`
+- `"Validate <github PR URL | ticket>"`
 - `"Extract knowledge from my-repo"`
 - `"Pen test my-repo"`
 - `"Design audit my-repo"`
@@ -89,6 +91,11 @@ greybeard/
 │   │   ├── pipeline/            # 3-phase triage → fix → gate loop
 │   │   └── templates/           # Fix-run audit record format
 │   ├── implement/               # Ticket/requirements → TDD → review --fix → browser validation
+│   ├── validate/                # QA: check the stated behavior, then explore around it
+│   │   ├── pipeline/            # Check → charter → explore loop → confirm
+│   │   ├── lenses/              # Exploratory heuristics (inputs, CRUD, states, timing, data, roles…)
+│   │   ├── context/             # Per-app launch, logins, seed data, known quirks
+│   │   └── templates/           # Report and run record
 │   ├── knowledge-extraction/    # Business logic documentation pipeline
 │   │   ├── pipeline/            # 5-phase extraction process
 │   │   └── templates/           # Output templates
@@ -128,6 +135,7 @@ $GREYBEARD_DATA/                       # default ~/.greybeard-data/
     ├── campaigns/{repo}/{campaign}/
     ├── code-review/{repo}/fix-runs/    # review-fix audit records (one per run)
     ├── code-review/{repo}/runs/        # plain review run records (one per review)
+    ├── validate/{repo}/{run}/         # Validation runs: report, record, screenshots
     ├── on-call/                       # Runbooks (by repo/domain) + PHI-free audit logs
     └── retro/                         # Retro state, reports, changelog (or $RETRO_HOME → a private repo)
 ```
@@ -175,6 +183,23 @@ implement <Linear issue | Jira ticket URL | ticket ID | GitHub issue URL | freef
 6. For a Linear issue, attach an `agent-summary.md` to it: what was built, why, and the decisions made along the way
 
 Never pushes, never opens a PR. See [`workflows/implement/`](workflows/implement/) for details.
+
+### 🔎 Validate
+
+General-purpose QA, done the way a curious human tester would do it. Check the change does what it claims, then explore at and around it for what nobody specified.
+
+```
+validate <ticket | github PR URL | branch in repo | freeform> [--check-only] [--rounds N] [--url <base-url>]
+```
+
+**How it works:**
+1. Pick the interface: a browser for UI changes, HTTP for APIs, a local console for jobs and model rules
+2. Map the change: where users meet it, the things it creates and changes, their states, everywhere its data shows up, what it depends on, and the rules it must never break
+3. Check each stated criterion as real use, looking where the user would look next
+4. Loop: a fresh session runs the top charters, then a debrief follows up on bugs and odd leads and reorders the backlog
+5. Stop when the backlog is empty, a round finds nothing new, or the round cap hits; replay every finding before it is reported
+
+Never touches production, never modifies code. See [`workflows/validate/`](workflows/validate/) for details.
 
 ### 📓 Knowledge Extraction
 

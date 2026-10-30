@@ -19,7 +19,7 @@ $GREYBEARD_DATA/
     ├── code-review/{repo}/runs/      # plain review run records (one per review, including review-fix rounds)
     ├── code-review/{repo}/calibration.md  # human review threads vs. run records, one entry per merged PR
     ├── on-call/                      # Runbooks (per repo, by domain) and PHI-free audit logs
-    ├── validate/{repo}/              # Validation reports (one per run)
+    ├── validate/{repo}/{run}/        # Validation runs: report, record, screenshots
     └── retro/                        # Retro state, reports, designs, changelog (default; override with $RETRO_HOME → a private repo)
 ```
 
@@ -57,9 +57,12 @@ greybeard/
 │   │   ├── pipeline/            # 3-phase triage → fix → gate loop
 │   │   └── templates/           # Fix-run audit record format
 │   ├── implement/               # Ticket/requirements → TDD → review --fix
-│   ├── validate/                # Browser-driven acceptance check + optional exploratory testing
-│   │   ├── pipeline/            # Acceptance check → optional bounded exploratory loop
-│   │   └── templates/           # Validation report format
+│   ├── validate/                # QA: check the stated behavior, then explore around it (browser, API, or console)
+│   │   ├── PERSONA.md           # Tester mindset, observation, user personas, oracles
+│   │   ├── pipeline/            # Check → charter → explore loop → confirm
+│   │   ├── lenses/              # Exploratory heuristics: where to look, what to try
+│   │   ├── context/             # Per-app launch, logins, seed data, known quirks
+│   │   └── templates/           # Report and run record
 │   ├── knowledge-extraction/    # Business logic documentation pipeline
 │   │   ├── pipeline/            # 5-phase extraction process
 │   │   └── templates/           # Output templates
@@ -100,7 +103,7 @@ The leading word routes the request to a workflow. Match on it directly.
 | `review --calibrate` | Code Review — Calibrate | `code-review` (`--calibrate`) | `review --calibrate https://github.com/origami-medical/care_platform/pull/980` |
 | `implement` | Implement | `implement` | `implement https://sanabenefits.atlassian.net/browse/ER-1477` |
 | `validate` | Validate | `validate` | `validate ER-1477` |
-| `validate --exploratory` | Validate — Exploratory | `validate` (`--exploratory`) | `validate ER-1477 --exploratory` |
+| `validate --check-only` | Validate — Check Only | `validate` (`--check-only`) | `validate ER-1477 --check-only` |
 | `triage` | On-Call | `on-call` | `triage https://sanabenefits.atlassian.net/browse/ER-1477` |
 | `extract knowledge from` | Knowledge Extraction | `knowledge-extraction` | `extract knowledge from care_platform` |
 | `pen test` | Security Testing | `security-testing` | `pen test origami_claims` |
@@ -126,7 +129,7 @@ After a PR with human review merges, compares every human review thread against 
 Takes a ticket or a set of requirements and turns it into working, tested, reviewed code on a branch — test-first (red then green, testing behavior not implementation), then reviewed and auto-fixed via `review --fix`. `implement <Linear issue | Jira ticket URL | ticket ID | GitHub issue URL | freeform requirements>`, optionally `in <repo>`, `--skip-ui`, `--pr`. Picks the smallest design that meets the criteria and reports the alternative as not built; render-checks UI changes with one screenshot per page. For a Linear issue, branches from its `gitBranchName` and attaches a PHI-free `agent-summary.md` to the issue as the point of record (what was built, why, the human's steers). Never pushes or opens a PR unless `--pr` is passed, which opens a draft whose title carries no ticket ID. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/implement/AGENTS.md`.
 
 ### Validate
-Drives a real browser against a running app to check a change against acceptance criteria — the browser-validation step that used to live inside `implement`, now standalone so it can run against any branch and be re-run after a fix. `validate <Jira ticket URL | ticket ID | GitHub issue URL | freeform requirements>`, optionally `in <repo>`. Add `--exploratory` for a bounded, loop-based round of open-ended testing beyond the stated criteria (adjacent flows, boundary inputs, navigation/reload state), producing a separate findings list ranked by severity. Read-only — never modifies code, never commits. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/validate/AGENTS.md`.
+General-purpose QA, done the way a creative human tester would do it. Checks each stated criterion as real use, then explores at and around the change: fresh sessions run charters drawn from a change map (entities, states, data paths, dependencies, never/always rules) and from lenses (inputs, counts and position, CRUD, states, timing, following the data, the ecosystem, roles, navigation, small screens). A debrief after each round follows up on bugs and leads; it stops when the backlog is empty, a round finds nothing new, or the round cap hits. Every finding is replayed before it is reported. Uses a browser for UI changes, and HTTP or a local console for APIs, jobs, and model rules. `validate <ticket | PR URL | branch in repo | freeform>`, optionally `--check-only`, `--rounds N`, `--url <base-url>`. Never touches production, never modifies code, never commits. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/validate/AGENTS.md`.
 
 ### Knowledge Extraction
 Extracts business logic from code into structured documentation. `extract knowledge from <repo>` / `catch up knowledge for <repo>`. 5-phase pipeline → domain records, ubiquitous language, open questions. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/knowledge-extraction/AGENTS.md`.
