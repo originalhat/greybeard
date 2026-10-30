@@ -37,7 +37,11 @@ For each finding, ask: **what would actually have to change to fix this?** — n
 
 If `review`'s fact-check marked a finding pre-existing — not introduced by this branch — classify it `no-op` regardless of what Step 2 would otherwise say. Fixing it isn't this branch's job, and folding it into a `review-fix` commit would misrepresent what that commit is for, the same reason campaign's reviewer phase notes pre-existing issues without touching them. It still appears in the final report's Pre-Existing section, unmodified. Only override this if the human explicitly asked `review-fix` to also clean up pre-existing issues on this branch.
 
-### Step 5: Carry Forward Findings from Prior Rounds
+### Step 5: Keep the Earlier Routing of Carried Findings
+
+A finding the review marked `carried` was already routed by an earlier run on this branch. Keep that run's classification. An item the human already saw as `ask-user` does not come back as `auto-fix` because a fresh pass read it differently. On care_platform 2423, a re-review after five new commits auto-fixed seven items, none of them in the new commits.
+
+### Step 6: Carry Forward Findings from Prior Rounds
 
 If this is a re-review (round 2+), some findings may be about code the fixer itself wrote in a prior round. Flag which findings fall inside a prior fix-round's commit — Phase 3 (the gate) needs this to apply the ratchet exit ramp. You don't decide the ramp here; you just mark provenance.
 

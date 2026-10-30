@@ -17,7 +17,7 @@ Decide whether another round is worth running, stop the loop when it isn't, and 
 
 ### Step 1: Re-Review Fresh
 
-If Phase 2 committed anything, re-invoke the standard `review` pipeline (`../../code-review/AGENTS.md`) against the branch as a **new invocation** — not a continuation of the fixer's session or context. It evaluates the full diff, including this round's commit, exactly as it would for any branch. Do not tell it which lines the fixer just wrote; a blind re-review is the point.
+If Phase 2 committed anything, re-invoke the standard `review` pipeline (`../../code-review/AGENTS.md`) against the branch as a **new invocation** — not a continuation of the fixer's session or context. It evaluates the full diff, including this round's commit, exactly as it would for any branch. In a scoped run it is `review --since <sha>` with the SHA from the run's scope check, which still covers this round's commit. Do not tell it which lines the fixer just wrote; a blind re-review is the point.
 
 A targeted spec run, a full-suite run, or reading the fixer's diff is not a re-review and does not replace one. The re-review may skip lenses whose subject the branch cannot touch at all (React lenses on a backend-only branch), never the lenses that could see this round's fix, and it lists what it skipped in its run record.
 
@@ -40,9 +40,9 @@ This exists because a fix loop that only ever has "file another finding" as a mo
 
 ### Step 4: Decide — Loop, Stop Clean, or Stop Capped
 
-- **Loop**: there are new `auto-fix` findings, none hit the ratchet condition, and this would be round ≤ 3. Go back to Phase 1 with the new findings.
+- **Loop**: there are new `auto-fix` findings, none hit the ratchet condition, and the next round is within the cap: 3 for a full run, 2 for a scoped run. Go back to Phase 1 with the new findings.
 - **Stop clean**: zero `auto-fix` findings remain. Proceed to the final report.
-- **Stop capped**: round 3 just finished and `auto-fix` findings remain. Proceed to the final report, and note in it that the loop was capped — this is a signal the branch needs a human, not more rounds.
+- **Stop capped**: the last round within the cap just finished and `auto-fix` findings remain. Proceed to the final report, and note in it that the loop was capped — this is a signal the branch needs a human, not more rounds.
 
 ### Step 5: Assemble the Final Report
 
@@ -60,7 +60,7 @@ If nothing was auto-fixed across any round, state that in one line instead of an
 
 ### Step 6: Write the Run Record
 
-Write `$GREYBEARD_DATA/output/code-review/{repo}/fix-runs/{branch}-{timestamp}.md` per `${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/templates/FIX-RUN-RECORD.md` — every round's counts, commits created, the final status (`clean`, `capped`, or `parked`), and, per round, the path of the `runs/` record that round's review wrote. A round with no `runs/` record did not run the pipeline; say so rather than leaving the line out.
+Write `$GREYBEARD_DATA/output/code-review/{repo}/fix-runs/{branch}-{timestamp}.md` per `${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/templates/FIX-RUN-RECORD.md` — every round's counts, commits created, the scope (`full`, or `<sha>..HEAD` with the scope check's reason), the final status (`clean`, `capped`, `parked`, or `stopped`), and, per round, the path of the `runs/` record that round's review wrote. A round with no `runs/` record did not run the pipeline; say so rather than leaving the line out.
 
 ---
 
@@ -68,5 +68,5 @@ Write `$GREYBEARD_DATA/output/code-review/{repo}/fix-runs/{branch}-{timestamp}.m
 
 - **The re-review is always a fresh pass.** Never resume the fixer's session for it — that's what would let a round certify its own prescription.
 - **The ratchet ramp is for prior-round code only.** An ordinary multi-round sequence fixing different parts of the *author's* original change never triggers it.
-- **Three rounds, no exceptions from inside a run.** If three rounds isn't enough, that's a finding for the human, not a reason to raise the cap mid-run.
+- **The cap holds, no exceptions from inside a run.** If three rounds (two when scoped) isn't enough, that's a finding for the human, not a reason to raise the cap mid-run.
 - **Every open finding gets reported.** Capped or clean, nothing found along the way gets silently dropped.

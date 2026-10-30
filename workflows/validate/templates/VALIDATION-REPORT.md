@@ -28,7 +28,7 @@ Validate · {repo} {#pr or branch} · {ticket-id | "PR description" | "freeform"
 Repro:
 1. {step from a clean start}
 2. {step}
-↳ {severity} · {LENS} · {oracle} · {introduced | unconfirmed} · `{screens/NN.png}`
+↳ {severity} · {LENS} · {oracle} · {introduced | introduced in <branch> | unconfirmed} · `{screens/NN.png}`
 
 ## 🤔 Questions
 
@@ -59,6 +59,7 @@ Not covered: {charters left in the backlog, lenses skipped and why}
 
 - Number everything in one sequence (criteria, bugs, questions, and the rest) so a reply can say "#4".
 - Bugs rank by what the user loses: data, money, or access first, then wrong results, then confusion.
+- With `--stack`, the header names the top branch and every ticket, the criteria are grouped by ticket, and `## 🐞 Bugs` has one `### {branch}` subheading per branch that introduced a bug, bottom layer first.
 - A bug heading states impact, not mechanism. "Coordinators lose their typed note when the save fails", not "onSubmit error handler resets state".
 - Repro steps start from a clean start (a fresh page load or a fresh request) and name the role and the data they need.
 - Questions use the user's voice: concise, about user impact, and ending in a question mark. One sentence by default.

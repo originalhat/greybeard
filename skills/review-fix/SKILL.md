@@ -5,7 +5,9 @@ description: >-
   "fix this branch", "auto-fix mode", or "review and fix" — classifies the
   review's findings, auto-applies the safe ones, commits them separately from
   the author's original commits, and re-reviews with a fresh pass — looping
-  (bounded) until nothing auto-fixable remains or a 3-round cap is hit. Never
+  (bounded) until nothing auto-fixable remains or a 3-round cap is hit. On a
+  branch already reviewed, reviews only the commits since (2-round cap) unless
+  they are a large share of the branch; `--full` forces a full review. Never
   pushes; only runs on a branch the user can write to. Produces a one-shot
   fix-run audit record. This is the `--fix` mode of the `review` verb, not a
   separate trigger word.

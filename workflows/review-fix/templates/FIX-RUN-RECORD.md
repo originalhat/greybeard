@@ -13,7 +13,8 @@ Unlike `.scan-state.json` or `.campaign-state.json`, this is not read back in on
 **Started:** {ISO timestamp}
 **Starting SHA:** {sha}
 **Final SHA:** {sha}
-**Status:** clean | capped | parked
+**Scope:** full | {sha}..HEAD ({reason line from review-scope.sh})
+**Status:** clean | capped | parked | stopped
 
 ## Rounds
 
@@ -35,7 +36,7 @@ Unlike `.scan-state.json` or `.campaign-state.json`, this is not read back in on
 
 ## Final State
 
-- {N} rounds run (capped at 3 | stopped clean)
+- {N} rounds run (capped at {3 | 2 when scoped} | stopped clean | stopped by the human)
 - {N} findings auto-fixed total
 - {N} findings still open, handed to the human in this run's report
 - {N} commits created on the branch, none pushed

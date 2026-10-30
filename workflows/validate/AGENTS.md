@@ -31,6 +31,8 @@ Triggered by **`validate <ticket | PR | branch>`**: a Jira ticket URL or ID, a G
 - **The target repo's docs**: root `CLAUDE.md` / `AGENTS.md`, plus any `CLAUDE.md` or `README.md` on the path to a touched file.
 - **Running software.** Local by default. `--url <base-url>` points at a non-production environment. **Never run against production**, and never open a production console. Exploration creates, edits, and deletes data.
 - `--check-only`: run the check and skip exploration (steps 6 to 8). The fast path for re-running after a fix.
+- `--stack <top-branch>`: validate a stack of branches, or a batch of tickets built on top of each other, once, from its top branch. See **Stacks** below.
+- **Called from `implement`.** Implement runs this as step 5 of its own pipeline, and again as `--check-only` after its fixes. It passes the app it already launched, and on the re-check, extra criteria: each fixed bug's repro, with the fixed behavior as the expected result. Check them like any other criterion.
 - `--rounds N`: the exploration round cap (default 4). `--exploratory` is still accepted; exploration is now the default.
 - Tools: the `playwright` MCP for UIs; `curl` for HTTP APIs; the repo's local console or runner for jobs and model behavior; a project launch skill (e.g. `run`) or the repo's conventions to start the app; the GitHub MCP for PRs; the `atlassian` MCP for Jira tickets.
 
@@ -52,7 +54,7 @@ Triggered by **`validate <ticket | PR | branch>`**: a Jira ticket URL or ID, a G
 
 These steps are **strictly sequential**.
 
-1. **Intake.** Resolve the input to the change, the intent, and a numbered list of checkable criteria. A ticket's acceptance criteria come first. A PR description's claims come next. When neither states checkable behavior, write the core flow as the one criterion: who uses this, and what done looks like for them. Ask only if even that can't be inferred. Read the diff, the repo docs, and `context/APPS.md` for this repo.
+1. **Intake.** Resolve the input to the change, the intent, and a numbered list of checkable criteria. A ticket's acceptance criteria come first. A PR description's claims come next. When neither states checkable behavior, write the core flow as the one criterion: who uses this, and what done looks like for them. Ask only if even that can't be inferred. Read the diff, the repo docs, and `context/APPS.md` for this repo. With `--stack`, number the criteria across the whole stack, grouped under each ticket.
 2. **Pick the interfaces.** For each surface the change touches, choose how a user, or a caller, meets it:
    - **UI:** the browser, through the `playwright` MCP.
    - **HTTP API:** `curl` against the local server, with the same auth a real client uses.
@@ -60,7 +62,7 @@ These steps are **strictly sequential**.
    - **Email, SMS, notifications:** the local mail preview or delivery log, never a real send.
 
    Before you drive anything that sends a message or calls an outside vendor, confirm the local environment routes it to a stub or a sandbox. If you can't confirm that, ask. Stop only if nothing in the change can be exercised locally, and say what it would take (a vendor sandbox, a device, seed data).
-3. **Launch.** Use a project launch skill if one exists, else the repo's conventions. Log in with what `context/APPS.md` gives. If it gives nothing, ask once, then propose an `APPS.md` entry in the report.
+3. **Launch.** When `implement` passes a running app, use it. Otherwise use a project launch skill if one exists, else the repo's conventions. Log in with what `context/APPS.md` gives. If it gives nothing, ask once, then propose an `APPS.md` entry in the report.
 4. **Change map.** Built once by the frontier model, used by every later step:
    - **Surfaces:** where users or callers meet the change, and through which interface.
    - **Entities:** the things the change creates, reads, updates, or deletes, with their key attributes and what they belong to or contain.
@@ -75,6 +77,15 @@ These steps are **strictly sequential**.
    - **7b. Debrief:** follow up on bugs and leads, then reorder the backlog.
 8. **Confirm** (`pipeline/02-exploratory.md`). Replay every finding cleanly and decide its scope.
 9. **Report and record.** Write the report per `templates/VALIDATION-REPORT.md` and print it. Write the run record per `templates/VALIDATION-RUN-RECORD.md`. Write the record even when nothing was found. A clean run with its coverage listed is useful information.
+
+### Stacks (`--stack`)
+
+Every branch in a stack gets its own code review when it is built. Validation runs once, over the whole stack, because users meet the stack's combined behavior, not one layer of it.
+
+- **The layers.** Every local branch whose tip is in `origin/main..<top-branch>`, ordered from the bottom up. When a branch has a PR, the PR's base names its parent; prefer that over guessing from history.
+- **The intent.** Each layer's ticket: from its branch name (a Linear `gitBranchName` such as `d/prod-2424-…` carries `PROD-2424`), else its PR. Criteria are numbered across the stack and grouped by ticket.
+- **The change.** `git diff origin/main...<top-branch>`, from the top branch's checkout or worktree. The change map covers the whole stack.
+- **Scope.** Step 8 tags each `introduced` finding with the lowest layer whose own diff (`<parent>...<branch>`) touches the code or screen on its repro path: `introduced in <branch>`. The report groups bugs by that branch, so each fix goes to the branch that owns it.
 
 ## Components
 
@@ -107,4 +118,4 @@ Per-app knowledge: how to launch, which logins and roles exist, seed data, and k
 - **Severity words are fixed**: `severe` (data loss, wrong money, access to what the user should not see, crash or dead end), `moderate` (wrong behavior with a workaround), `minor` (confusing but correct).
 - **Report evidence, not a verdict.** "Two bugs lose typed notes" lets the reader decide. "Not ready to ship" does not.
 - Handoff, not fix: a bug worth fixing goes back to `implement`, `review --fix`, or the author.
-- `implement` doesn't run this itself. Chain them: `implement <ticket>` to build it, then `validate <ticket>` once the branch exists.
+- `implement` runs this itself for a branch built on `main`. Run it by hand for a stack (`--stack`), for a branch built some other way, or after `implement --no-validate`.

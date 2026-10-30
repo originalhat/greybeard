@@ -17,7 +17,9 @@ description: >-
   finding before reporting it, and reports bugs with repro steps ranked by
   user impact, questions for the author, and coverage. `--check-only` skips
   exploration; `--rounds N` (default 4); `--url <base-url>` for a
-  non-production environment. Never touches production, never modifies code,
+  non-production environment; `--stack <top-branch>` validates a stack of
+  branches once and tags each bug with the branch that introduced it
+  ("validate the stack"). Never touches production, never modifies code,
   never commits.
 ---
 
@@ -27,7 +29,7 @@ A ticket, PR, or branch in; running software used like a curious human
 tester would use it; a report of what works, what users will trip on, and
 how hard we looked out.
 
-**Trigger:** `validate <Jira ticket URL | ticket ID | GitHub issue URL | GitHub PR URL | freeform requirements>`, or `validate <branch-name> in <repo-name>`. Optional `--check-only`, `--rounds N`, `--url <base-url>`.
+**Trigger:** `validate <Jira ticket URL | ticket ID | GitHub issue URL | GitHub PR URL | freeform requirements>`, or `validate <branch-name> in <repo-name>`, or `validate --stack <top-branch> in <repo-name>`. Optional `--check-only`, `--rounds N`, `--url <base-url>`.
 
 **Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/validate/AGENTS.md`.
 
@@ -44,5 +46,6 @@ Target repos live under `$GREYBEARD_DATA/sources/{repo}/` (default
 `~/.greybeard-data/`). Needs the `playwright` MCP for UI changes, the GitHub
 MCP for PRs, and the `atlassian` MCP for Jira tickets.
 
-Chain it after `implement`: `implement <ticket>` to build it, then
-`validate <ticket>` once the branch exists.
+`implement` runs it itself for a branch built on `main`. Run it by hand for
+a stack (`--stack`, once its last branch is built), for a branch built some
+other way, or after `implement --no-validate`.

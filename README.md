@@ -160,7 +160,7 @@ review <github PR URL>
 4. Fact-check findings against the actual codebase
 5. Output an impact-first report: a pass/fail/nit tally, numbered failures with a one-sentence fix, then the nits as one line each
 
-**Auto-fix mode** (`review --fix`): instead of stopping at a report, classifies findings, auto-applies the safe ones, commits them separately from the author's original commits, and re-reviews with a fresh pass — looping (bounded) until nothing auto-fixable remains or a 3-round cap is hit. Never pushes; only runs on a branch you own. See [`workflows/review-fix/`](workflows/review-fix/).
+**Auto-fix mode** (`review --fix`): instead of stopping at a report, classifies findings, auto-applies the safe ones, commits them separately from the author's original commits, and re-reviews with a fresh pass — looping (bounded) until nothing auto-fixable remains or a 3-round cap is hit. When the branch was already reviewed, it reviews only the commits since (2-round cap), unless they are a large share of the branch or touch migrations or config. Never pushes; only runs on a branch you own. See [`workflows/review-fix/`](workflows/review-fix/).
 
 **Interactive mode** (`review --interactive`): prints the report, then walks failures 1-by-1 — drafting a PR review comment in your voice (concise, question-framed, user-impact focused), revising on feedback, and posting inline to GitHub only after approval. Skips pre-existing findings; nits skipped by default.
 
@@ -168,21 +168,23 @@ See [`workflows/code-review/`](workflows/code-review/) for details.
 
 ### 🛠️ Implement
 
-Takes a ticket or a set of requirements and turns it into working, tested, reviewed code on a branch.
+Takes a ticket or a set of requirements and turns it into working, tested, reviewed, and validated code on a branch, with one list of decisions for you at the end.
 
 ```
-implement <Linear issue | Jira ticket URL | ticket ID | GitHub issue URL | freeform requirements> [in <repo-name>]
+implement <Linear issue | Jira ticket URL | ticket ID | GitHub issue URL | freeform requirements> [in <repo-name>] [--worktree [--base <branch>]] [--skip-ui] [--no-validate] [--pr]
 ```
 
 **How it works:**
-1. Intake the ticket and investigate the target repo's conventions and existing patterns
+1. Intake the ticket and investigate the target repo's conventions and existing patterns; ask only what changes what gets built
 2. Implement test-first, one behavior at a time — red, green, refactor
-3. Commit once the whole suite is green
-4. Run `review --fix` against the branch, then apply any remaining in-scope corrections in a separate commit
-5. When the change has a UI, drive it in a real browser against the acceptance criteria
-6. For a Linear issue, attach an `agent-summary.md` to it: what was built, why, and the decisions made along the way
+3. Commit once the changed files' tests are green
+4. Code review and `validate` run side by side on that commit
+5. One fix pass: safe review fixes, the bugs validate found (test-first), and the agent's own recommendation on every judgment call
+6. A review of only those fixes, and a quick re-check of the criteria and the fixed bugs
+7. One list: what changed, the decisions made on your behalf, what needs you, what wasn't built
+8. For a Linear issue, attach an `agent-summary.md` to it: what was built, why, and the decisions made along the way
 
-Never pushes, never opens a PR. See [`workflows/implement/`](workflows/implement/) for details.
+A stacked branch (`--base`) skips validate; validate the whole stack once from its top branch with `validate --stack`. Never pushes or opens a PR unless `--pr` is passed. See [`workflows/implement/`](workflows/implement/) for details.
 
 ### 🔎 Validate
 
@@ -190,6 +192,7 @@ General-purpose QA, done the way a curious human tester would do it. Check the c
 
 ```
 validate <ticket | github PR URL | branch in repo | freeform> [--check-only] [--rounds N] [--url <base-url>]
+validate --stack <top-branch> in <repo>
 ```
 
 **How it works:**

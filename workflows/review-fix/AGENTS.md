@@ -19,7 +19,7 @@ Reuses, unmodified: `../code-review/lenses/`, `../code-review/context/`, `../cod
 
 ## Inputs
 
-Triggered by **`review --fix`** (current branch) or **`review --fix <branch> in <repo>`**.
+Triggered by **`review --fix`** (current branch) or **`review --fix <branch> in <repo>`**. Optional **`--full`** forces a full review when the scope check would scope it.
 
 - The current git checkout, under `$GREYBEARD_DATA/sources/{repo}/`. Unlike plain `review`, this is never a PR URL for someone else's fork — `review-fix` commits to the branch it runs against, so it only ever runs on a branch you can write to.
 - Everything plain `review` needs: fetched `origin/main`, a three-dot diff, optional PR context.
@@ -45,11 +45,12 @@ Triggered by **`review --fix`** (current branch) or **`review --fix <branch> in 
 
 These steps are **strictly sequential** within a round; rounds run one after another, never in parallel.
 
-1. **Initial review**: Run the standard `review` pipeline (`../code-review/AGENTS.md`, unmodified) against the current branch. This is exactly what plain `review` produces — same lenses, same context, same fact-check, same run record in `runs/`.
+0. **Scope check**: Run `../code-review/scripts/review-scope.sh {repo} {branch}` from the checkout (`REVIEW_BASE=origin/<base>` for a stacked branch). `reviewed <sha>`: HEAD is already reviewed; say so in one line and stop. `scoped <sha>`: every review in this run, the first and each re-review, is `review --since <sha>` with that same SHA, so the fixer's commits fall inside the delta. `full`, or `--full` was passed: review the whole branch. Print the script's reason line once.
+1. **Initial review**: Run the standard `review` pipeline (`../code-review/AGENTS.md`, unmodified) against the current branch, scoped per step 0. This is exactly what plain `review` produces — same lenses, same context, same fact-check, same run record in `runs/`.
 2. **Triage** (`pipeline/01-triage.md`): Classify every finding from step 1 as `auto-fix`, `ask-user`, or `no-op`.
 3. **Fixer** (`pipeline/02-fixer.md`): If there are any `auto-fix` findings, apply them and commit. If there are none, skip straight to step 6.
 4. **Gate — re-review** (`pipeline/03-gate.md`): Re-run the standard `review` pipeline fresh against the updated branch — a new invocation, not a continuation of the fixer's session, so nothing re-certifies its own prescription. A spec run, a full-suite run, or a read of the fixer's diff is not a re-review and does not replace one.
-5. **Gate — loop or stop**: If the re-review has zero `auto-fix` findings, stop. If it has new ones and the round cap (3, see `pipeline/03-gate.md`) isn't reached, go back to step 2 with the new findings. If the cap is reached, stop and surface everything open.
+5. **Gate — loop or stop**: If the re-review has zero `auto-fix` findings, stop. If it has new ones and the round cap (3 for a full run, 2 for a scoped one; see `pipeline/03-gate.md`) isn't reached, go back to step 2 with the new findings. If the cap is reached, stop and surface everything open.
 6. **Final report**: Assemble the report — auto-fixed summary, then remaining findings in `REPORT-FORMAT.md`'s shape — and write the run record.
 
 ## Components
@@ -70,4 +71,5 @@ These steps are **strictly sequential** within a round; rounds run one after ano
 - **Never runs against someone else's branch.** If asked to fix a PR you don't own, say so and point at plain `review` instead.
 - **Never pushes.** Commits are local; the human decides when the branch is ready.
 - **Every round leaves a `runs/` record.** The per-lens findings and what steps 8 and 8b did with them live there; the fix-run record is the loop's log and points at them. When a later calibration asks whether a lens ever raised something, this is where the answer is.
-- **Bounded by default.** Three rounds. A branch that isn't converging after three rounds has a problem worth a human's attention, not more automated rounds.
+- **Bounded by default.** Three rounds for a full run, two for a scoped one. A branch that isn't converging has a problem worth a human's attention, not more automated rounds.
+- **Stop when asked.** If the human says to stop, wrap up, or skip the review while a run is going, start no new agent and no new round. Let the agents already running hand back, write the fix-run record with status `stopped`, list what is still open, and say whether HEAD is unreviewed (a fixer commit with no re-review after it). On care_platform 2423, "let's wrap up the reviews" was followed by 9 more minutes of review.

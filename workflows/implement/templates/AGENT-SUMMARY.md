@@ -12,7 +12,8 @@ Written for whoever opens this ticket later to understand what was built and why
 
 - The design chosen and the reason, in a sentence each.
 - **Not built:** the alternative from step 2 and the one sentence on why it lost.
-- Every decision the human made or steered during the run, with what prompted it (`Asked to drop the feature flag and remove the code path instead`).
+- Every decision taken on the human's behalf (step 6 of the pipeline), with what prompted it, and whether the human kept or changed it.
+- Every steer or answer from the human, with what prompted it (`Asked to drop the feature flag and remove the code path instead`).
 - Assumptions made where the ticket was silent.
 
 ## Where it lives
@@ -23,9 +24,9 @@ The few files or modules a future reader should open first, one line each on wha
 
 The behaviors covered by tests, one line each, and which specs hold them. Anything verified by hand (render check screenshots, console checks) and anything left untested, with why.
 
-## Review
+## Review and QA
 
-What `review --fix` found and fixed, and anything left open as a judgment call. Link the fix-run record path.
+What the review found and what was fixed, and the scope of the re-review. What validate checked, the bugs it found and which were fixed, and anything left open. Link the review, fix-run, and validate record paths.
 
 ## Commits
 

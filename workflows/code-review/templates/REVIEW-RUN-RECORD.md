@@ -16,6 +16,7 @@ The report is what the author reads and it lives in the thread. This file is wha
 **Base:** origin/main @ {sha}
 **Run:** {ISO timestamp}
 **Mode:** plain | interactive
+**Scope:** full | {sha}..HEAD ({reason line from scripts/review-scope.sh})
 **Lenses:** {LENS-A}, {LENS-B}, ... ({N})
 **Agents:** {one per lens | {group}: LENS-A, LENS-B; {group}: LENS-C, … }
 **Skipped lenses:** {LENS (reason), … | none}
@@ -33,7 +34,7 @@ One row per finding raised in steps 5–6, before any filtering. Numbers match t
 | – | {LENS} | {...} | {file:line} | dropped (8b) | {falsifier found: what recovers the user / which rule governs} |
 | – | {LENS} | {...} | {file:line} | pre-existing | {why the branch did not make it newly reachable} |
 
-Outcome vocabulary is fixed: `kept`, `demoted to nit`, `promoted` (nit raised to failure), `dropped (8)`, `dropped (8b)`, `pre-existing`.
+Outcome vocabulary is fixed: `kept`, `demoted to nit`, `promoted` (nit raised to failure), `dropped (8)`, `dropped (8b)`, `pre-existing`, `carried` (a scoped review met a finding an earlier run record for the branch already raised; cite that record).
 
 ## Falsifiers
 

@@ -30,6 +30,7 @@ lenses and repo-specific context.
 
 **Modes:**
 - `review --fix` — auto-fix loop. Run `${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/AGENTS.md` instead of the plain pipeline below.
+- `review --since <sha>` — scoped re-review of `<sha>..HEAD`, with the rest of the branch as read-only context. See the `--since` section of the workflow file.
 - `review --interactive` — print the report, then walk failures 1-by-1 drafting PR comments in the user's voice, posting to GitHub only on approval. Same pipeline as plain `review`; the interactive loop runs after the report.
 - `review --calibrate <PR URL>` — no evaluation. Fetch the human review threads and the branch's run records, bucket each thread (caught / found late / misjudged / never raised / not a miss), flag unreviewed pushes, append to `$GREYBEARD_DATA/output/code-review/{repo}/calibration.md`, and print proposals for lenses or context when the ledger shows a repeat. Section `--calibrate` in the workflow AGENTS.md.
 

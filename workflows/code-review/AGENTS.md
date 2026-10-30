@@ -9,7 +9,7 @@ code-review/
 ├── AGENTS.md           # You are here
 ├── lenses/             # Generalized technical review criteria
 ├── context/            # Repo/team-specific review criteria
-├── scripts/            # last-reviewed-sha.sh: is HEAD the SHA the last run record reviewed?
+├── scripts/            # last-reviewed-sha.sh: is HEAD reviewed? review-scope.sh: full, scoped, or none?
 └── templates/          # Canonical output format, the run record, the calibration ledger
 ```
 
@@ -39,6 +39,18 @@ Plain `review` runs steps 1–11 below: the report, then the run record. `--fix`
 If the invocation includes `--fix` (or "fix this branch", "auto-fix mode", "review and fix"): do steps 1–4 exactly as written, then **stop** and switch to `${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/AGENTS.md`. That pipeline takes the diff from steps 1–4, classifies findings, auto-applies the safe ones, commits them separately from the branch's existing commits, and re-reviews (by re-running this pipeline without `--fix`, fresh) in a bounded loop. It never pushes.
 
 `--fix` inherits plain `review`'s scope: the current branch only, never a PR URL for a branch you didn't check out yourself. `review-fix` commits to whatever branch it runs against, so to review someone else's work, leave `--fix` off.
+
+### `--since <sha>` (scoped re-review)
+
+For a branch that already has a review record and has gained a few commits since. `scripts/review-scope.sh {repo} {branch}` decides it: `scoped <sha>` means review `<sha>..HEAD`, `full` means run steps 1–11 as written, `reviewed <sha>` means HEAD needs no review. `review-fix` and `implement` run the script themselves; a human can also say `review --since <sha>`. On care_platform 2139, 2423, and 2424, re-reviews covered 1–15% new lines but re-read the whole branch, and found almost nothing in the new commits.
+
+Steps 1–11 run with these changes:
+
+- **Step 3.** The review target is `git diff <sha>..HEAD`. Every lens and context agent also gets the full branch diff (`git diff origin/main...HEAD`, or `origin/<base>...HEAD` for a stacked branch) as read-only context. They use it to judge the delta. They do not review it again.
+- **Step 5.** Run only the lenses whose subject the delta can touch. List the rest under `Skipped lenses:` as `outside the delta`.
+- **Step 8.** A finding is in scope when its line is in the delta, or the delta makes it newly reachable (a new caller, a removed guard). For a finding on branch lines outside the delta, check the branch's earlier run records. If one already raised it, its outcome is `carried`, citing that record, and it is not reported again as new. If no record raised it and it is real, keep it. A scoped review that happens to see a miss still reports it.
+- **Escalate** to a full review when the delta changes something the rest of the branch depends on in a way the size check cannot see: a shared model's contract, a public interface, a permission rule. Record why on the run record's `Scope:` line.
+- **Step 11.** The run record's `Scope:` line holds `<sha>..HEAD` and the script's reason line. `HEAD SHA:` is written as always, so the pre-push check still finds it.
 
 ### `--interactive` (draft-and-post)
 
@@ -174,7 +186,7 @@ Repo and team-specific criteria:
 - **GitHub access: MCP first, `gh` as fallback.** Use the GitHub MCP tools (`mcp__GitHub__*`) for reading PRs, issues, files, reviews, and comments and for posting comments and reviews. They run inside Claude's process, so the Bash sandbox, its TLS proxy, and the keychain never get in the way. Fall back to the `gh` command only when the MCP is not connected yet (it starts through npx and can lag at session start). Listing or searching PRs (an author's open PRs, a stacked base, the PR for a branch) is `list_pull_requests` or `search_pull_requests`, not `gh pr list`. When `gh` does run, run it as a standalone command: the sandbox exclusion matches a whole simple command, so `cd … && gh …`, `gh … | head`, and `$(gh …)` stay sandboxed and fail on the network. Pushing local commits is always plain `git`; the MCP cannot push a branch.
 - **Output format is fixed**: `templates/REPORT-FORMAT.md`. Impact in the heading, context then consequence in the body, one-sentence Fix, lens name in the footer. Number the failures, tally the passes, then list the nits one line each, then any pre-existing findings one line each. Never enumerate all lenses.
 - **The run record is the audit trail.** A retro on a missed or wrongly dropped finding reads `$GREYBEARD_DATA/output/code-review/{repo}/runs/`, not the thread transcript. If a lens never raised the finding, that is a lens gap; if it was raised and dropped, the record's `Why` column says what step 8 or 8b believed. Write the record even when the tally is all passes.
-- **`deferred` is not an outcome.** A finding is `kept`, `demoted to nit`, `promoted`, `dropped (8)`, `dropped (8b)`, or `pre-existing`. A real finding the author should decide on is `kept` and goes in the report (in `review-fix`, triage routes it `ask-user`). "Deferred" is how a quadratic fan-out was recorded as "one-time cost per child" on care_platform #980 and then blocked the PR in human review.
+- **`deferred` is not an outcome.** A finding is `kept`, `demoted to nit`, `promoted`, `dropped (8)`, `dropped (8b)`, `pre-existing`, or, in a `--since` review, `carried`. A real finding the author should decide on is `kept` and goes in the report (in `review-fix`, triage routes it `ask-user`). "Deferred" is how a quadratic fan-out was recorded as "one-time cost per child" on care_platform #980 and then blocked the PR in human review.
 - **Fact-check confirms; step 8b tries to falsify.** These are different jobs and the second one is the one that gets skipped. Confirming a mechanism is easy and feels like verification. The finding still dies if some other path recovers the user, or if the behavior it calls a divergence is the correct one. Name the falsifier, go look for it, and drop what fails.
 - **Pre-existing findings are determined in fact-check, not per-lens**: a finding is pre-existing if its file:line isn't part of this branch's diff and the branch didn't newly expose or make it reachable. It's real, but it isn't this PR's to fix, so it ranks last and is never counted as a failure or nit.
 - **No metaphors in findings.** No "blast radius", "retry storm", "footgun". Say what happens. Short active sentences, one term per concept.
