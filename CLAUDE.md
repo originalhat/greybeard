@@ -15,6 +15,7 @@ $GREYBEARD_DATA/
     ├── security-testing/{repo}/      # Scan results, security reports
     ├── design-audit/{repo}/          # Inventory, findings, design specs
     ├── campaigns/{repo}/{campaign}/  # Campaign strategy, inventory, plan, batch reviews
+    ├── improve/{repo}/               # Improve knowledge base: state.json (visits, backlog), map.md, patterns.md, slices/, runs/ (brief + record per run)
     ├── code-review/{repo}/fix-runs/  # review-fix audit records (one per run)
     ├── code-review/{repo}/runs/      # plain review run records (one per review, including review-fix rounds)
     ├── code-review/{repo}/calibration.md  # human review threads vs. run records, one entry per merged PR
@@ -25,7 +26,7 @@ $GREYBEARD_DATA/
 
 Set up the data directory (one-time):
 ```bash
-mkdir -p "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources" "${GREYBEARD_DATA:-$HOME/.greybeard-data}/output"/{knowledge-extraction,security-testing,design-audit,campaigns,code-review,on-call,validate,retro}
+mkdir -p "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources" "${GREYBEARD_DATA:-$HOME/.greybeard-data}/output"/{knowledge-extraction,security-testing,design-audit,campaigns,improve,code-review,on-call,validate,retro}
 ```
 
 This runs automatically on the first session after install (a `SessionStart` hook creates the dirs idempotently), so the manual `mkdir` is only needed if you want to populate `sources/` before launching Claude.
@@ -77,6 +78,10 @@ greybeard/
 │   ├── campaign/                # Large-scale refactoring campaign execution
 │   │   ├── context/             # Archetype-specific gotchas
 │   │   └── pipeline/            # 6-phase plan → execute → review cycle
+│   ├── improve/                 # N rounds on one branch: scout a slice → record knowledge → build the best backlog candidate; then validate, file defects, one PR
+│   │   ├── pipeline/            # slice → scout → record → build per round, then finish
+│   │   ├── scripts/             # pick-slice.sh (churn + review findings, skips visited), scope-gate.sh (caps + denylist); tests in scripts/test/
+│   │   └── templates/           # state.json schema, map, patterns, slice record, round brief, run record, defect ticket
 │   ├── on-call/                 # On-call ticket triage + self-improving runbooks
 │   │   ├── pipeline/            # 5-phase triage → publish → capture → curate → sync
 │   │   ├── context/             # Authoring standard + escalation map
@@ -109,6 +114,7 @@ The leading word routes the request to a workflow. Match on it directly.
 | `pen test` | Security Testing | `security-testing` | `pen test origami_claims` |
 | `design audit` | Design Audit | `design-audit` | `design audit care_platform` |
 | `campaign` | Campaign | `campaign` | `campaign plan "…" in origami_claims` |
+| `improve` | Improve | `improve` | `improve --rounds 10 --pr`, `improve discover --slices 3`, `improve status` |
 | `retro` | Retro | `retro` | `retro`, `retro --days 7`, `retro walkthrough`, `retro rollback S-…` |
 
 `review` and `triage` are the two single-word entry points: **`review` always means code review** (of a GitHub PR or branch), and **`triage` always means on-call** (of a JIRA ticket). On-call's other phases keep the `on-call` prefix (`on-call publish/capture/curate/sync`); bare `triage` is the shorthand for starting one. `review --fix` and `review --interactive` stay under the `review` verb because they're the same evaluation with a loop bolted on, not a different concern.
@@ -142,6 +148,9 @@ Scans frontend repositories for design consistency and produces a living design 
 
 ### Campaign
 Executes large-scale, systematic refactoring campaigns across many files over multiple sessions. `campaign plan <goal> in <repo>`, `campaign continue <campaign> in <repo>`, `campaign status <campaign> in <repo>`. Details (execution modes, DDD integration): `${CLAUDE_PLUGIN_ROOT}/workflows/campaign/AGENTS.md`.
+
+### Improve
+Continuous small improvements to an existing codebase. A run is `--rounds N` (default 1) on one `improve/<date>-batch` branch, each round in its own subagent while the parent checks every round and steers the next through a shared brief. A round scouts one slice of 2-3 related files (`scripts/pick-slice.sh`: most-changed and most review-flagged first, unchanged visited files skipped) with the code-review lenses applied to existing code, records the results in a per-repo knowledge base (`map.md` conventions, `patterns.md` recurring observations, a `state.json` backlog), and builds the best backlog candidate through `implement` as its own commits, reviewed with `review --since <round base>` and checked by `scripts/scope-gate.sh` (8 files, 250 lines, no migrations, dependencies, CI, routes, or auth paths). The finish catches up with main, runs one `validate` of the combined behavior changes, fixes what the branch broke, files the defects found along the way in the Linear Defects project (`improve-workflow` label, "Needs validation first" when unconfirmed), and with `--pr` opens one draft PR. A pattern seen in 3 slices becomes a cross-cutting candidate or a `campaign` suggestion. Behavior-preserving changes by default; a small behavior change with a big structural payoff is built but flagged, with before/after screenshots. `improve [in <repo>] [--rounds N] [--focus <path>] [--worktree] [--pr] [--no-validate] [--no-file]`, `improve discover [--slices N]`, `improve I-<n> …`, `improve status`, `improve reject I-<n> "<why>"`. Never stacks PRs, never merges. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/improve/AGENTS.md`.
 
 ### On-Call
 Triages engineering on-call (ER) tickets and turns every resolution into durable knowledge — runbooks plus a PHI-free audit trail. Spans `origami_claims` (primary), `care_platform`, and `sana_mobile`. `triage <Jira ticket URL>` / `triage ER-1477`. Five verbs: `triage`, `on-call publish`, `on-call capture`, `on-call curate`, `on-call sync`. Runbooks/audit logs are the source of truth in `$GREYBEARD_DATA/output/on-call/` (PHI/PII-free). Needs the `atlassian` (JIRA) MCP — declared in the plugin's `.mcp.json`. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/on-call/AGENTS.md`.

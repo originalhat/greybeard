@@ -13,6 +13,7 @@ This directory contains AI agent workflows. Each workflow is a structured pipeli
 | `knowledge-extraction/` | Multi-phase pipeline to extract business logic into documentation |
 | `security-testing/` | Whole-repo security vulnerability assessment with 17 lenses and 3-phase pipeline |
 | `design-audit/` | Frontend design consistency assessment with living design specification |
+| `improve/` | N rounds on one branch, each scouting a 2-3 file slice with the code-review lenses, growing a per-repo knowledge base (conventions, patterns, backlog), and building the best candidate through `implement`; then one validate, defects filed in Linear, one draft PR |
 | `campaign/` | Large-scale refactoring campaign execution — migrations, architectural transitions, coverage sweeps |
 | `on-call/` | Triage on-call tickets and build a self-improving hierarchy of runbooks plus a PHI-free audit trail |
 | `retro/` | Retrospective over recent bb threads: quantified friction → suggestions on a value by confidence 2x2 with before/after impact → high confidence auto-applied with rollback, the rest approved one at a time → committed |

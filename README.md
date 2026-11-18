@@ -13,8 +13,9 @@ Greybeard is a collection of structured AI agent workflows that help you:
 5. **Security test** repositories against 17 focused security lenses
 6. **Audit design** consistency across frontend codebases
 7. **Run campaigns** — systematic large-scale refactoring across many files over multiple sessions
-8. **Triage on-call tickets** — investigate incidents, propose fixes, and turn each resolution into durable runbooks
-9. **Run retrospectives** — read recent agent threads, quantify recurring friction, apply the high-confidence fixes with a rollback, and approve the rest
+8. **Improve** — rounds of small, reviewed improvements on one branch, a growing knowledge base of the repo's conventions and recurring problems, then one validation pass, defect tickets, and one PR
+9. **Triage on-call tickets** — investigate incidents, propose fixes, and turn each resolution into durable runbooks
+10. **Run retrospectives** — read recent agent threads, quantify recurring friction, apply the high-confidence fixes with a rollback, and approve the rest
 
 Each workflow is a set of prompts and templates that guide AI agents through multi-stage analysis.
 
@@ -42,7 +43,7 @@ Or, for a local clone you're developing against, add it by path instead of by Gi
 Greybeard keeps cloned repos and workflow output outside the plugin, at `$GREYBEARD_DATA/` (defaults to `~/.greybeard-data/`). Set `GREYBEARD_DATA` to relocate it. The data directory is created automatically on the first session after install (a `SessionStart` hook runs `mkdir -p` idempotently), so this step is optional — run it manually only if you want to populate `sources/` before launching Claude:
 
 ```bash
-mkdir -p "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources" "${GREYBEARD_DATA:-$HOME/.greybeard-data}/output"/{knowledge-extraction,security-testing,design-audit,campaigns,code-review,on-call,validate,retro}
+mkdir -p "${GREYBEARD_DATA:-$HOME/.greybeard-data}/sources" "${GREYBEARD_DATA:-$HOME/.greybeard-data}/output"/{knowledge-extraction,security-testing,design-audit,campaigns,improve,code-review,on-call,validate,retro}
 ```
 
 ### 3. Add your repositories
@@ -110,6 +111,10 @@ greybeard/
 │   ├── campaign/                # Large-scale refactoring campaign execution
 │   │   ├── context/             # Archetype-specific gotchas
 │   │   └── pipeline/            # 6-phase plan → execute → review cycle
+│   ├── improve/                 # N rounds on one branch → validate → defects filed → one PR
+│   │   ├── pipeline/            # slice → scout → record → build per round, then finish
+│   │   ├── scripts/             # Slice picker and scope gate, with tests
+│   │   └── templates/           # State, map, patterns, slice record
 │   ├── on-call/                 # On-call ticket triage + self-improving runbooks
 │   │   ├── pipeline/            # 5-phase triage → publish → capture → curate → sync
 │   │   ├── context/             # Authoring standard + escalation map
@@ -133,6 +138,7 @@ $GREYBEARD_DATA/                       # default ~/.greybeard-data/
     ├── security-testing/{repo}/
     ├── design-audit/{repo}/
     ├── campaigns/{repo}/{campaign}/
+    ├── improve/{repo}/                # Improve knowledge base: backlog, conventions, patterns, slice records
     ├── code-review/{repo}/fix-runs/    # review-fix audit records (one per run)
     ├── code-review/{repo}/runs/        # plain review run records (one per review)
     ├── validate/{repo}/{run}/         # Validation runs: report, record, screenshots
@@ -290,6 +296,26 @@ campaign status <campaign-name> in <repo-name>
 ```
 
 See [`workflows/campaign/`](workflows/campaign/) for details on execution modes (autonomous vs. guided) and DDD campaign integration.
+
+### 🧹 Improve
+
+Small, continuous improvements to a codebase you already have. A run is a number of rounds on one branch. Each round looks closely at 2-3 related files, writes down what it learned, and builds the best thing in the backlog as its own reviewed commits. Over time the notes add up: a problem seen in three places becomes a candidate of its own, or a campaign suggestion.
+
+```
+improve --rounds 10 --pr
+improve discover --slices 3
+improve I-12 I-15
+improve status
+improve reject I-7 "we keep these separate on purpose"
+```
+
+**How it works:**
+1. Make one `improve/<date>-batch` branch for the run
+2. Each round, in its own subagent: pick a slice (the most-changed, most review-flagged file not yet visited, plus the files that change with it), scout it with the code-review lenses applied to existing code, record conventions, patterns and candidates, then build the best backlog candidate through `implement`, reviewed on its own and checked against a scope gate (8 files, 250 lines, no migrations, dependencies, CI, routes, or auth)
+3. Between rounds the parent checks the commits, keeps the branch mergeable with main, and steers the next round
+4. At the end: one `validate` of the combined behavior changes, fixes for anything the branch broke, the defects found along the way filed in Linear, and with `--pr` one draft PR
+
+Never stacks PRs, never merges. The knowledge base lives in `$GREYBEARD_DATA/output/improve/{repo}/`. See [`workflows/improve/`](workflows/improve/) for details.
 
 ### 📟 On-Call
 
