@@ -14,7 +14,7 @@ Otherwise, from candidates with `status: open`:
 
 1. Keep `safe` with value `high` or `medium`, and `flagged` with value `high`. A behavior change has to be worth it.
 2. Order by value, then `safe` before `flagged`, then confidence `high` before `low`, then **lower id** (the oldest first). Size is not a tiebreaker: on the first CP run, smallest-first let each new slice's tiny test gap jump the queue for three rounds while the bigger, older items waited.
-3. Apply the brief's steer. Usually that is the variety rule: after two `test-only` rounds, prefer the best qualifying candidate that changes app code.
+3. Apply the brief's steer. Usually that is the variety rule: after two `test-only` rounds, prefer the best qualifying candidate that changes app code. With `--focus perf`, only candidates with `perf` set qualify.
 4. Skip candidates whose files the batch branch already changed in an earlier round when another qualifies. Two rounds editing one file is allowed, but it makes the commits harder to review on their own.
 5. Take the first one that still holds (section 2).
 
@@ -45,6 +45,7 @@ Acceptance:
 - safe → Behavior is unchanged. The existing tests that cover {paths} pass without edits.
          If the changed path has no test, write a characterization test first, against the current code, and keep it.
 - flagged → {userVisible}. Nothing else a user can see changes.
+- perf (in addition) → {perf.measure} drops from {before} to {after or less}, shown by a test.
 
 Scope: only what the change above needs. Anything else noticed goes in the round report, not the branch.
 ```
@@ -52,6 +53,7 @@ Scope: only what the change above needs. Anything else noticed goes in the round
 - **Flags:** always `--no-validate`; the finish validates the combined branch once. `--skip-ui` unless the candidate is `flagged` and touches UI, where the render check takes the after shots. Never `--pr`. With a worktree, work in it and don't create another.
 - **Review only this round.** Implement's review and its `review --fix` cover `{round base}..HEAD`, not the whole branch: run the review as `review --since {round base}`, and give `review-fix` the same SHA. Earlier rounds were reviewed in their own rounds.
 - **TDD for a `safe` change:** implement's red step becomes the characterization test. It must pass before the change and after it. Prove it can fail: break the code it covers, see it fail, restore. A test that only passes after the change means the change wasn't behavior-preserving; relabel the candidate `flagged` (or `out`) and report it instead of shipping it as `safe`.
+- **Performance candidates** (`perf` set): the red test is the measure. Write a test that counts the work for a realistic N and asserts the target: on Rails, subscribe to `sql.active_record` around the request or method and count queries, leaving out `SCHEMA` and `CACHE` ones; on the client, count requests through the test's msw server or renders with React's `Profiler`. It must fail at the round base and pass after the change, alongside the unchanged behavior tests. Never assert on wall-clock time; timing is flaky. A local before-and-after timing may go in the report as color, labeled as local. A change that needs a new index is a migration, so it becomes an `out` ticket, not a round.
 - **Test-only candidates** (`test-gap`, a spec that passes whether or not the code works): the test is the change. Still prove each new or tightened example fails when the behavior it pins is broken.
 - **Implement's closing list becomes the round report.** Its decisions, questions, and **Not fixed** items go in the report for the parent; nothing waits for the human mid-run. For a `flagged` candidate, the first decision is `{userVisible}. Flagged behavior change, built because {payoff}. Before/after: {screenshot paths}`.
 
@@ -70,4 +72,4 @@ A round that can't finish for another reason (a test it can't make pass, a revie
 
 ## 6. Record and report
 
-Set `status: built` with `branch`, `commits` (the round's SHAs), and `run`. Then return the round report from `templates/ROUND-BRIEF.md`. The **Behavior to validate** line matters most for the finish: for an `app-code` round, name the flows a user goes through that touch the changed code ("schedule, cancel, and send-now failure messages on the care request composer") and whether the change is `unchanged` or `flagged`. For a `test-only` round, write `none`.
+Set `status: built` with `branch`, `commits` (the round's SHAs), and `run`, and for a `perf` round the measured result in `perf.measured`. Then return the round report from `templates/ROUND-BRIEF.md`. The **Behavior to validate** line matters most for the finish: for an `app-code` round, name the flows a user goes through that touch the changed code ("schedule, cancel, and send-now failure messages on the care request composer") and whether the change is `unchanged` or `flagged`. For a `test-only` round, write `none`.

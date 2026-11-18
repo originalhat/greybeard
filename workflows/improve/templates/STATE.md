@@ -26,6 +26,7 @@
       "confidence": "high",
       "size": {"files": 2, "lines": 60},
       "pattern": "status-chip-implementations",
+      "perf": null,
       "ref": "8fbfd856cf63f3371f080dba2b5ecc019c9518af",
       "slice": "slices/2026-11-16-client-src-referrals-referralrow.md",
       "status": "open",
@@ -54,6 +55,7 @@ A fresh file is `{"repo": "{repo}", "nextId": 1, "visits": [], "candidates": []}
 - `value`: `high` | `medium`. Low-value candidates are never stored. `confidence`: `high` | `low`.
 - `ref`: the `origin/main` SHA the candidate was last confirmed at. `pick-slice.sh` reads `visits[].sha` the same way: a file is skipped while it hasn't changed since its last visit.
 - `pattern`: the `patterns.md` heading this candidate came from or advances, else `null`.
+- `perf`: for performance candidates, `{measure, expected, baseline, measured}`: what the test counts, the expected before → after, the production APM line when it was found, and the measured before → after once built. `null` otherwise.
 
 ## Status vocabulary
 

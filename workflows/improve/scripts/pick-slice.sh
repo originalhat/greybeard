@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # Picks the next slice for improve to scout: one anchor file plus the files that most often change with it.
 #
-# Usage: pick-slice.sh <repo> [--focus <path-prefix>] [--size N]
+# Usage: pick-slice.sh <repo> [--focus <path-prefix> | --focus perf] [--size N]
 #   Run from inside the target repo checkout. Reads the base ref only, never the working tree.
 #   IMPROVE_BASE         ref to read (default origin/main)
 #   IMPROVE_SINCE        churn window (default "6 months ago")
 #   IMPROVE_SWEEP_FILES  commits touching more files than this don't count as co-changes (default 20)
+#   Production hotspots: $GREYBEARD_DATA/output/improve/<repo>/hotspots.tsv (path, weight, evidence; see map-hotspots.sh)
+#   add their weight to the score. `--focus perf` anchors only on hotspot files.
 #
 # Output:
 #   anchor <path>
@@ -33,6 +35,7 @@ sweep="${IMPROVE_SWEEP_FILES:-20}"
 output="${GREYBEARD_DATA:-$HOME/.greybeard-data}/output"
 state="$output/improve/$repo/state.json"
 runs="$output/code-review/$repo/runs"
+hotspots="$output/improve/$repo/hotspots.tsv"
 ref="$(git rev-parse "$base^{commit}")"
 
 tmp="$(mktemp -d "${TMPDIR:-/tmp}/pick-slice.XXXXXX")"
@@ -43,7 +46,19 @@ excluded_re='(^|/)(vendor|node_modules|generated|dist|build|coverage|tmp|log|pub
 test_re='(^|/)(spec|test|tests|__tests__|__mocks__|fixtures|factories|e2e|cypress)/|_(spec|test)\.[a-z]+$|\.(test|spec|stories)\.[a-z]+$'
 
 git ls-tree -r --name-only "$ref" | grep -E "$code_re" | grep -vE "$excluded_re" > "$tmp/eligible" || true
-grep -vE "$test_re" "$tmp/eligible" | awk -v focus="$focus" 'focus == "" || index($0, focus) == 1' > "$tmp/anchors" || true
+: > "$tmp/hotspots"
+[ -f "$hotspots" ] && awk -F'\t' 'NF >= 2' "$hotspots" > "$tmp/hotspots"
+
+if [ "$focus" = "perf" ]; then
+  if [ ! -s "$tmp/hotspots" ]; then
+    echo "none"
+    echo "reason: --focus perf, but no production hotspots recorded in $hotspots"
+    exit 0
+  fi
+  grep -vE "$test_re" "$tmp/eligible" | awk -F'\t' 'NR == FNR { hot[$1] = 1; next } ($0 in hot)' "$tmp/hotspots" - > "$tmp/anchors" || true
+else
+  grep -vE "$test_re" "$tmp/eligible" | awk -v focus="$focus" 'focus == "" || index($0, focus) == 1' > "$tmp/anchors" || true
+fi
 
 git log --since="$since" --format= --name-only "$ref" | awk 'NF' | sort | uniq -c > "$tmp/churn"
 
@@ -59,8 +74,9 @@ if [ -f "$state" ]; then
   jq -r '.visits[]? | [.path, .sha] | @tsv' "$state" > "$tmp/visits"
 fi
 
-awk -v churn_file="$tmp/churn" -v findings_file="$tmp/findings" '
+awk -v churn_file="$tmp/churn" -v findings_file="$tmp/findings" -v hotspots_file="$tmp/hotspots" '
   FILENAME == churn_file { churn[$2] = $1; next }
+  FILENAME == hotspots_file { split($0, h, "\t"); heat[h[1]] = h[2]; next }
   FILENAME == findings_file { n = $1; sub(/^ *[0-9]+ /, ""); findings[$0] = n; next }
   {
     f = $0; hits = 0
@@ -68,9 +84,10 @@ awk -v churn_file="$tmp/churn" -v findings_file="$tmp/findings" '
       if (f == p || (length(f) > length(p) && substr(f, length(f) - length(p)) == "/" p)) hits += findings[p]
     }
     c = (f in churn) ? churn[f] : 0
-    printf "%d\t%s\t%d\t%d\n", c + 2 * hits, f, c, hits
+    w = (f in heat) ? heat[f] : 0
+    printf "%d\t%s\t%d\t%d\n", c + 2 * hits + w, f, c, hits
   }
-' "$tmp/churn" "$tmp/findings" "$tmp/anchors" | sort -t $'\t' -k1,1nr -k2,2 > "$tmp/ranked"
+' "$tmp/churn" "$tmp/findings" "$tmp/hotspots" "$tmp/anchors" | sort -t $'\t' -k1,1nr -k2,2 > "$tmp/ranked"
 
 unchanged_since_visit() {
   local path="$1" sha
@@ -107,4 +124,5 @@ git log --format='@%H' --name-only --full-diff -n 200 "$ref" -- "$anchor" \
 echo "anchor $anchor"
 sed 's/^/with /' "$tmp/with"
 echo "ref $ref"
-echo "reason: $commits commits since $since, $hits pre-existing review findings"
+heat="$(awk -F'\t' -v p="$anchor" '$1 == p { print $3; exit }' "$tmp/hotspots")"
+echo "reason: $commits commits since $since, $hits pre-existing review findings${heat:+, hotspot $heat}"

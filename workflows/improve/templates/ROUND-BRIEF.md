@@ -13,6 +13,7 @@
 - Candidate: {I-n, for `improve I-n` | pick per 04-build}
 - Round base: {sha}  (the batch branch's HEAD when this round starts)
 - Steer: {e.g. "rounds 2-3 were test-only; prefer an app-code candidate" | none}
+- Focus: {path | perf (hotspot anchors and perf candidates only) | none}
 
 ## Where
 - Workflow: run `${CLAUDE_PLUGIN_ROOT}/workflows/improve/pipeline/01-slice.md` through `04-build.md` (with --focus {path} | for I-n: 04-build.md only)
@@ -54,6 +55,7 @@ ROUND {k} REPORT
 - Review: {run record path} · {tally} · {N} fixed by review-fix
 - Gate: pass ({files} files, {lines} lines) | fail ({reasons})
 - Proof: {how the new or changed tests were shown to fail when the behavior breaks}
+- Perf: {measure: before → after, for a perf round | none}
 - Behavior to validate: {flows a user goes through that touch the changed code; unchanged | flagged: userVisible} | none
 - Defects noticed: I-{n} {title} ({confidence}); …
 - Decisions: {what the round decided on the human's behalf}

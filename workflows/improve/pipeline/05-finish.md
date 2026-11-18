@@ -59,7 +59,7 @@ Then write each filed ticket ID into `state.json` (`ticket`, and create a candid
 2. Push the branch and open **one draft PR** against `main` (GitHub MCP, `draft: true`; fallback `gh pr create --draft`). Title: what the batch changes for the people who work in this code, e.g. `Tighten care request and referral tests, and share scheduled-message errors`.
 3. Body, in the global PR format:
    - **Description:** 1-2 short paragraphs on what gets safer or easier, from the point of view of whoever benefits (users for a `flagged` change, the engineers who work in this code otherwise). No round-by-round list, no file walkthrough.
-   - **Visuals:** the before/after screenshots of any `flagged` UI change. When nothing in the batch is visible, the heading becomes `### Checks`: a short list of what ran beyond CI (each round's review, before/after screenshot comparisons, validate's result and what it couldn't cover). Leave out specs, lint, and types; CI already shows those.
+   - **Visuals:** the before/after screenshots of any `flagged` UI change. When nothing in the batch is visible, the heading becomes `### Checks`: a short list of what ran beyond CI (each round's review, before/after screenshot comparisons, validate's result and what it couldn't cover, and for performance rounds the measured before → after with the production p95 it targets). Leave out specs, lint, and types; CI already shows those.
    - No Claude attribution line.
 4. Print the URL. Never mark it ready for review, and never merge.
 
@@ -73,6 +73,7 @@ One message, implement's closing-list shape, numbered across sections so the hum
 ## Done
 {N} rounds · {N} built ({test-only} test-only, {app-code} app code, {flagged} flagged) · {N} parked · branch {branch} on main @ {sha} · {PR url | local only}
 validate: {N} criteria pass, {N} bugs fixed on the branch, {N} pre-existing | skipped: {why}
+perf: {I-n {measure} {before → after} (production baseline {p95}); … | none}
 
 | Round | Candidate | What changed | Commits |
 |-------|-----------|--------------|---------|

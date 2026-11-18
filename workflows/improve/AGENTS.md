@@ -12,13 +12,15 @@ Unlike `campaign` (a goal the human already has, across many files), improve fin
 improve/
 ├── AGENTS.md                # You are here: preflight, the round loop, finish
 ├── pipeline/
+│   ├── 00-hotspots.md       # Parent, preflight: the files behind production's slowest endpoints and jobs (Datadog APM)
 │   ├── 01-slice.md          # Pick the slice, gather existing evidence, choose lenses
 │   ├── 02-scout.md          # Sonnet scouts apply the lenses to existing code (no diff)
 │   ├── 03-record.md         # Fact-check, label, dedupe, update the knowledge base, synthesize patterns
 │   ├── 04-build.md          # Select one candidate, run implement on it as this round's commits, scope gate
 │   └── 05-finish.md         # After the last round: catch up with main, validate, file defects, draft PR, report
 ├── scripts/
-│   ├── pick-slice.sh        # Deterministic slice choice: churn + review findings, skips visited files
+│   ├── pick-slice.sh        # Deterministic slice choice: churn + review findings + production hotspots, skips visited files
+│   ├── map-hotspots.sh      # APM resources (endpoints, jobs) → their files, ranked by total time
 │   ├── scope-gate.sh        # File/line caps and a path denylist, checked on every round's commits
 │   └── test/                # bash workflows/improve/scripts/test/<name>_test.sh
 └── templates/
@@ -46,6 +48,7 @@ No lenses of its own. The scouts apply `code-review/lenses/` to existing code th
 - **Repo:** the current working directory's repo, or `in <repo>`: a path, else `$GREYBEARD_DATA/sources/<repo>`. The **repo name** for the data directory is the basename of the `origin` remote URL without `.git` (`care_platform`), so a worktree or a second clone shares one knowledge base.
 - `--rounds N` (also `--rounds=N`): how many rounds, at most 20. The run stops early when a round finds nothing worth building and the slice picker has nothing left.
 - `--focus <path>` limits every round's slice anchor to that path prefix (`client/src`, `app/services/fabric`).
+- `--focus perf` is a performance run: slices anchor only on production hotspots, and rounds build only candidates with a measured performance target (`pipeline/00-hotspots.md`, `04-build.md` section 4).
 - `--worktree`: the batch branch lives in one sibling worktree for the whole run (`implement`'s worktree section), not one per round.
 - `--pr`: push the batch branch and open **one** draft PR at the end. Never one PR per round, and never a stack.
 - `--no-validate` skips the final validate. `--no-file` skips filing defects in Linear; they are still listed in the report.
@@ -59,6 +62,7 @@ Per repo, in `$GREYBEARD_DATA/output/improve/{repo}/`:
 ├── state.json      # visits, candidates (the backlog), nextId: templates/STATE.md
 ├── map.md          # conventions the repo follows: templates/MAP.md
 ├── patterns.md     # recurring observations with slice counts: templates/PATTERNS.md
+├── hotspots.tsv    # production hotspots for this run: path, weight, APM evidence (pipeline/00-hotspots.md)
 ├── slices/
 │   └── {YYYY-MM-DD}-{anchor-slug}.md   # one per slice: templates/SLICE-RECORD.md
 └── runs/
@@ -79,9 +83,10 @@ The **parent** (the session the human talks to) owns the run: the lock, the bran
 
 1. Resolve the repo and its name (see Inputs). Read its root `CLAUDE.md` / `AGENTS.md` at `origin/main` (`git show origin/main:CLAUDE.md`), and an untracked `CLAUDE.local.md` in the checkout if present. Its conventions override anything here.
 2. `git fetch origin main` in the checkout. It moves only `origin/main`, never the checked-out branch. If the fetch fails (network, sandbox), carry on with the existing `origin/main` and say how old it is in one line.
-3. **One run per repo at a time.** `mkdir $GREYBEARD_DATA/output/improve/{repo}/.lock`. If it already exists and is under 3 hours old, stop and say another run holds it. If it is older, remove it and continue. The parent holds the lock for the whole run and removes it at the end, including when the run stops early. Round subagents never take or remove it. `improve status` doesn't take the lock.
-4. Create `state.json`, `map.md`, `patterns.md`, `slices/` and `runs/` from the templates if they don't exist. Create this run's directory, `runs/{YYYY-MM-DD}-{n}/`, and its `brief.md` and `record.md`.
-5. **The batch branch** (skip for `discover`): `improve/{YYYY-MM-DD}-batch` from `origin/main`. Without `--worktree`, the checkout must be clean; if it isn't, stop and say so, and don't stash or commit the user's work. `git switch --no-track -c <branch> origin/main`. With `--worktree`, create one worktree for the run at `<checkout-dir>-improve-{YYYY-MM-DD}` per implement's worktree section (`git worktree` needs the Bash sandbox off). Record the branch, the path, and the base SHA in `record.md`.
+3. **One run per repo at a time.** `mkdir -p $GREYBEARD_DATA/output/improve/{repo}`, then `mkdir $GREYBEARD_DATA/output/improve/{repo}/.lock`. If it already exists and is under 3 hours old, stop and say another run holds it. If it is older, remove it and continue. The parent holds the lock for the whole run and removes it at the end, including when the run stops early. Round subagents never take or remove it. `improve status` doesn't take the lock.
+4. **Production hotspots:** `pipeline/00-hotspots.md` writes `hotspots.tsv` from Datadog APM. If Datadog isn't reachable it keeps a recent file or goes without, and says so in one line.
+5. Create `state.json`, `map.md`, `patterns.md`, `slices/` and `runs/` from the templates if they don't exist. Create this run's directory, `runs/{YYYY-MM-DD}-{n}/`, and its `brief.md` and `record.md`.
+6. **The batch branch** (skip for `discover`): `improve/{YYYY-MM-DD}-batch` from `origin/main`. Without `--worktree`, the checkout must be clean; if it isn't, stop and say so, and don't stash or commit the user's work. `git switch --no-track -c <branch> origin/main`. With `--worktree`, create one worktree for the run at `<checkout-dir>-improve-{YYYY-MM-DD}` per implement's worktree section (`git worktree` needs the Bash sandbox off). Record the branch, the path, and the base SHA in `record.md`.
 
 ### 1. Rounds
 
@@ -95,7 +100,7 @@ For round `k` of N, in sequence:
    - A round that stopped partway (its report says `parked`) left its commits on a `improve-parked/{id}` ref and reset the branch to the round base. Check that the branch is back at the base.
    - Append the round to `record.md`: candidate, kind (`test-only` | `app-code`), commits, review tally, gate, the behavior to validate, defects noticed, questions.
 4. **Steer the next round.** Add to the brief anything the next round should know: setup lessons (`yarn install` once in a new worktree, which stack slot is free), settled questions not to re-raise, files the branch has already changed (re-read them at HEAD, not at `origin/main`). Two variety rules, from the first CP run where 9 of 10 rounds added a small test:
-   - After two `test-only` rounds in a row, the next round takes the best qualifying candidate that changes app code, if one exists.
+   - After two `test-only` rounds in a row, the next round takes the best qualifying candidate that changes app code, if one exists. (Not with `--focus perf`, where every round is a performance round.)
    - Between candidates of equal value and confidence, the oldest goes first (04-build section 1), so new small findings don't keep jumping the queue.
 5. **Questions don't stop the run.** A round's questions, flagged decisions, and defects collect in `record.md` for the finish. Stop between rounds only when the next round can't run without an answer: the branch is broken, every remaining candidate waits on the same question, or the human interjects.
 
@@ -107,7 +112,7 @@ The run ends after N rounds, or earlier when a round reports `nothing to build` 
 
 ### `improve status`
 
-Read `state.json` and print: files visited and slices scouted; open candidates by label and value; patterns at 2 of 3 slices; `out` defects and refactors with no `ticket` yet; and outcomes (`built`, `merged`, `rejected`) as counts with the accept rate, which is merged ÷ (merged + rejected). Before printing, check each `built` candidate's PR with the GitHub MCP (fallback `gh pr view`). Merged → `merged`. Closed without merging → `rejected`, with reason `PR closed without merge`, unless its commits went into a later PR that merged (the 2026-11-17 stack was closed and re-opened as one PR). Write those changes back to `state.json`.
+Read `state.json` and print: files visited and slices scouted; the top production hotspots and whether each has been scouted; open candidates by label and value; patterns at 2 of 3 slices; `out` defects and refactors with no `ticket` yet; and outcomes (`built`, `merged`, `rejected`) as counts with the accept rate, which is merged ÷ (merged + rejected). Before printing, check each `built` candidate's PR with the GitHub MCP (fallback `gh pr view`). Merged → `merged`. Closed without merging → `rejected`, with reason `PR closed without merge`, unless its commits went into a later PR that merged (the 2026-11-17 stack was closed and re-opened as one PR). Write those changes back to `state.json`. For each `merged` candidate with `perf` set, re-run the hotspot query (`pipeline/00-hotspots.md`) for its endpoint or job and print its p95 at the baseline and now, so a performance fix shows whether it moved production. Say plainly when the window since the deploy is too short to tell (under 3 days).
 
 ### `improve reject I-12 "<why>"`
 
@@ -127,6 +132,8 @@ Set `status: rejected`, `reason`, and `resolvedAt`. If its commits are on an unm
 - **One candidate per round, one branch per run.** Each round's change is its own commits, reviewed on its own. The implementer doesn't widen scope; anything else it notices becomes a candidate.
 - **Commits on the batch branch are authorized.** Invoking `improve` or `improve I-<n>` is the human's explicit request to commit, the same as saying "commit", so a "never commit unless I say so" rule is satisfied for the run's `improve/{date}-batch` branch. That covers `implement`'s commits, its fix commits, `review --fix`, and the finish's fix commits. It never covers `main`, another branch, or the user's uncommitted work, and `discover`, `status`, and `reject` never commit. In a worktree, `git commit` needs the Bash sandbox off (the worktree's index lives under the main checkout's `.git/worktrees`).
 - **Filing defects is authorized** for the Linear team, project, and labels in `templates/LINEAR-TICKET.md`, once per run at the finish. **Refactor tickets are not**: the report proposes them and they are filed only when the human answers `file`. `--no-file` turns it off. Nothing else is posted anywhere.
+- **Datadog is read-only and aggregate.** Only resource names, hit counts, and latency percentiles are read; never span tags, trace contents, logs, or anything with member data.
+- **Performance is measured, not asserted.** A performance change ships with a test that counts the work (queries, rows, requests, renders) and fails without the change. Production p95 is the baseline and the follow-up, never a test.
 - **Never pushes or opens a PR without `--pr`**, and then only one draft for the whole branch, only after every round's gate passed and the reviewed-SHA check. Never merges, never force-pushes.
 
 ## Gotchas

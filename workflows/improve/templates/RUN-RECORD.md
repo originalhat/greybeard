@@ -11,6 +11,7 @@
 **Branch:** {improve/YYYY-MM-DD-batch} · worktree: {path | none}
 **Base:** origin/main @ {sha} → {final base sha after catch-up}
 **Rounds:** {done} of {N} · stopped: {after N | nothing left to build | human}
+**Hotspots:** {date} · service {service} · top: {file (p95, hits)}, … | none ({why})
 
 ## Rounds
 

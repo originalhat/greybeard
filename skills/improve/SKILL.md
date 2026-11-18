@@ -8,7 +8,8 @@ description: >-
   I-<n>". A run is N rounds (`--rounds N`, default 1) on one
   `improve/<date>-batch` branch, each round in its own subagent: scout one
   slice of 2-3 related files (picked by churn and past review findings, never
-  re-reading unchanged files) through the code-review lenses, record what it
+  re-reading unchanged files; production hotspots from Datadog APM rank
+  higher) through the code-review lenses, record what it
   learned in a per-repo knowledge base (conventions, recurring patterns, a
   backlog of evidence-backed candidates), and build the best backlog candidate
   through `implement` as reviewed commits. Then one `validate` of the combined
@@ -18,7 +19,9 @@ description: >-
   round becomes a proposed ticket (filed only on approval) recommending one
   PR or, past a high bar, a campaign. Behavior-preserving changes are the default; small behavior
   changes with a big structural payoff are built but flagged with before/after
-  screenshots. Optional `--focus <path>`, `--worktree`, `--pr`,
+  screenshots. Performance changes ship with a test that counts the work (queries,
+  requests, renders) before and after. Optional `--focus <path>`, `--focus
+  perf` (hotspots and performance candidates only), `--worktree`, `--pr`,
   `--no-validate`, `--no-file`, `discover --slices N`. Never stacks PRs,
   never merges.
 ---
@@ -27,11 +30,12 @@ description: >-
 
 N rounds on one branch: scout a slice, record what it taught, build the best thing in the backlog. Then validate once, file the defects, and open one draft PR.
 
-**Trigger:** `improve [in <repo>] [--rounds N] [--focus <path>] [--worktree] [--pr] [--no-validate] [--no-file]`, `improve discover [--slices N]`, `improve I-<n> [I-<m> …]`, `improve status`, `improve reject I-<n> "<why>"`.
+**Trigger:** `improve [in <repo>] [--rounds N] [--focus <path> | --focus perf] [--worktree] [--pr] [--no-validate] [--no-file]`, `improve discover [--slices N]`, `improve I-<n> [I-<m> …]`, `improve status`, `improve reject I-<n> "<why>"`.
 
 **Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/improve/AGENTS.md`.
 
-That file makes the batch branch, then runs each round in a subagent through
+That file pulls production hotspots from Datadog APM (`pipeline/00-hotspots.md`,
+`scripts/map-hotspots.sh`), makes the batch branch, then runs each round in a subagent through
 `pipeline/01-slice.md` to `04-build.md` (`scripts/pick-slice.sh`, Sonnet
 scouts applying `${CLAUDE_PLUGIN_ROOT}/workflows/code-review/lenses/` to the
 existing code, the knowledge base in `$GREYBEARD_DATA/output/improve/{repo}/`,

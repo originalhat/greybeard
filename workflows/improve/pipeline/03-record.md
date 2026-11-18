@@ -14,6 +14,8 @@ Then check the scout's **Changes behavior** answer yourself, using OPPORTUNISTIC
 
 ## 2. Dedupe
 
+Performance candidates also record `perf`: the measure and the APM baseline (`{"measure": "queries per request, N = 50", "expected": "52 → 3", "baseline": "patientapi::carerequestscontroller_index p95 2.21s, 16052 hits/7d, 2026-11-18"}`); `null` for everything else.
+
 A candidate's **fingerprint** is `{LENS}:{first path}:{symbol}`, where the symbol is the class, method, or component that holds the first location. Two candidates in this run with the same fingerprint, or describing the same change, merge into one with both scouts' evidence.
 
 Against `state.json` candidates with the same fingerprint, or the same change under a different lens:
@@ -40,8 +42,8 @@ Write the ticket-ready goal in `fix`, in one or two sentences. Improve never sta
 
 ## 4. Rate
 
-- **Value.** `high`: removes a real risk (an untested branch on a frequently changed path, an N+1 on a list endpoint), removes duplication across 3 or more sites, or converges on a standard `map.md` or the design spec already names. `medium`: a clear readability or structure win in a file that changes often, per the slice's reason line. `low`: local and cosmetic.
-- **Confidence.** `high` when the evidence is deterministic (`lint`, `review-record`, `design-audit`, `duplicate`, `test-gap`) and the fact-check confirmed it. `low` when it rests on `reading` alone or the fact-check needed judgment.
+- **Value.** `high`: removes a real risk (an untested branch on a frequently changed path, an N+1 on a list endpoint), cuts work on a production hotspot (`apm` evidence plus the code path, with a measure that shows the cut), removes duplication across 3 or more sites, or converges on a standard `map.md` or the design spec already names. `medium`: a clear readability or structure win in a file that changes often, per the slice's reason line. `low`: local and cosmetic.
+- **Confidence.** `high` when the evidence is deterministic (`lint`, `review-record`, `design-audit`, `duplicate`, `test-gap`, or `apm` with the query or loop confirmed in the code) and the fact-check confirmed it. `low` when it rests on `reading` alone or the fact-check needed judgment.
 
 `low`-value candidates are not added to the backlog. They go in the slice record and, if they recur, in `patterns.md`. The backlog only holds things worth a branch.
 

@@ -32,14 +32,16 @@ All of these, or it's not a candidate:
    - `design-audit F-nnn`
    - `duplicate`: the other site, quoted with its `path:line`
    - `test-gap`: the branch or behavior with no test, and which spec file you checked
+   - `apm`: the production hotspot line for the endpoint or job that runs this code (p95, hits). Only together with the query, loop, or render path you found; the hotspot alone says where to look, not what is wrong.
    - `reading`: none of the above, from reading the code alone. This is the weakest, and step 3 rates it accordingly.
 6. **Changes behavior:** `no`, or `yes: {what a user or caller would notice}`. Read the "Behavior-Change Trap" section of `OPPORTUNISTIC-REFACTOR-REVIEWER.md` before answering. A change that makes code run that didn't run before is a behavior change, however small the diff.
 7. **Size:** about how many files and changed lines, tests included.
+8. **For a performance candidate, the measure:** what a test can count before and after (queries per request, rows loaded, requests or renders per interaction) and the expected numbers for a realistic N.
 
 Don't report:
 
 - Style or formatting the repo's linter doesn't enforce, or a different way of writing something that is already clear.
-- Speculative performance without the query, loop, or render path shown.
+- Speculative performance without the query, loop, or render path shown, or without what grows (`N = open care requests`). On a hotspot slice, look harder, not looser.
 - Missing abstractions for code that has a single use.
 - Anything already listed as a candidate in the material you were given. Mention it only if you found new evidence.
 
@@ -66,6 +68,7 @@ Report these too, even when there's no candidate. They are how the knowledge bas
 - Evidence: {type}: {detail}; …
 - Changes behavior: no | yes: {what a user or caller would notice}
 - Size: ~{files} files, ~{lines} lines
+- Measure: {queries per request for N = 50: ~52 → 3 | none}
 
 ## Observations
 - {pattern-name} (existing | new): {one line} at {path:line}

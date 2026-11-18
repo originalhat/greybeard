@@ -40,6 +40,7 @@ visited() {
   [ -f "$file" ] || echo '{"visits":[]}' > "$file"
   jq --arg p "$path" --arg s "$sha" '.visits += [{"path":$p,"sha":$s,"at":"2026-11-01"}]' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
 }
+hotspot() { printf '%s\t%s\t%s\n' "$1" "$2" "${3:-$1: p95 1.2s, 5000 hits}" >> "$STATE_DIR/hotspots.tsv"; }
 pick() { "$PICK" app "$@" > "$WORK/out" 2>&1; echo "exit $?" >> "$WORK/out"; }
 anchor() { sed -n 's/^anchor //p' "$WORK/out"; }
 withs() { sed -n 's/^with //p' "$WORK/out" | paste -sd, -; }
@@ -198,6 +199,46 @@ ties_break_by_path() {
   assert_eq "$(anchor)" "app/a.rb"
 }
 
+production_hotspots_raise_a_files_rank() {
+  commits 3 app/busy.rb
+  commits 1 app/hot.rb
+  publish
+  hotspot app/hot.rb 5 "hotcontroller_index: p95 1.2s, 5000 hits"
+  pick
+  assert_eq "$(anchor)" "app/hot.rb"
+  assert_out_contains "hotspot hotcontroller_index: p95 1.2s, 5000 hits"
+}
+
+focus_perf_limits_anchors_to_hotspots() {
+  commits 5 app/busy.rb
+  commits 1 app/hot.rb
+  commits 1 app/warm.rb
+  publish
+  hotspot app/warm.rb 3
+  hotspot app/hot.rb 9
+  pick --focus perf
+  assert_eq "$(anchor)" "app/hot.rb"
+}
+
+focus_perf_moves_to_the_next_hotspot_once_one_is_visited() {
+  commits 1 app/hot.rb
+  commits 1 app/warm.rb
+  publish
+  hotspot app/hot.rb 9
+  hotspot app/warm.rb 3
+  visited app/hot.rb
+  pick --focus perf
+  assert_eq "$(anchor)" "app/warm.rb"
+}
+
+focus_perf_without_hotspots_is_none() {
+  commits 2 app/busy.rb
+  publish
+  pick --focus perf
+  assert_eq "$(head -1 "$WORK/out")" "none"
+  assert_out_contains "no production hotspots recorded"
+}
+
 it "anchors on the file that changes most" anchors_on_the_file_that_changes_most
 it "pre-existing review findings raise a file's rank" pre_existing_review_findings_raise_a_files_rank
 it "findings recorded with a partial path still count" findings_recorded_with_a_partial_path_still_count
@@ -213,6 +254,10 @@ it "skips collaborators deleted since" skips_collaborators_deleted_since
 it "focus limits anchors to a path" focus_limits_anchors_to_a_path
 it "reads the base ref, not the checkout" reads_the_base_ref_not_the_checkout
 it "ties break by path" ties_break_by_path
+it "production hotspots raise a file's rank" production_hotspots_raise_a_files_rank
+it "--focus perf limits anchors to hotspots" focus_perf_limits_anchors_to_hotspots
+it "--focus perf moves to the next hotspot once one is visited" focus_perf_moves_to_the_next_hotspot_once_one_is_visited
+it "--focus perf without hotspots is none" focus_perf_without_hotspots_is_none
 
 echo
 echo "$passed passed, $failed failed"

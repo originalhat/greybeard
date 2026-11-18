@@ -303,6 +303,7 @@ Small, continuous improvements to a codebase you already have. A run is a number
 
 ```
 improve --rounds 10 --pr
+improve --focus perf --rounds 3
 improve discover --slices 3
 improve I-12 I-15
 improve status
@@ -311,11 +312,11 @@ improve reject I-7 "we keep these separate on purpose"
 
 **How it works:**
 1. Make one `improve/<date>-batch` branch for the run
-2. Each round, in its own subagent: pick a slice (the most-changed, most review-flagged file not yet visited, plus the files that change with it), scout it with the code-review lenses applied to existing code, record conventions, patterns and candidates, then build the best backlog candidate through `implement`, reviewed on its own and checked against a scope gate (8 files, 250 lines, no migrations, dependencies, CI, routes, or auth)
+2. Each round, in its own subagent: pick a slice (the most-changed, most review-flagged, or slowest-in-production file not yet visited, plus the files that change with it), scout it with the code-review lenses applied to existing code, record conventions, patterns and candidates, then build the best backlog candidate through `implement`, reviewed on its own and checked against a scope gate (8 files, 250 lines, no migrations, dependencies, CI, routes, or auth)
 3. Between rounds the parent checks the commits, keeps the branch mergeable with main, and steers the next round
 4. At the end: one `validate` of the combined behavior changes, fixes for anything the branch broke, the defects and too-big refactors found along the way filed in Linear, and with `--pr` one draft PR
 
-Never stacks PRs, never merges. The knowledge base lives in `$GREYBEARD_DATA/output/improve/{repo}/`. See [`workflows/improve/`](workflows/improve/) for details.
+Performance fixes ship with a test that counts the queries or requests saved, and production hotspots come from Datadog APM. Never stacks PRs, never merges. The knowledge base lives in `$GREYBEARD_DATA/output/improve/{repo}/`. See [`workflows/improve/`](workflows/improve/) for details.
 
 ### 📟 On-Call
 
