@@ -111,6 +111,7 @@ Everything step 5 found is fixed together, before any re-review.
 - **Review findings.** Classify them with `${CLAUDE_PLUGIN_ROOT}/workflows/review-fix/pipeline/01-triage.md`, then apply the `auto-fix` ones with `pipeline/02-fixer.md`. Its `review-fix:` commit is unchanged from how that pipeline commits.
 - **Validate bugs.** Fix test-first, as in step 3, every bug the branch `introduced`, and every `unconfirmed` one whose repro runs through code this branch changed. Severe and moderate always; minor when the fix stays inside the changed area. One commit per bug, with the message in user terms (`Keep a sent message out of Drafts after Back`). Pre-existing and `couldn't reproduce` bugs go to the summary unfixed.
 - **Render-check problems.** Fix a page that fails to render or looks visibly off from its neighbours.
+- **Tests CI won't run.** When review keeps a finding that CI skips tests this branch adds (a tag guard, a missing system library, an excluded Gemfile group), fix it here, whatever triage classified it as. Use the smallest change that makes CI run them, usually a separate CI job for that tag on an image that has the library, and leave the main test job alone. Read the job config back to confirm it selects those tests, and say in step 8 that CI hasn't run the job yet. Only when the fix needs a CI setting or credentials the agent can't change does it go under **Needs you**, with what it would take. On care_platform #1107 this was the review's top finding, the closing list offered it as a follow-up, and human review raised it on the draft PR.
 - **Decisions, taken optimistically.** For every `ask-user` finding and every validate question, take the recommendation you would give the human, as long as it stays inside the ticket's scope and a follow-up commit could undo it. Most often the recommendation is to leave the behavior as built, and nothing changes. When it is a change, make it test-first and put all of them in one `Apply review and QA recommendations` commit. Record every decision for step 8 either way, with what prompted it. Never take one of these optimistically; they wait for the human under **Needs you**:
   - a change to which record a value is read from, or which event triggers a behavior;
   - a new table, column, or other durable state;
@@ -147,6 +148,7 @@ Say ok to keep all of it, a number to change one, or pr to push and open a draft
 ```
 
 - Number decisions and needs in one run, so any of them can be answered by number.
+- A kept review failure is never offered as "want a follow-up?". Step 6 either fixed it, listed it under **Decisions I made**, or put it under **Needs you** with what fixing it takes.
 - With `--worktree`: add the worktree path, the app URL, and how to clean up (`bin/worktree-teardown` from the worktree, then `git worktree remove <path>`, plus `git branch -D <branch>` once the branch is merged or abandoned). Don't tear it down; the human uses it to try the change.
 - With `--base` (stacked): add one line, `Validate the stack once its last branch is built: validate --stack <top-branch> in <repo>`.
 
