@@ -4,7 +4,7 @@ Continuous, small improvements to an existing codebase. A run is a number of **r
 
 Runs don't re-read the whole repo. They build a per-repo knowledge base instead: conventions, recurring patterns, and a backlog of evidence-backed candidates. Wider, architectural candidates come out of that knowledge base. A pattern seen in three slices becomes a candidate of its own, so the view widens while the cost per round stays flat.
 
-It sits between `grind` (the same prompt N times, no memory beyond a notes file) and `campaign` (a goal the human already has, across many files). Improve finds the goal itself, one slice at a time, and hands a pattern to `campaign` once it is too big for one round.
+It sits between `grind` (the same prompt N times, no memory beyond a notes file) and `campaign` (a goal the human already has, across many files). Improve finds the goal itself, one slice at a time. Work too big for one round becomes a proposed Linear ticket, filed once the human approves it, that recommends one PR or, past a higher bar, a campaign (`pipeline/03-record.md` section 3); improve never starts either itself.
 
 ## Directory Structure
 
@@ -28,7 +28,7 @@ improve/
     ├── SLICE-RECORD.md      # The audit record of one slice
     ├── ROUND-BRIEF.md       # What the parent gives each round's subagent, and the report it returns
     ├── RUN-RECORD.md        # One run: rounds, validate, defects filed, PR
-    └── DEFECT-TICKET.md     # The Linear ticket for a defect found along the way
+    └── LINEAR-TICKET.md     # The Linear tickets the finish files: defects, and refactors too big for a round
 ```
 
 No lenses of its own. The scouts apply `code-review/lenses/` to existing code through a short discovery preamble (`pipeline/02-scout.md`). Building reuses `implement`, which runs the review, the fix pass, and the scoped `review --fix`. The final check reuses `validate`.
@@ -67,7 +67,7 @@ Per repo, in `$GREYBEARD_DATA/output/improve/{repo}/`:
         └── record.md    # the run record: templates/RUN-RECORD.md
 ```
 
-Plus, for a run that builds: the batch branch `improve/{YYYY-MM-DD}-batch` (`-2`, `-3` for a second run that day), with each round's `implement` commits and `review-fix:` commits, a code-review run record per round, a validate report, Linear tickets for the defects, and a draft PR only with `--pr`.
+Plus, for a run that builds: the batch branch `improve/{YYYY-MM-DD}-batch` (`-2`, `-3` for a second run that day), with each round's `implement` commits and `review-fix:` commits, a code-review run record per round, a validate report, Linear tickets for the defects, proposed tickets for the too-big refactors, and a draft PR only with `--pr`.
 
 Everything here is code-level and PHI-free: file paths, symbols, and code. No member data from fixtures, seeds, or logs.
 
@@ -107,7 +107,7 @@ The run ends after N rounds, or earlier when a round reports `nothing to build` 
 
 ### `improve status`
 
-Read `state.json` and print: files visited and slices scouted; open candidates by label and value; patterns at 2 of 3 slices; `campaign` suggestions; `out` defects with no `ticket` yet; and outcomes (`built`, `merged`, `rejected`) as counts with the accept rate, which is merged ÷ (merged + rejected). Before printing, check each `built` candidate's PR with the GitHub MCP (fallback `gh pr view`). Merged → `merged`. Closed without merging → `rejected`, with reason `PR closed without merge`, unless its commits went into a later PR that merged (the 2026-11-17 stack was closed and re-opened as one PR). Write those changes back to `state.json`.
+Read `state.json` and print: files visited and slices scouted; open candidates by label and value; patterns at 2 of 3 slices; `out` defects and refactors with no `ticket` yet; and outcomes (`built`, `merged`, `rejected`) as counts with the accept rate, which is merged ÷ (merged + rejected). Before printing, check each `built` candidate's PR with the GitHub MCP (fallback `gh pr view`). Merged → `merged`. Closed without merging → `rejected`, with reason `PR closed without merge`, unless its commits went into a later PR that merged (the 2026-11-17 stack was closed and re-opened as one PR). Write those changes back to `state.json`.
 
 ### `improve reject I-12 "<why>"`
 
@@ -126,7 +126,7 @@ Set `status: rejected`, `reason`, and `resolvedAt`. If its commits are on an unm
 - **The repo's conventions win.** A candidate that contradicts `map.md` or the repo's own docs is dropped. If the convention itself looks harmful, record that as an observation. Rejections are recorded too, and teach the scouts.
 - **One candidate per round, one branch per run.** Each round's change is its own commits, reviewed on its own. The implementer doesn't widen scope; anything else it notices becomes a candidate.
 - **Commits on the batch branch are authorized.** Invoking `improve` or `improve I-<n>` is the human's explicit request to commit, the same as saying "commit", so a "never commit unless I say so" rule is satisfied for the run's `improve/{date}-batch` branch. That covers `implement`'s commits, its fix commits, `review --fix`, and the finish's fix commits. It never covers `main`, another branch, or the user's uncommitted work, and `discover`, `status`, and `reject` never commit. In a worktree, `git commit` needs the Bash sandbox off (the worktree's index lives under the main checkout's `.git/worktrees`).
-- **Filing defects is authorized** for the Linear project and labels in `templates/DEFECT-TICKET.md`, once per run at the finish. `--no-file` turns it off. Nothing else is posted anywhere.
+- **Filing defects is authorized** for the Linear team, project, and labels in `templates/LINEAR-TICKET.md`, once per run at the finish. **Refactor tickets are not**: the report proposes them and they are filed only when the human answers `file`. `--no-file` turns it off. Nothing else is posted anywhere.
 - **Never pushes or opens a PR without `--pr`**, and then only one draft for the whole branch, only after every round's gate passed and the reviewed-SHA check. Never merges, never force-pushes.
 
 ## Gotchas

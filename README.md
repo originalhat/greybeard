@@ -299,7 +299,7 @@ See [`workflows/campaign/`](workflows/campaign/) for details on execution modes 
 
 ### 🧹 Improve
 
-Small, continuous improvements to a codebase you already have. A run is a number of rounds on one branch. Each round looks closely at 2-3 related files, writes down what it learned, and builds the best thing in the backlog as its own reviewed commits. Over time the notes add up: a problem seen in three places becomes a candidate of its own, or a campaign suggestion.
+Small, continuous improvements to a codebase you already have. A run is a number of rounds on one branch. Each round looks closely at 2-3 related files, writes down what it learned, and builds the best thing in the backlog as its own reviewed commits. Over time the notes add up: a problem seen in three places becomes a candidate of its own, or a ticket when it's too big for a round.
 
 ```
 improve --rounds 10 --pr
@@ -313,7 +313,7 @@ improve reject I-7 "we keep these separate on purpose"
 1. Make one `improve/<date>-batch` branch for the run
 2. Each round, in its own subagent: pick a slice (the most-changed, most review-flagged file not yet visited, plus the files that change with it), scout it with the code-review lenses applied to existing code, record conventions, patterns and candidates, then build the best backlog candidate through `implement`, reviewed on its own and checked against a scope gate (8 files, 250 lines, no migrations, dependencies, CI, routes, or auth)
 3. Between rounds the parent checks the commits, keeps the branch mergeable with main, and steers the next round
-4. At the end: one `validate` of the combined behavior changes, fixes for anything the branch broke, the defects found along the way filed in Linear, and with `--pr` one draft PR
+4. At the end: one `validate` of the combined behavior changes, fixes for anything the branch broke, the defects and too-big refactors found along the way filed in Linear, and with `--pr` one draft PR
 
 Never stacks PRs, never merges. The knowledge base lives in `$GREYBEARD_DATA/output/improve/{repo}/`. See [`workflows/improve/`](workflows/improve/) for details.
 

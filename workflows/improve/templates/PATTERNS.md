@@ -10,4 +10,4 @@ Recurring observations. Each one counts the **distinct slices** it was seen in. 
   - {date} `{anchor}`: `{path:line}`
   - {date} `{anchor}`: `{path:line}`, `{path:line}`
 - **Outside evidence:** {design-audit F-nnn (5 sites) | review-record {file} | none}
-- **Candidate:** {I-n (first step) · I-m (campaign) | none yet}
+- **Candidate:** {I-n (first step) · I-m (refactor ticket, one-pr | campaign) | none yet}

@@ -35,9 +35,9 @@ Implement's step 6 rules, scoped to this branch:
 - **A `flagged` round the human rejects later** is reverted with `git revert` of its commits, not rewritten.
 - **`pre-existing` bugs** are not fixed here. They are defects (section 4).
 
-## 4. File the defects
+## 4. File tickets
 
-Skip with `--no-file`; list them in the report instead.
+Two kinds, both per `templates/LINEAR-TICKET.md`. **Defects are filed automatically**; skip with `--no-file` and they are listed in the report instead. **Refactors too big for a round are proposed, never filed automatically**: they go in the report for the human to approve (section 6), and only an approved one becomes a ticket.
 
 **What gets filed:** every bug this run found that is real and not this branch's to fix:
 
@@ -45,11 +45,13 @@ Skip with `--no-file`; list them in the report instead.
 - validate's `pre-existing` bugs, and its `unconfirmed` ones outside the branch's code;
 - `Not fixed` items from the rounds' implement reports that describe wrong behavior.
 
+**Refactors to propose:** `out` candidates with `kind: refactor` created during this run (`run` matches) and with no `ticket`. Draft each one now per the template (title, recommended approach and why, what gets easier, scope), but don't create it. The draft goes in the report under **Refactor tickets to file?**. A refactor the human skips stays `open` with no ticket and is proposed again in a later run only if new evidence adds to it.
+
 **What doesn't:** `out` candidates with `kind: restricted` (structural work in a restricted area, not a bug); findings that cite the security report (`security-testing` owns those); anything with a `ticket` already. Search the Linear project for the improve ID and the title's key words before creating one, so a re-run doesn't file duplicates.
 
-Write each ticket per `templates/DEFECT-TICKET.md` with the Linear MCP: the project, labels, priority by user impact, and **Needs validation first** for anything resting on `reading` alone, low confidence, or a console check nobody ran. Validate's bugs carry their repro. A bug validate found that matches an existing candidate is one ticket, not two.
+Write each ticket per `templates/LINEAR-TICKET.md` with the Linear MCP: the project, labels, priority by user impact, and **Needs validation first** for anything resting on `reading` alone, low confidence, or a console check nobody ran. Validate's bugs carry their repro. A bug validate found that matches an existing candidate is one ticket, not two.
 
-Then write each ticket ID into `state.json` (`ticket`, and create a candidate for any validate bug that had none, `label: out`, `kind: defect`) and into `record.md`.
+Then write each filed ticket ID into `state.json` (`ticket`, and create a candidate for any validate bug that had none, `label: out`, `kind: defect`) and into `record.md`.
 
 ## 5. PR, only with `--pr`
 
@@ -82,16 +84,22 @@ validate: {N} criteria pass, {N} bugs fixed on the branch, {N} pre-existing | sk
 ## Needs you
 {N}. {parked rounds and why, gate false positives, anything validate left failing, or "Nothing."}
 
-## Defects filed
-| Ticket | Priority | Needs validation first? |
-|--------|----------|-------------------------|
-| [PROD-…](url) {title} | {priority} | {yes: what to check | no} |
+## Tickets filed
+| Ticket | Kind | Priority | Needs validation first? |
+|--------|------|----------|-------------------------|
+| [PROD-…](url) {title} | defect | {priority} | {yes: what to check | no} |
+
+## Refactor tickets to file?
+{N}. {title} · recommends {one PR | campaign}: {why, one clause} · ~{files} files · I-{n}
 
 ## Backlog
-{top 5 open candidates, `campaign` suggestions}
+{top 5 open candidates}
 
-Say ok to keep all of it, a number to change one, or pr to push and open a draft PR.
+Say ok to keep all of it, a number to change one, file to file every proposed refactor ticket (or file and the numbers), or pr to push and open a draft PR.
 ```
+
+- Leave out **Refactor tickets to file?** when there are none.
+- `file` (or `file 6 8`) creates those tickets per the template, with the Linear MCP, then records the IDs in `state.json` and `record.md` and prints them as links. `ok` alone files none of them.
 
 ## 7. Clean up
 

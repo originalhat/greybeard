@@ -64,7 +64,7 @@ IMPROVE_BASE={round base} ${CLAUDE_PLUGIN_ROOT}/workflows/improve/scripts/scope-
 ```
 
 - **`pass`:** the round is done.
-- **`fail`:** park the round. `git branch improve-parked/{id} HEAD`, then `git reset --hard {round base}`, so the next round starts clean. Set `status: too-big` when the caps failed (and suggest the split or the campaign), or leave it `open` with the reason when it only hit a denylist path, and report `parked`. When every reason is a denylist false positive the candidate really needed (care_platform's `referral_authorization*`), keep the commits instead and say so in the report; the parent lists it under **Needs you**.
+- **`fail`:** park the round. `git branch improve-parked/{id} HEAD`, then `git reset --hard {round base}`, so the next round starts clean. When the caps failed, relabel the candidate `out` with `kind: refactor` and an `approach` (03-record section 3), so the finish tickets it; when it only hit a denylist path, leave it `open` with the reason. Report `parked`. When every reason is a denylist false positive the candidate really needed (care_platform's `referral_authorization*`), keep the commits instead and say so in the report; the parent lists it under **Needs you**.
 
 A round that can't finish for another reason (a test it can't make pass, a review failure it can't fix) parks the same way.
 

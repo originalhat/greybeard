@@ -47,7 +47,8 @@ A fresh file is `{"repo": "{repo}", "nextId": 1, "visits": [], "candidates": []}
 ## Fields
 
 - `label`: `safe` | `flagged` | `out` (`pipeline/03-record.md` section 3). `userVisible` is set only for `flagged`.
-- `kind`: for `out` only. `defect` (wrong behavior a user or caller hits) is filed in Linear at the finish; `restricted` (structural work in a restricted area) is not. `null` otherwise.
+- `kind`: for `out` only. `defect` (wrong behavior a user or caller hits) and `refactor` (structural work too big for a round) are filed in Linear at the finish; `restricted` (structural work in a restricted area) is not. `null` otherwise.
+- `approach`: for `kind: refactor` only. `one-pr` (mechanical and behavior-preserving, however many files) or `campaign` (needs checkpoints; `pipeline/03-record.md` section 3).
 - `run`: the run directory that last built or reopened it (`runs/2026-11-18-1`). `commits`: the SHAs of the round that built it.
 - `ticket`: the Linear ID once filed (`PROD-2576`). A candidate with a ticket is never filed again.
 - `value`: `high` | `medium`. Low-value candidates are never stored. `confidence`: `high` | `low`.
@@ -57,13 +58,12 @@ A fresh file is `{"repo": "{repo}", "nextId": 1, "visits": [], "candidates": []}
 ## Status vocabulary
 
 - `open`: in the backlog. Step 4 may select it (unless `out`).
-- `building`: a round started it. `branch` is set. A round that parks resets it to `open` (or `too-big`) with the reason.
+- `building`: a round started it. `branch` is set. A round that parks resets it to `open` with the reason, or relabels it `out` / `refactor` when it outgrew the gate.
 - `built`: its round finished and passed the gate. `branch`, `commits`, and `run` are set, and `pr` once the run's draft PR opened.
 - `merged`: its PR merged (set by `improve status`).
 - `rejected`: the human said no, or its PR closed without merging. `reason` is kept. **Never proposed again** without new evidence that answers the reason.
 - `stale`: the problem is no longer in the code. Reopened if a later slice finds it again.
-- `too-big`: over the gate's caps with no first step that fits.
-- `campaign`: a pattern too wide for one branch. `fix` holds the `campaign plan` goal.
+- `too-big`, `campaign`: older entries only. Work too big for a round is now `out` with `kind: refactor` and an `approach`, and gets a ticket.
 
 ## Rules
 

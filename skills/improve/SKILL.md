@@ -14,8 +14,9 @@ description: >-
   through `implement` as reviewed commits. Then one `validate` of the combined
   behavior changes, defects found along the way filed in Linear (Defects
   project, `improve-workflow` label), and with `--pr` one draft PR. Patterns
-  seen across 3 slices become cross-cutting candidates or campaign
-  suggestions. Behavior-preserving changes are the default; small behavior
+  seen across 3 slices become cross-cutting candidates; work too big for a
+  round becomes a proposed ticket (filed only on approval) recommending one
+  PR or, past a high bar, a campaign. Behavior-preserving changes are the default; small behavior
   changes with a big structural payoff are built but flagged with before/after
   screenshots. Optional `--focus <path>`, `--worktree`, `--pr`,
   `--no-validate`, `--no-file`, `discover --slices N`. Never stacks PRs,
@@ -44,6 +45,7 @@ commits, its fix commits, `review --fix` commits, and the finish's fix
 commits, on the run's own `improve/<date>-batch` branch only. That satisfies a
 "never commit unless I say so" rule for this branch. It does not extend to
 `main`, the user's branches, or pushing, which still needs `--pr` or a `pr`
-reply. Filing the run's defects in the Linear Defects project is authorized
-the same way (`--no-file` turns it off). `improve discover`, `improve status`,
+reply. Filing the run's defect tickets in Linear is authorized the same way
+(`--no-file` turns it off); refactor tickets are only proposed, and filed
+when the user answers `file`. `improve discover`, `improve status`,
 and `improve reject` never commit or file.

@@ -23,15 +23,20 @@ Against `state.json` candidates with the same fingerprint, or the same change un
 | `open`, `stale` | Update it: new `ref`, merged evidence, `status: open`. No new id |
 | `building`, `built`, `merged` | Drop the new one |
 | `rejected` | Drop it, unless the new evidence answers the rejection `reason`. Then reopen it with a note quoting the reason and the new evidence, and name it in the report |
-| `too-big`, `campaign` | Add the evidence to it. No new id |
+| `out` with `kind: refactor` | Add the evidence to it. No new id |
 
 ## 3. Label
 
 - **`safe`**: changes no behavior, or only adds tests.
 - **`flagged`**: changes something a user or caller can notice, **and** the payoff is structural. Examples: converging on the standard component, deleting a divergent copy of shared logic, making two sites behave the same where one is the clear standard. Write `userVisible` in one sentence of user terms ("status chips in the referral list match the rest of the app"). It is the line the human approves.
-- **`out`**: needs a ticket, not improve. That covers a fix whose payoff is correcting a defect rather than structure, anything from the security report, and anything touching schema, migrations, auth or permissions, sessions, routes or a public API, dependencies, or CI. Record it so it isn't lost, but step 4 never builds it. Set `kind`: `defect` when users or callers hit wrong behavior today (the finish files it in Linear), `restricted` when it is structural work that happens to touch a restricted area (recorded, never filed). Findings from the security report are `restricted` here; `security-testing` owns them.
+- **`out`**: needs a ticket, not improve. That covers a fix whose payoff is correcting a defect rather than structure, anything from the security report, and anything touching schema, migrations, auth or permissions, sessions, routes or a public API, dependencies, or CI. Record it so it isn't lost, but step 4 never builds it. Set `kind`: `defect` when users or callers hit wrong behavior today (the finish files it in Linear), `refactor` when it is structural work too big for a round (below; also filed), `restricted` when it is structural work that happens to touch a restricted area (recorded, never filed). Findings from the security report are `restricted` here; `security-testing` owns them.
 
-**Too big:** when the size is over the gate's caps (8 files, 250 lines) and it can't be split into a first step that fits, set `status: too-big`. When it's one pattern repeated across many files, set `status: campaign` and write a one-sentence `campaign plan` goal in `fix`.
+**Bigger than a round.** When the change is over the gate's caps (8 files, 250 lines) and has no first step that fits, label it `out` with `kind: refactor`, and set `approach`:
+
+- **`one-pr`** (the default), however many files it touches, when every step is mechanical and behavior-preserving: moving or extracting components, renames, converting call sites to a standard that already exists. Specs plus a before/after screenshot check can prove it, and moved-line highlighting makes it quick to review. The care_platform split of two component files (I-107: 26 components, 34 files) was this. It ran as a campaign and didn't need to: one PR, low risk.
+- **`campaign`** only when the work needs checkpoints one PR can't give: it changes behavior or a contract at many sites, touches data or migrations along the way, is a language or framework migration, or is more non-mechanical change than one person can review in a sitting (roughly 50+ files that aren't pure moves).
+
+Write the ticket-ready goal in `fix`, in one or two sentences. Improve never starts a campaign or a large refactor itself; the finish proposes a ticket that recommends the approach, files it only if the human approves, and the human decides when to pick it up.
 
 ## 4. Rate
 
@@ -60,7 +65,7 @@ For each observation: add this slice to the matching pattern in `patterns.md` (b
 A pattern **reaches the threshold** at 3 distinct slices, or sooner when a design-audit finding or a review record already shows 3 or more sites. When a pattern reaches it with no candidate linked yet, write one cross-cutting candidate:
 
 - The smallest **first step** that fits the gate, usually: pick or extract the standard, then convert one or two sites. Label it `safe` or `flagged` as in section 3, with value `high`, and link it with `pattern`.
-- If the remaining sites wouldn't fit one branch, also write a `campaign` candidate whose `fix` is the `campaign plan` goal, for after the first step merges.
+- If the remaining sites wouldn't fit one round, also write an `out` candidate with `kind: refactor` and an `approach` (section 3) for the rest, to be ticketed.
 - Link both from the pattern's `Candidate:` line.
 
 This is how the view widens: no run reads more than a slice, but the knowledge base sees across all of them.
