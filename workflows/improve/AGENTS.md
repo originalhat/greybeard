@@ -4,7 +4,7 @@ Continuous, small improvements to an existing codebase. A run is a number of **r
 
 Runs don't re-read the whole repo. They build a per-repo knowledge base instead: conventions, recurring patterns, and a backlog of evidence-backed candidates. Wider, architectural candidates come out of that knowledge base. A pattern seen in three slices becomes a candidate of its own, so the view widens while the cost per round stays flat.
 
-It sits between `grind` (the same prompt N times, no memory beyond a notes file) and `campaign` (a goal the human already has, across many files). Improve finds the goal itself, one slice at a time. Work too big for one round becomes a proposed Linear ticket, filed once the human approves it, that recommends one PR or, past a higher bar, a campaign (`pipeline/03-record.md` section 3); improve never starts either itself.
+Unlike `campaign` (a goal the human already has, across many files), improve finds the goal itself, one slice at a time. Work too big for one round becomes a proposed Linear ticket, filed once the human approves it, that recommends one PR or, past a higher bar, a campaign (`pipeline/03-record.md` section 3); improve never starts either itself.
 
 ## Directory Structure
 
