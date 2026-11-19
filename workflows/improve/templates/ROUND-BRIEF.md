@@ -8,7 +8,7 @@
 # Improve run {run} · {repo}
 
 ## This round
-- Round: {k} of {N}
+- Round: {k} of {N} | {k}, until {--loc target} lines ({total} so far)
 - Mode: {improve | improve I-n | discover}
 - Candidate: {I-n, for `improve I-n` | pick per 04-build}
 - Round base: {sha}  (the batch branch's HEAD when this round starts)

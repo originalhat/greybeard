@@ -5,7 +5,8 @@ description: >-
   user says "improve", "improve --rounds 10", "improve in <repo>", "improve
   discover", "find something to improve", "what should we clean up", "boy
   scout this repo", "improve status", "improve reject I-<n>", or "improve
-  I-<n>". A run is N rounds (`--rounds N`, default 1) on one
+  I-<n>". A run is N rounds (`--rounds N`, default 1, or `--loc N` to keep
+  going until the branch has N changed lines) on one
   `improve/<date>-batch` branch, each round in its own subagent: scout one
   slice of 2-3 related files (picked by churn and past review findings, never
   re-reading unchanged files; production hotspots from Datadog APM rank
@@ -30,7 +31,7 @@ description: >-
 
 N rounds on one branch: scout a slice, record what it taught, build the best thing in the backlog. Then validate once, file the defects, and open one draft PR.
 
-**Trigger:** `improve [in <repo>] [--rounds N] [--focus <path> | --focus perf] [--worktree] [--pr] [--no-validate] [--no-file]`, `improve discover [--slices N]`, `improve I-<n> [I-<m> …]`, `improve status`, `improve reject I-<n> "<why>"`.
+**Trigger:** `improve [in <repo>] [--rounds N] [--loc N] [--focus <path> | --focus perf] [--worktree] [--pr] [--no-validate] [--no-file]`, `improve discover [--slices N]`, `improve I-<n> [I-<m> …]`, `improve status`, `improve reject I-<n> "<why>"`.
 
 **Run:** execute `${CLAUDE_PLUGIN_ROOT}/workflows/improve/AGENTS.md`.
 

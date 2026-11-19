@@ -39,7 +39,7 @@ No lenses of its own. The scouts apply `code-review/lenses/` to existing code th
 
 | Say | Does |
 |-----|------|
-| `improve [in <repo>] [--rounds N] [--focus <path>] [--worktree] [--pr] [--no-validate] [--no-file]` | N rounds (default 1) on one batch branch, then finish (`05-finish.md`) |
+| `improve [in <repo>] [--rounds N] [--loc N] [--focus <path>] [--worktree] [--pr] [--no-validate] [--no-file]` | Rounds on one batch branch until N rounds (default 1) or, with `--loc`, until the branch reaches N changed lines; then finish (`05-finish.md`) |
 | `improve discover [in <repo>] [--focus <path>] [--slices N]` | Steps 1-3 only, for N slices one after another (default 1, max 5). No code changes, no tickets |
 | `improve I-12 [I-15 …] [in <repo>] [--worktree] [--pr] [--no-validate] [--no-file]` | One round per named candidate (step 4 only, no new slice), then finish |
 | `improve status [in <repo>]` | Backlog, patterns close to the threshold, coverage, defects not yet ticketed, and outcomes |
@@ -47,6 +47,7 @@ No lenses of its own. The scouts apply `code-review/lenses/` to existing code th
 
 - **Repo:** the current working directory's repo, or `in <repo>`: a path, else `$GREYBEARD_DATA/sources/<repo>`. The **repo name** for the data directory is the basename of the `origin` remote URL without `.git` (`care_platform`), so a worktree or a second clone shares one knowledge base.
 - `--rounds N` (also `--rounds=N`): how many rounds, at most 20. The run stops early when a round finds nothing worth building and the slice picker has nothing left.
+- `--loc N` (also `--loc=N`): keep running rounds until the batch branch's changed lines reach N or more: added plus deleted, tests included, counted the same way as the scope gate (`--loc` section below). With `--rounds` too, the run stops at whichever comes first; without it, the 20-round cap still applies. Each round is capped at 250 lines, so `--loc 1000` takes at least 4 rounds.
 - `--focus <path>` limits every round's slice anchor to that path prefix (`client/src`, `app/services/fabric`).
 - `--focus perf` is a performance run: slices anchor only on production hotspots, and rounds build only candidates with a measured performance target (`pipeline/00-hotspots.md`, `04-build.md` section 4).
 - `--worktree`: the batch branch lives in one sibling worktree for the whole run (`implement`'s worktree section), not one per round.
@@ -90,10 +91,10 @@ The **parent** (the session the human talks to) owns the run: the lock, the bran
 
 ### 1. Rounds
 
-For round `k` of N, in sequence:
+For round `k`, in sequence, until the run's stop condition (below):
 
 1. **Update the brief** (`templates/ROUND-BRIEF.md`): the round number, the round base (the branch's HEAD now), the steer for this round, and every lesson so far.
-2. **Launch one subagent** with `subagent_type: general-purpose`, the brief's path, and `run_in_background: true`. It runs `pipeline/01-slice.md` through `pipeline/04-build.md` on the batch branch and returns the round report from the brief. For `improve I-n …`, the round builds that candidate and skips 01-03. For `discover`, it runs 01-03 only, and there is no branch. One line when it starts ("Round 3 of 10: scouting."), then end the turn. Don't poll; the subagent's completion wakes the parent.
+2. **Launch one subagent** with `subagent_type: general-purpose`, the brief's path, and `run_in_background: true`. It runs `pipeline/01-slice.md` through `pipeline/04-build.md` on the batch branch and returns the round report from the brief. For `improve I-n …`, the round builds that candidate and skips 01-03. For `discover`, it runs 01-03 only, and there is no branch. One line when it starts ("Round 3 of 10: scouting.", or with `--loc`, "Round 3: scouting, 412/1000 lines so far."), then end the turn. Don't poll; the subagent's completion wakes the parent.
 3. **Check the round** when it reports, before launching the next:
    - `git log --oneline {round base}..HEAD` matches the commits the report lists. `scripts/scope-gate.sh` with `IMPROVE_BASE={round base}` passes. HEAD is the SHA the round's last review record covers (`code-review/scripts/last-reviewed-sha.sh`).
    - The branch still merges into the latest `origin/main`: `git fetch origin main` then `git merge-tree --write-tree origin/main HEAD`. A conflict is resolved now, while it is one round's worth (`git rebase origin/main`, then re-run that round's specs), not at the end.
@@ -104,7 +105,18 @@ For round `k` of N, in sequence:
    - Between candidates of equal value and confidence, the oldest goes first (04-build section 1), so new small findings don't keep jumping the queue.
 5. **Questions don't stop the run.** A round's questions, flagged decisions, and defects collect in `record.md` for the finish. Stop between rounds only when the next round can't run without an answer: the branch is broken, every remaining candidate waits on the same question, or the human interjects.
 
-The run ends after N rounds, or earlier when a round reports `nothing to build` and `pick-slice.sh` printed `none`.
+The run ends at the first of:
+
+- **`--rounds N`:** N rounds have run (parked rounds count; they used a slot).
+- **`--loc N`:** after a round's check, the branch's changed lines are at or above N. Count from the merge base with `origin/main`, so a catch-up rebase doesn't reset it, and only committed rounds count (a parked round reset its commits):
+
+  ```bash
+  git diff --numstat $(git merge-base origin/main HEAD) HEAD | awk '$1 != "-" { n += $1 + $2 } END { print n + 0 }'
+  ```
+
+  Write the running total in `record.md` after each round and in the next round's start line ("Round 4: scouting, 612/1000 lines so far."). The target is measured before the finish: validate's fixes and a catch-up rebase can add a little more, and the report shows both numbers (`1,012 lines at the last round, 1,048 after the finish`).
+- **20 rounds**, the hard cap, whatever `--rounds` or `--loc` asked for. With `--loc`, say how far short the branch stopped.
+- **Nothing left:** a round reports `nothing to build` and `pick-slice.sh` printed `none`. With `--loc`, say how far short the branch stopped.
 
 ### 2. Finish
 

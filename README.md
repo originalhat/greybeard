@@ -304,6 +304,7 @@ Small, continuous improvements to a codebase you already have. A run is a number
 ```
 improve --rounds 10 --pr
 improve --focus perf --rounds 3
+improve --loc 1000 --pr
 improve discover --slices 3
 improve I-12 I-15
 improve status

@@ -10,14 +10,14 @@
 **Command:** {as typed}
 **Branch:** {improve/YYYY-MM-DD-batch} · worktree: {path | none}
 **Base:** origin/main @ {sha} → {final base sha after catch-up}
-**Rounds:** {done} of {N} · stopped: {after N | nothing left to build | human}
+**Rounds:** {done} of {N | cap 20} · lines: {total} of {--loc target | no target} · stopped: {after N | reached --loc | 20-round cap | nothing left to build | human}
 **Hotspots:** {date} · service {service} · top: {file (p95, hits)}, … | none ({why})
 
 ## Rounds
 
-| Round | Candidate | Label | Kind | Commits | Review | Gate | Status |
-|-------|-----------|-------|------|---------|--------|------|--------|
-| 1 | I-{n} {title} | safe | test-only | {sha}..{sha} ({N}) | {tally} | pass | done |
+| Round | Candidate | Label | Kind | Commits | Review | Gate | Lines (branch total) | Status |
+|-------|-----------|-------|------|---------|--------|------|----------------------|--------|
+| 1 | I-{n} {title} | safe | test-only | {sha}..{sha} ({N}) | {tally} | pass | {round} ({total}) | done |
 
 Steers given between rounds:
 - before round {k}: {the steer and why}

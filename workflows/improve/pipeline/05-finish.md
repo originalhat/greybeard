@@ -71,7 +71,7 @@ One message, implement's closing-list shape, numbered across sections so the hum
 
 ```
 ## Done
-{N} rounds · {N} built ({test-only} test-only, {app-code} app code, {flagged} flagged) · {N} parked · branch {branch} on main @ {sha} · {PR url | local only}
+{N} rounds · {N} built ({test-only} test-only, {app-code} app code, {flagged} flagged) · {N} parked · {lines} lines changed ({at last round} before the finish{, target {N}} with --loc) · branch {branch} on main @ {sha} · {PR url | local only}
 validate: {N} criteria pass, {N} bugs fixed on the branch, {N} pre-existing | skipped: {why}
 perf: {I-n {measure} {before → after} (production baseline {p95}); … | none}
 
