@@ -17,6 +17,7 @@ This directory contains AI agent workflows. Each workflow is a structured pipeli
 | `campaign/` | Large-scale refactoring campaign execution — migrations, architectural transitions, coverage sweeps |
 | `on-call/` | Triage on-call tickets and build a self-improving hierarchy of runbooks plus a PHI-free audit trail |
 | `retro/` | Retrospective over recent bb threads: quantified friction → suggestions on a value by confidence 2x2 with before/after impact → high confidence auto-applied with rollback, the rest approved one at a time → committed |
+| `tidy/` | Local cleanup after an implementation track: worktree, branch, Docker containers, images and databases, dev servers, behind a safety gate for unmerged or in-use resources |
 
 ## Workflow Conventions
 

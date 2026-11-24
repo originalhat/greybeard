@@ -116,6 +116,7 @@ The leading word routes the request to a workflow. Match on it directly.
 | `campaign` | Campaign | `campaign` | `campaign plan "…" in origami_claims` |
 | `improve` | Improve | `improve` | `improve --rounds 10 --pr`, `improve discover --slices 3`, `improve status` |
 | `retro` | Retro | `retro` | `retro`, `retro --days 7`, `retro walkthrough`, `retro rollback S-…` |
+| `tidy` | Tidy | `tidy` | `tidy`, `tidy PROD-2387`, `tidy --dry-run` |
 
 `review` and `triage` are the two single-word entry points: **`review` always means code review** (of a GitHub PR or branch), and **`triage` always means on-call** (of a JIRA ticket). On-call's other phases keep the `on-call` prefix (`on-call publish/capture/curate/sync`); bare `triage` is the shorthand for starting one. `review --fix` and `review --interactive` stay under the `review` verb because they're the same evaluation with a loop bolted on, not a different concern.
 
@@ -157,6 +158,9 @@ Triages engineering on-call (ER) tickets and turns every resolution into durable
 
 ### Retro
 A retrospective over recent bb threads: quantifies recurring friction (corrections, steers, failed commands, minutes lost) and proposes the most deterministic fix for each pattern — config and tooling first, structure, skill mechanics, memory, prose rules last — with its before and after impact, placed on a value by confidence 2x2. High-confidence fixes that are local and reversible are applied during the run and reported with a rollback; the rest are walked one at a time for approval. `retro` (since last run), `retro --days 7`, `retro --report-only`, `retro walkthrough`, `retro apply S-…`, `retro reject S-…`, `retro rollback S-…`, `retro status`. State, reports, designs, and changelog live in `$RETRO_HOME` (default `$GREYBEARD_DATA/output/retro/`; point it at a private repo). Its own threads carry `[retro]`. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/retro/AGENTS.md`.
+
+### Tidy
+Cleans up what an implementation track left on this machine once it's merged or abandoned: the worktree and local branch, its Docker containers, images, volumes and per-worktree databases, dev servers, and stray screenshots. Gitignored notes are copied into the main checkout first. A safety gate keeps anything unrecoverable or still in use: a dirty worktree, a branch whose content isn't on `origin` (squash-aware), or an image another worktree still runs. It never stashes or resets, and never deletes remote branches. `tidy [<ticket | branch | worktree path>] [in <repo>] [--dry-run] [--keep-branch] [--keep-data]`. Details: `${CLAUDE_PLUGIN_ROOT}/workflows/tidy/AGENTS.md`.
 
 ## Sources
 
